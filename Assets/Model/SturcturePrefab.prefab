@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3806524585600746675
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3806524585600746637}
+  - component: {fileID: 1165819541521810079}
+  - component: {fileID: 7220937725510119355}
+  m_Layer: 0
+  m_Name: SturcturePrefab
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3806524585600746637
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3806524585600746675}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &1165819541521810079
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3806524585600746675}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7220937725510119355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3806524585600746675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f2336ed8e3e68a458152a7db30ef89b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  atomPrefabVar: {fileID: 4997048308515125665, guid: 9ff28f77f9b680440800ab9355d3f927,
+    type: 3}
+  latPrefabVar: {fileID: 8116349078610132731, guid: 8681358b040432943a66e4a219a0479f,
+    type: 3}
+  bondPrefabVar: {fileID: 1074463570723431492, guid: 1d6ce2f0cb1998e42bacc1c267d1f7b1,
+    type: 3}
+  nodePrefabVar: {fileID: 1582054456059128272, guid: db51956a9e00175468cfc6b591f9a299,
+    type: 3}
+  parent: {fileID: 0}
+  id: 0
+  energy: 0
+  abc: []
+  lat:
+    e00: 0
+    e01: 0
+    e02: 0
+    e03: 0
+    e10: 0
+    e11: 0
+    e12: 0
+    e13: 0
+    e20: 0
+    e21: 0
+    e22: 0
+    e23: 0
+    e30: 0
+    e31: 0
+    e32: 0
+    e33: 0
+  atomList: []
+  latList: []
+  bondList: []
+  latCenter: {fileID: 0}
+  pathid: 0
+  conv: 0
+  nminimum: 0
+  numstr: 0
+  nopathway: 0
+  ts: 0
