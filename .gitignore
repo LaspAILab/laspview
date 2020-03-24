@@ -1,0 +1,56 @@
+# =============== #
+# Unity generated #
+# =============== #
+Temp/
+Obj/
+UnityGenerated/
+Library/
+Assets/AssetStoreTools*
+
+# ===================================== #
+# Visual Studio / MonoDevelop generated #
+# ===================================== #
+ExportedObj/
+.vs/
+*.svd
+*.userprefs
+*.csproj
+*.pidb
+*.suo
+*.sln
+*.user
+*.unityproj
+*.booproj
+
+# ============ #
+# OS generated #
+# ============ #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+
+# ============ #
+# Python / Spyder generated #
+# ============ #
+/.spyproject
+/template
+
+#=============#
+#Test File#
+#=============#
+1.arc
+2.arc
+UserAddress.log
+LASP4WIN*
+newPj/SSW*
+newPj/best.arc
+newPj/all*
+newPj/Ba*
+newPj/lasp.out
+LaspRun/*
+lasp*.txt
