@@ -11,6 +11,7 @@ Assets/AssetStoreTools*
 # Visual Studio / MonoDevelop generated #
 # ===================================== #
 ExportedObj/
+.vs/
 *.svd
 *.userprefs
 *.csproj
@@ -32,3 +33,9 @@ ExportedObj/
 Icon?
 ehthumbs.db
 Thumbs.db
+
+# ============ #
+# Python / Spyder generated #
+# ============ #
+/.spyproject
+/template

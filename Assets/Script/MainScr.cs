@@ -79,7 +79,7 @@ public class MainScr : MonoBehaviour
         arcList[currentArc].gameObject.SetActiveRecursively(false);
         targetArc.gameObject.SetActive(true);
         currentArc = arcIndex;
-        print(arcList[currentArc].filename);
+        //print(arcList[currentArc].filename);
         (bool, bool) playerStatus = targetArc.DrawStructure(targetArc.currentStr);
         GuiLogic.S.PlayerBtnChecked(playerStatus);
     }

@@ -9,6 +9,7 @@ using UnityEngine;
 using System.Text;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System;
 
 
 public class ArcStructures : MonoBehaviour
@@ -57,10 +58,11 @@ public class ArcStructures : MonoBehaviour
 
     public (bool, bool) DrawStructure(int i)
     {
-        foreach(Bond b in structureList[currentStr].bondList)
+        //print(currentStr);
+        foreach (Bond b in structureList[currentStr].bondList)
         {
             //Destroy all bond before setActive False to save memory
-            Object.Destroy(b.gameObject);
+            UnityEngine.Object.Destroy(b.gameObject);
         }
         structureList[currentStr].bondList.Clear();
         structureList[currentStr].gameObject.SetActiveRecursively (false);
@@ -105,85 +107,112 @@ public class ArcStructures : MonoBehaviour
     {   //Initilization function outside Unity3d frame. Need to be call soon after Instantiation.
         this.filename = filename;
         currentStr = -1;
-        foreach (string line in lines)
+        int startingPoint = 0;
+        print(1);
+        //若文件行数大于(300个原子，100个结构，约等于30000行)，只执行25000个原子的结构
+        if (lines.Length > 30000)
         {
-            // add Structure
-            if (!noE)
-            {
-                if (line.Contains("Energy") || line.Contains("IS") || line.Contains("TS") || (line.Contains("SSW") && !line.Contains("Str")))
-                {
-                    currentStr += 1;
-                    if (!line.Contains("****"))
-                    {
-                        AddSturcture();
-                        structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(line)[4]);
-                        structureList[currentStr].conv = float.Parse(ConFun.S.PySplit(line)[2]);
-                        try
-                        {
-                            structureList[currentStr].pathid = int.Parse(ConFun.S.PySplit(line)[1]);
-                        }
-                        catch (System.Exception)
-                        {
-                            structureList[currentStr].pathid = 0;
-                        }
-                    }
-                    else
-                    {
-                        AddSturcture();
-                        structureList[currentStr].conv = 9999.0F;
-                    }
+            ConFun.S.printStatusInfo(filename + "is too long. Only last several structures is loaded.");
+            startingPoint = lines.Length - 8000;
 
-                }
-                else if (line.Contains("Str"))
-                {
-                    if (!line.Contains("****"))
-                    {
-                        AddSturcture();
-                        structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(line)[4]);
-                    }
-                    else
-                    {
-                        AddSturcture();
-                    }
-                    currentStr += 1;
-                    structureList[currentStr].nminimum = int.Parse(ConFun.S.PySplit(line)[1]);
-                    structureList[currentStr].numstr = int.Parse(ConFun.S.PySplit(line)[2]);
-                }
-                else if (line.Contains("React") || line.Contains("TS"))
-                {
-                    currentStr += 1;
-                    AddSturcture();
-                    structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(line)[4]);
-                    structureList[currentStr].numstr = int.Parse(ConFun.S.PySplit(line)[2]);
-                    structureList[currentStr].nopathway = int.Parse(ConFun.S.PySplit(line)[1]);
-                    if (line.Contains("React")) structureList[currentStr].ts = false;
-                    else structureList[currentStr].ts = true;
-                }
-                else if (line.Contains("CAR File"))
-                {
-                    AddSturcture();
-                    currentStr += 1;
-                }
-            }
-            else
+            for (; startingPoint < lines.Length - 1; startingPoint++)
             {
-                if (line.Contains("DATE"))
-                {
-                    AddSturcture();
-                    currentStr += 1;
-                }
+                print(3);
+                if (lines[startingPoint].Contains("Energy")) break;
             }
 
-            //complete information  in single structure
-            if (line.Contains("PBC") && !(line.Contains("ON") || line.Contains("OFF")))
+
+        }
+        print(lines[startingPoint]);
+        try
+        {
+            for (int i = startingPoint; i <= lines.Length - 1; i++)
             {
-                structureList[currentStr].AddLat(line);
-            }
-            else if (line.Contains("CORE"))
-            {
-                structureList[currentStr].AddAtom(line);
+                // add Structure
+                if (!noE)
+                {
+                    if (lines[i].Contains("Energy") || lines[i].Contains("IS") || lines[i].Contains("TS") || (lines[i].Contains("SSW") && !lines[i].Contains("Str")))
+                    {
+                        currentStr += 1;
+                        if (!lines[i].Contains("****"))
+                        {
+                            AddSturcture();
+                            structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(lines[i])[4]);
+                            structureList[currentStr].conv = float.Parse(ConFun.S.PySplit(lines[i])[2]);
+                            try
+                            {
+                                structureList[currentStr].pathid = int.Parse(ConFun.S.PySplit(lines[i])[1]);
+                            }
+                            catch (System.Exception)
+                            {
+                                structureList[currentStr].pathid = 0;
+                            }
+                        }
+                        else
+                        {
+                            AddSturcture();
+                            structureList[currentStr].conv = 9999.0F;
+                        }
+
+                    }
+                    else if (lines[i].Contains("Str"))
+                    {
+                        if (!lines[i].Contains("****"))
+                        {
+                            AddSturcture();
+                            structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(lines[i])[4]);
+                        }
+                        else
+                        {
+                            AddSturcture();
+                        }
+                        currentStr += 1;
+                        structureList[currentStr].nminimum = int.Parse(ConFun.S.PySplit(lines[i])[1]);
+                        structureList[currentStr].numstr = int.Parse(ConFun.S.PySplit(lines[i])[2]);
+                    }
+                    else if (lines[i].Contains("React") || lines[i].Contains("TS"))
+                    {
+                        currentStr += 1;
+                        AddSturcture();
+                        structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(lines[i])[4]);
+                        structureList[currentStr].numstr = int.Parse(ConFun.S.PySplit(lines[i])[2]);
+                        structureList[currentStr].nopathway = int.Parse(ConFun.S.PySplit(lines[i])[1]);
+                        if (lines[i].Contains("React")) structureList[currentStr].ts = false;
+                        else structureList[currentStr].ts = true;
+                    }
+                    else if (lines[i].Contains("CAR File"))
+                    {
+                        AddSturcture();
+                        currentStr += 1;
+                    }
+                }
+                else
+                {
+                    if (lines[i].Contains("DATE"))
+                    {
+                        AddSturcture();
+                        currentStr += 1;
+                    }
+                }
+
+                //complete information  in single structure
+                if (lines[i].Contains("PBC") && !(lines[i].Contains("ON") || lines[i].Contains("OFF")))
+                {
+                    structureList[currentStr].AddLat(lines[i]);
+                }
+                else if (lines[i].Contains("CORE"))
+                {
+                    structureList[currentStr].AddAtom(lines[i]);
+                }
             }
         }
+        catch (Exception ex)
+        {
+            ConFun.S.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.Message);
+            print(currentStr);
+            GameObject.Destroy(structureList[currentStr].gameObject);
+        }
+
 
         for (int i = 0; i < currentStr + 1; i++)
         {
@@ -229,18 +258,18 @@ public class ArcStructures : MonoBehaviour
     //    //}
     //}
 
-    private void OnDrawGizmos()
-    {
-        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        //对原子的拾取，取到就变色
-        if (Input.GetKey(KeyCode.Mouse0))
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawRay(mouseRay.origin, mouseRay.origin+100000f*mouseRay.direction);
-        }
+    //private void OnDrawGizmos()
+    //{
+    //    Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+    //    Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+    //    //对原子的拾取，取到就变色
+    //    if (Input.GetKey(KeyCode.Mouse0))
+    //    {
+    //        Gizmos.color = Color.red;
+    //        Gizmos.DrawRay(mouseRay.origin, mouseRay.origin+100000f*mouseRay.direction);
+    //    }
 
-    }
+    //}
 
     //public void MouseOnScene() //摄像机围绕目标旋转操作
     //{

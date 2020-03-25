@@ -37,9 +37,9 @@ namespace ViewerNetwork
             string fullTag = Regex.Match(msg, @"\A<([^/<>]*)>").Groups[1].ToString();
             if (fullTag == "")
             {
-                //ConFun.S.printStatusInfo("wrong XML head format");
-                tag = "";
-                return "";
+                throw new Exception("SocketError: Wrong XML format");
+                //tag = "";
+                //return "";
             }
             string[] st = fullTag.Split(' ');
             tag = st[0];
@@ -88,7 +88,7 @@ namespace ViewerNetwork
         static public Thread listenThred;
         TcpListener tlistener;
         TcpClient remoteClient;
-        private int bufferSize = 1024;
+        private int bufferSize = 4096;
         private string localIP;  //read from ip.txt later
         private int localPort;   //read from ip.txt later
 
@@ -100,7 +100,7 @@ namespace ViewerNetwork
 
         public void Start()
         {
-            localPort = 9540;
+            localPort = int.Parse(ConFun.S.globalPara["local_port"]);
             //string[] lines = File.ReadAllLines("ip.txt");
             //foreach (string line in lines)
             //{
@@ -155,6 +155,21 @@ namespace ViewerNetwork
                 try  //直接关掉客户端，服务器端会抛出异常
                 {
                     buffer = new byte[bufferSize];//定义一个缓存buffer数组
+
+                    //1.检查第一个bufferSize，有问题直接关掉链接
+                    byteRead = streamToClient.Read(buffer, 0, bufferSize);
+                    string msgHead = Encoding.UTF8.GetString(buffer, 0, byteRead);
+                    if (this.JudgeMsgHead(msgHead))
+                    {
+                        msgList.Append(msgHead);
+                    }
+                    else
+                    {
+                        throw new Exception("Server Error: Unkown Message. Wrong head format or user name different from allkey.log");
+                    }
+
+                    //2.接收完整信息，最大接收约3M
+                    int i = 0;
                     do
                     {
                         byteRead = streamToClient.Read(buffer, 0, bufferSize);//将数据搞入缓存中（有朋友说read()是阻塞方法，测试中未发现程序阻塞）
@@ -165,9 +180,19 @@ namespace ViewerNetwork
                         }
 
                         msgList.Append(Encoding.UTF8.GetString(buffer, 0, byteRead));//从二进制转换为字符串对应的客户端会有从字符串转换为二进制的方法
-                        //print("Receive: [" + byteRead + "byte]");
+                        print("Receive: [" + byteRead + "byte]");
+                        i++;
+                        if (i > 768)
+                        {
+                            msgList.Append("</file></laspview>");
+                            //文件长度超过1M强制停止接收
+                            break;
+                        }
                     }
-                    while (streamToClient.CanRead);
+                    while (streamToClient.CanRead );
+
+
+                    //信息处理
                     status = this.MsgProcess(msgList.ToString());
                     if (status == 0)
                     {
@@ -178,9 +203,9 @@ namespace ViewerNetwork
                 catch (Exception ex)
                 {
                     printOnMainTrhead("Error:" + ex.Message);
-                    StreamWriter file = new StreamWriter(@"error.txt", true);
-                    file.WriteLine(ex.Message);
-                    break;
+                    //StreamWriter file = new StreamWriter(@"error.txt", true);
+                    //file.WriteLine(ex.Message);
+                    //break;
                 }
                 finally
                 {
@@ -188,6 +213,21 @@ namespace ViewerNetwork
                 }
             }
             tlistener.Stop();
+
+        }
+
+        private bool JudgeMsgHead(string head)
+        {
+            string user = Regex.Match(head, @"\A<laspview user=([^/<>]*)>").Groups[1].ToString();
+            print(user);
+            if (user == ConFun.S.globalPara["user"] || user == "local")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
 
         }
 
@@ -296,7 +336,7 @@ namespace ViewerNetwork
 
         private TcpClient tcpClient;
         NetworkStream streamToServer;
-        private int bufferSize = 1024;
+        private int bufferSize = 4096;
 
         /// 远程服务IP地址
         public string remoteIP;
@@ -458,7 +498,6 @@ namespace ViewerNetwork
         {
             if (!initialized)
             {
-
                 if (!Application.isPlaying)
                     return;
                 initialized = true;

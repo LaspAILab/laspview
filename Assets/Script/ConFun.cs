@@ -29,7 +29,7 @@ public class ConFun : MonoBehaviour
     void Awake()
     {   
         S = this;
-        necessaryGlobalPara = new List<string>{ "remote_ip", "remote_port","local_port" };
+        necessaryGlobalPara = new List<string>{ "user", "remote_ip", "remote_port","local_port" };
         this.SetPeriodicTable();
         this.readGlobalPara();
         globalPara.Add("model_type", "scale");

@@ -1,0 +1,155 @@
+#! /home10/program/anaconda3/bin/python 
+# -*- coding: utf-8 -*-
+"""
+Often used python Script for transfer file to Local, 
+and grab file from template directory
+
+Containing:
+1. A File grabber to catch file from /home9/LaspViewTemplate,
+   which is managed by TransitServer,  to running directory
+2. A remote Client to send file to Transit Server
+"""
+
+"""
+Messege XML Format
+<laspview user="%username">
+    <file type="%type" name="%name">
+        # %type = arc  
+        # %name = directory name of file
+        %fileContent
+    </file>
+    
+    or
+    <sig>%sig</sig> #signal including stop server, grab file
+    
+    or
+    <path>%path</paht> #pwd of file
+</laspview>
+"""
+
+
+import os
+import socket
+import time
+import argparse
+
+
+"""CHANGEABLE PARAMETERS for USER"""
+USER = "shiyf"
+TEMP = './template'
+
+
+
+
+HOST = '127.0.0.1'
+#liu-node1
+#HOST = '192.168.5.201'
+PORT = 9539
+BUFSIZ = 1024
+ADDR = (HOST,PORT)
+
+
+
+def sendMsg(msg, addr):
+    """msg is a string"""
+    try:
+        clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        clientSocket.connect(addr)
+        print ('connect to '+str(addr))
+        clientSocket.send(msg.encode())
+        print("send msg success")
+    except socket.error as e:
+        print ('error:'+str(e))
+    finally:
+        clientSocket.close()
+                
+def addTagWithAttr(msgList, tag, attrbt):
+    """
+    msgList is List of message, waiting to join at last
+    tag & attrbt is tag & attribute in XML format
+    """
+    alist=["".join(["<", tag, " ", attrbt, ">"])]
+    alist.extend(msgList)
+    alist.append("</"+tag+">")
+    """return like: ['<laspview user=shiyf>', 'helloworld', '</laspview>'] """
+    return alist
+        
+def addTag(msgList, tag):
+    """
+    add tag with no attribute
+    msgList is List of message, waiting to join at last
+    tag & attrbt is tag & attribute in XML format
+    """
+    alist=["".join(["<", tag, ">"])]
+    alist.extend(msgList)
+    alist.append("</"+tag+">")
+    """return like: ['<laspview user=shiyf>', 'helloworld', '</laspview>'] """
+    return alist
+
+def sendFile(pwd,fname):
+    try:
+        clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        clientSocket.connect(ADDR)
+        print ('connect to '+str(ADDR))
+        
+        s = pwd.split("/|\\")
+        nam = s[-1]+'-'+fname
+        typ = fname.split(".")[-1]
+        clientSocket.send(("<laspview user=%s>"%USER+"<file name=%s type=%s>"%(nam,typ)).encode())
+        f = open(pwd+"\\"+fname,'rb')
+        while True:
+            msg = f.read(4096)
+            if not msg:
+               break
+            clientSocket.send(msg)
+        f.close()
+        clientSocket.send("</file></laspview>".encode())
+        print ('send file success')        
+    finally:
+        clientSocket.close()
+    
+    
+    
+def sendPath():
+    pass
+
+
+  
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Script to Send Message To Local LaspView, and to Make Lasp Calculation Project',epilog='')
+    parser.add_argument('-u',  "--user", type = str,  default = USER, nargs = 1 ,
+                        help = "Change default user to given argument, Default to $USER in the file.")
+    parser.add_argument('-s',  "--send", type = str, default = "best.arc", nargs = 1,
+                        help = "Path of file to send. Default to best.arc.")
+    parser.add_argument('-ls', "--list",  action = "store_true",
+                        help = "List the file in /$TEMP/$USER .")
+    parser.add_argument('-cp', "--copy",  action = "store_true",
+                        help = "Copy file and file with same prefix name to current dir.")
+    parser.add_argument('-m',  "--make",  action = "store_true",
+                        help = "Make Lasp computation project, a dir with lasp.in, *.pot and input.arc")
+    args = parser.parse_args()
+
+
+#    if args.user != None:
+#        print (args.user) 
+
+    if args.send != None:
+        """send Path of filename to Transit Server"""
+        msgList = addTag([os.getcwd()+"/"+args.send[0]],"path")
+        msgList = addTagWithAttr(msgList,"laspview","user="+USER)
+        sendMsg("".join(msgList), ADDR)
+    
+    
+##   def stop
+#    msgList = addTag(["StopServer"],"sig")
+#    msgList = addTagWithAttr(msgList,"laspview","user=shiyf")
+#    sendMsg("".join(msgList),ADDR)
+
+#    def sendFIle
+#    sendFile(os.getcwd()+'/'+filename)
+    
+#    def sendPath
+
+    
+#    def grabLatest
