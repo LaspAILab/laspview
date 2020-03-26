@@ -1,3 +1,4 @@
+#! python
 #! /home10/program/anaconda3/bin/python 
 # -*- coding: utf-8 -*-
 """
@@ -27,7 +28,7 @@ Messege XML Format
 </laspview>
 """
 
-
+import re
 import os
 import asyncio
 import argparse
@@ -57,19 +58,22 @@ def clientSend(msg, addr, port):
 
    
 async def asyncSendMsg(msg, addr, port):
-    reader, writer = await asyncio.open_connection(
-        addr, port)
-    print(f"connect to {addr!r}:{port!r}")
-    writer.write(msg.encode())
-    writer.write_eof()
-    await writer.drain()
-#
-    data = await reader.read()
-    rtnMsg = data.decode()
-    msgProcess(rtnMsg)
-    print('Client Closed')
-    writer.close()
-    await writer.wait_closed()
+    try:
+        reader, writer = await asyncio.open_connection(
+            addr, port)
+        print(f"connect to {addr!r}:{port!r}")
+        writer.write(msg.encode())
+        writer.write_eof()
+        await writer.drain()
+    #
+        data = await reader.read()
+        rtnMsg = data.decode()
+        msgProcess(rtnMsg)
+        print('Client Closed')
+        writer.close()
+        await writer.wait_closed()
+    except ConnectionRefusedError as e:
+        print(e)
     
 def msgProcess(msg):
 
@@ -126,6 +130,7 @@ def rmTag(msg):
     st = re.match(r"<([^/<>]*)>",msg)
     if st == None:
         print("wrong XML message")
+        print(msg)
         return(msg, None, None)
     st = st.group(1).split()
     tag  = st.pop(0)
@@ -174,32 +179,46 @@ if __name__ == "__main__":
                         help = "Path of file to send. Default to best.arc.")
     parser.add_argument('-ls', "--list",  action = "store_true",
                         help = "List the file in /$TEMP/$USER .")
-    parser.add_argument('-cp', "--copy",  action = "store_true",
+    parser.add_argument('-cp', "--copy",  type = str, nargs = '+',
                         help = "Copy file and file with same prefix name to current dir.")
     parser.add_argument('-m',  "--make",  action = "store_true",
-                        help = "Make Lasp computation project, a dir with lasp.in, *.pot and input.arc")
+                        help = "Make LASP computation project")
     parser.add_argument('-kill',  "--kill",  action = "store_true",
                         help = "Ask TransitServer to kill himself.")
     args = parser.parse_args()
 
 
 
-#    if args.user != None:
-#        print (args.user) 
+    print(args)
+    
+    ##   def stop
 
-    if args.send != None:
+    
+    if args.kill == True:
+        msgList = addTag(["StopServer"],"sig")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        clientSend("".join(msgList),HOST,PORT)
+        
+    elif args.list == True:
+        msgList = addTag(["ls"],"sig")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        clientSend("".join(msgList),HOST,PORT)
+        
+    elif args.copy != None:
+        msg = "cp "+" ".join(args.copy) 
+        msgList = addTag(["C"],"sig")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        clientSend("".join(msgList),HOST,PORT)
+    
+    elif args.send != None:
         """send Path of filename to Transit Server"""
-        print("Start to send %s"%args.send)
-        msgList = addTag([os.getcwd()+"/"+args.send],"path")
-        msgList = addTagWithAttr(msgList,"laspview","user="+USER)
-        clientSend("".join(msgList), HOST,PORT)
-    
-    
-###   def stop
-#    if args.kill != None:
-#        msgList = addTag(["StopServer"],"sig")
-#        msgList = addTagWithAttr(msgList,"laspview","user=shiyf")
-#        clientSend("".join(msgList),HOST,PORT)
+        if not os.path.isfile(args.send):
+            print("Error: "+args.send + " not exist")
+        else:
+            print("Start to send %s"%args.send)
+            msgList = addTag([os.getcwd()+"/"+args.send],"path")
+            msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+            clientSend("".join(msgList), HOST,PORT)
 
 #    def sendFIle
 #    sendFile(os.getcwd()+'/'+filename)

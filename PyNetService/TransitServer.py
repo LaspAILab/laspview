@@ -212,12 +212,6 @@ class Server(threading.Thread):
 #            print ('send file success')        
 #        finally:
 #            clientSocket.close()
-    def stopServer(self):
-        print("Server has STOP")
-        self.server.close()
-        self.loop.run_until_complete(self.server.wait_closed())  
-        self.loop.close()  # 终止事件循环
-        os.kill(os.getpid(), signal.SIGKILL)#kill himself
 
     """Method for Server / Receive Message"""
     async def asyncServerStart(self):
@@ -243,8 +237,17 @@ class Server(threading.Thread):
             rtn = await self.msgProcess(message)
 #            await asyncio.sleep(100)
             if rtn == False:
-                writer.close()
-                self.stopServer()     
+                writer.write("Server start to close".encode())
+                self.server.close()
+                print(type(self.server))
+                await self.server.wait_closed()
+#                self.loop.close()  # 终止事件循环
+                print("Server has STOP")
+                #in Linux
+                os.kill(os.getpid(), signal.SIGKILL)#kill himself 
+                
+                
+                
             elif type(rtn) == str:
                 writer.write(("<laspview user=echo><RtnMsg>"+rtn+"</RtnMsg></laspview>").encode())
                 writer.write_eof()
@@ -259,12 +262,13 @@ class Server(threading.Thread):
         except TransitError as e:
             errMsg = e.msg
             print(e)
-        except BaseException as e:
-            errMsg = e.args
-            print(e.args)
+#        except BaseException as e:
+#            errMsg = e
+#            print((type(e),(e.args)))
         finally:
             if errMsg != None:
                 try:
+                    print("1"+"<laspview user=echo><ErrMsg>"+errMsg+"</ErrMsg></laspview>")
                     writer.write(("<laspview user=echo><ErrMsg>"+errMsg+"</ErrMsg></laspview>").encode())
                     writer.write_eof()
                     await writer.drain()

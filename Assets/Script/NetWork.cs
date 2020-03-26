@@ -231,7 +231,7 @@ namespace ViewerNetwork
 
         }
 
-        private int MsgProcess(string msg)
+        private string MsgProcess(string msg)
         {
             string tag;
             Dictionary<string, string> attr = new Dictionary<string, string>();
@@ -262,11 +262,11 @@ namespace ViewerNetwork
                 }
                 else if (tag == "sig")
                 {
-                    if (msg == "StopLocalServer")
-                    {
-                        printOnMainTrhead("Local server has stopped");
-                        return 0; //means closer server
-                    }
+                    //if (msg == "StopLocalServer")
+                    //{
+                    //    printOnMainTrhead("Local server has stopped");
+                    //    return 0; //means closer server
+                    //}
                 }
 
             }
