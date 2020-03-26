@@ -38,6 +38,7 @@ Messege XML Format
 #import socket
 import re
 import os
+import signal
 import threading
 import asyncio
 import datetime
@@ -83,6 +84,7 @@ def addTag(msgList, tag):
 
 def rmTag(msg):
     """"get tag name and attributes, than remove tag contents"""
+    print(msg)
     st = re.match(r"<([^/<>]*)>",msg)
     if st == None:
         print("wrong XML message")
@@ -97,6 +99,13 @@ def rmTag(msg):
     msg = re.sub(r"^(<%s([^>/])*>)|(</%s>)$"%(tag,tag), "", msg)
     return (msg, tag, attr)
     
+class TransitError(BaseException):
+    def __init__(self, msg):
+        self.msg = msg
+    def __str__(self):
+        print("TransitError"+self.msg)
+        return "TransitError"+self.msg
+
 
 class Server(threading.Thread):
 #class Server():
@@ -115,10 +124,7 @@ class Server(threading.Thread):
         self.serverPort = port
         
 #        asyncio.create_task(self.asyncServerStart(ADDR[0], ADDR[1]))
-        
-        
-        
-#        
+
 #        self.listner = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 #        self.listner.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 #        self.listner.bind(ADDR)
@@ -128,7 +134,7 @@ class Server(threading.Thread):
     def run(self):
         #asyncio.run(self.asyncServerStart(self.serverAddr, self.serverPort))
         #asyncio.create_task(self.main())
-        self.loop =  asyncio.new_event_loop()
+        self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
         coro  = asyncio.start_server(
@@ -145,12 +151,7 @@ class Server(threading.Thread):
 #                self.connection,addr = self.listner.accept()
 #                print ('...connected from:'+str(addr))
 #               
-#                msgList=[]
-#                while True:
-#                    msg =self.connection.recv(BUFIZ).decode()
-#                    if not msg:    
-#                        break
-#                    msgList.append(msg)
+
 #
 #            except ConnectionRefusedError as e:
 #                print ('Receive ConnectionRefusedError:'+str(e.args))
@@ -211,12 +212,16 @@ class Server(threading.Thread):
 #            print ('send file success')        
 #        finally:
 #            clientSocket.close()
-        
-        
+    def stopServer(self):
+        print("Server has STOP")
+        self.server.close()
+        self.loop.run_until_complete(self.server.wait_closed())  
+        self.loop.close()  # 终止事件循环
+        os.kill(os.getpid(), signal.SIGKILL)#kill himself
 
     """Method for Server / Receive Message"""
     async def asyncServerStart(self):
-        coro  = asyncio.start_server(
+        coro = asyncio.start_server(
             self.asyncServerHandler,self.serverAddr, self.serverPort)
         self.server = await coro 
         addr = self.server.sockets[0].getsockname()
@@ -228,23 +233,45 @@ class Server(threading.Thread):
    
     async def asyncServerHandler(self, reader, writer):
         try:
+            errMsg = None
+            
             data = await reader.read()
             message = data.decode()
             addr = writer.get_extra_info('peername')
             print(f"Received from {addr!r}")
         
             rtn = await self.msgProcess(message)
-            await asyncio.sleep(5)
+#            await asyncio.sleep(100)
             if rtn == False:
-                print("Server has STOP")
-                self.server.close()
+                writer.close()
+                self.stopServer()     
+            elif type(rtn) == str:
+                writer.write(("<laspview user=echo><RtnMsg>"+rtn+"</RtnMsg></laspview>").encode())
+                writer.write_eof()
+                await writer.drain()
+            
         except TimeoutError as e:
-            print("syncServerHandler Error: Network Failure. Plz Check Network Condition"+str(e.args))
+            errMsg =  "TransitError: Network Failure. Plz Check Network Condition"+str(e.args)
+            print(errMsg)
         except ConnectionRefusedError as e:
-            print("syncServerHandler Error: Link Succeed but Reused. Plz Check Network Condition"+str(e.args))
+            errMsg = "TransitError: Link Succeed but Reused. Plz Check Network Condition"+str(e.args)
+            print(errMsg)
+        except TransitError as e:
+            errMsg = e.msg
+            print(e)
+        except BaseException as e:
+            errMsg = e.args
+            print(e.args)
         finally:
-            print("Close the connection")
+            if errMsg != None:
+                try:
+                    writer.write(("<laspview user=echo><ErrMsg>"+errMsg+"</ErrMsg></laspview>").encode())
+                    writer.write_eof()
+                    await writer.drain()
+                except BaseException:
+                    pass
             writer.close()
+            print("Server connection is closed")
         
 
     async def msgProcess(self, msg):
@@ -258,18 +285,18 @@ class Server(threading.Thread):
             return
         reader, writer = await asyncio.open_connection(
             addr, port)
-    
         print(f'Send: {message!r}')
         writer.write(message.encode())
-    
+        writer.write_eof()
+        await writer.drain()
         print('Close the connection')
+#        await data = reader.read()12
         writer.close()    
     
     async def asyncClientSendFile(self, path, user, port):
         addr = self.getUserAddr(user)
         if addr == None:
             return
-        print(addr)
         reader, writer = await asyncio.open_connection(
             addr, port)
     
@@ -277,7 +304,6 @@ class Server(threading.Thread):
         nam = s[-2]+'-'+s[-1]
         typ = nam.split(".")[-1]
         writer.write(("<laspview user=%s>"%user+"<file name=%s type=%s>"%(nam,typ)).encode())
-        await writer.drain()
         
         f = open(path,'rb')
         while True:
@@ -285,7 +311,6 @@ class Server(threading.Thread):
             if not msg:
                   break
             writer.write(msg)
-            await writer.drain()
         f.close()
         
         writer.write("</file></laspview>".encode())
@@ -298,8 +323,8 @@ class Server(threading.Thread):
         self.checkUserAddr()
         addr = self.userAddr.get(user, None)
         if addr == None:
-            print("Error: No IP Address for user %s, plz check username and use checkIP signal in local LaspView First"%user)
-            return None
+            msg = "TransitError: No IP Address for user %s, plz check username and use checkIP signal in local LaspView First"%user
+            raise BaseException(msg)
         else:
             return addr
     
@@ -350,7 +375,7 @@ class InternalServer(Server):
                 otherwise return"""
             if user == None:
                 print("unknown user: %s"%msg)
-                return
+                return ("unknown user: %s"%msg)
             
             msg, tag, attr = rmTag(msg)
             
@@ -375,21 +400,22 @@ class InternalServer(Server):
 #                    print("send file %s to %s local client"%(nam,user))
 #                else:
 #                    print("wrong file message: no name or type")
-                
+                  
             
             elif tag == "path":
-
 #                self.sendFile(msg, (userAddr,LOCAL_PORT),user)
                 await self.asyncClientSendFile(msg, user, LOCAL_PORT)
-                print("send file of path %s to %s local client"%(msg,user))
+                print("Send %s to %s_local Successfully."%(msg,user))
+                return("Send %s to %s_local Successfully."%(msg,user))
             
             
             else:
-                print("unknown tag %s"%msg)
+                print("unknown tag in InternalServer.msgProcess():\n %s"%msg)
+                return("unknown tag in InternalServer.msgProcess():\n %s"%msg)
             
         else:
             print("unknown message: %s"%msg)
-            return
+            return("unknown message: %s"%msg)
         
         
 class ExternalServer(Server):
@@ -405,7 +431,7 @@ class ExternalServer(Server):
                 otherwise return"""
             if user == None:
                 print("unknown user: %s"%msg)
-                return 
+                return ("unknown user: %s"%msg)
             
             msg, tag, attr = rmTag(msg)
             if tag == "sig": 
@@ -414,6 +440,7 @@ class ExternalServer(Server):
                     self.readUserAddr()
                     self.changeUserAddr(user, remoteIP)
                     print("change ip of %s to %s"%(user,remoteIP))
+                    return "IP received"
                     
             if tag == "file":
                 if os.path.isdir("./template/"+user) == False:
@@ -423,7 +450,8 @@ class ExternalServer(Server):
                     filename = datetime.datetime.now().strftime('%m%d%H%M%S.xx')
                 with open("./template/"+user+"/"+filename, 'w') as wfile:
                     wfile.write(msg)
-                    
+                print("Receive %s from %"%(filename, user))
+                return "File received"
     
     
 class timer():

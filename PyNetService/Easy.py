@@ -29,8 +29,7 @@ Messege XML Format
 
 
 import os
-import socket
-import time
+import asyncio
 import argparse
 
 
@@ -46,22 +45,58 @@ HOST = '127.0.0.1'
 #HOST = '192.168.5.201'
 PORT = 9539
 BUFSIZ = 1024
-ADDR = (HOST,PORT)
 
 
 
-def sendMsg(msg, addr):
+
+def clientSend(msg, addr, port):
     """msg is a string"""
-    try:
-        clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        clientSocket.connect(addr)
-        print ('connect to '+str(addr))
-        clientSocket.send(msg.encode())
-        print("send msg success")
-    except socket.error as e:
-        print ('error:'+str(e))
-    finally:
-        clientSocket.close()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    asyncio.ensure_future(asyncSendMsg(msg, addr, port))
+
+   
+async def asyncSendMsg(msg, addr, port):
+    reader, writer = await asyncio.open_connection(
+        addr, port)
+    print(f"connect to {addr!r}:{port!r}")
+    writer.write(msg.encode())
+    writer.write_eof()
+    await writer.drain()
+#
+    data = await reader.read()
+    rtnMsg = data.decode()
+    msgProcess(rtnMsg)
+    print('Client Closed')
+    writer.close()
+    await writer.wait_closed()
+    
+def msgProcess(msg):
+
+    msg, tag, attr = rmTag(msg)
+
+    """First tag: laspview"""
+    if tag == "laspview":
+        
+        user = attr.get("user", None)
+        """ tag laspview should contain attribute user which is in UserList
+            otherwise return"""
+        if user == None:
+            print("unknown user: %s"%msg)
+            return
+        
+        msg, tag, attr = rmTag(msg)
+        if tag == "rtnMsg":
+            print(msg)
+
+        elif tag == "ErrMsg":
+            print("\033[41;1m"+msg+"\033[0m")
+        else:
+            print("unknown tag %s"%msg)
+        
+    else:
+        print("unknown message: %s"%msg)
+        return
                 
 def addTagWithAttr(msgList, tag, attrbt):
     """
@@ -86,27 +121,42 @@ def addTag(msgList, tag):
     """return like: ['<laspview user=shiyf>', 'helloworld', '</laspview>'] """
     return alist
 
-def sendFile(pwd,fname):
-    try:
-        clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        clientSocket.connect(ADDR)
-        print ('connect to '+str(ADDR))
-        
-        s = pwd.split("/|\\")
-        nam = s[-1]+'-'+fname
-        typ = fname.split(".")[-1]
-        clientSocket.send(("<laspview user=%s>"%USER+"<file name=%s type=%s>"%(nam,typ)).encode())
-        f = open(pwd+"\\"+fname,'rb')
-        while True:
-            msg = f.read(4096)
-            if not msg:
-               break
-            clientSocket.send(msg)
-        f.close()
-        clientSocket.send("</file></laspview>".encode())
-        print ('send file success')        
-    finally:
-        clientSocket.close()
+def rmTag(msg):
+    """"get tag name and attributes, than remove tag contents"""
+    st = re.match(r"<([^/<>]*)>",msg)
+    if st == None:
+        print("wrong XML message")
+        return(msg, None, None)
+    st = st.group(1).split()
+    tag  = st.pop(0)
+    attr = dict()
+    if len(st)!=0:
+        for at in st:
+            at = at.split("=")
+            attr[at[0]]=at[1]
+    msg = re.sub(r"^(<%s([^>/])*>)|(</%s>)$"%(tag,tag), "", msg)
+    return (msg, tag, attr)
+#def sendFile(pwd,fname):
+#    try:
+#        clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+#        clientSocket.connect(ADDR)
+#        print ('connect to '+str(ADDR))
+#        
+#        s = pwd.split("/|\\")
+#        nam = s[-1]+'-'+fname
+#        typ = fname.split(".")[-1]
+#        clientSocket.send(("<laspview user=%s>"%USER+"<file name=%s type=%s>"%(nam,typ)).encode())
+#        f = open(pwd+"\\"+fname,'rb')
+#        while True:
+#            msg = f.read(4096)
+#            if not msg:
+#               break
+#            clientSocket.send(msg)
+#        f.close()
+#        clientSocket.send("</file></laspview>".encode())
+#        print ('send file success')        
+#    finally:
+#        clientSocket.close()
     
     
     
@@ -128,7 +178,10 @@ if __name__ == "__main__":
                         help = "Copy file and file with same prefix name to current dir.")
     parser.add_argument('-m',  "--make",  action = "store_true",
                         help = "Make Lasp computation project, a dir with lasp.in, *.pot and input.arc")
+    parser.add_argument('-kill',  "--kill",  action = "store_true",
+                        help = "Ask TransitServer to kill himself.")
     args = parser.parse_args()
+
 
 
 #    if args.user != None:
@@ -136,15 +189,17 @@ if __name__ == "__main__":
 
     if args.send != None:
         """send Path of filename to Transit Server"""
-        msgList = addTag([os.getcwd()+"/"+args.send[0]],"path")
+        print("Start to send %s"%args.send)
+        msgList = addTag([os.getcwd()+"/"+args.send],"path")
         msgList = addTagWithAttr(msgList,"laspview","user="+USER)
-        sendMsg("".join(msgList), ADDR)
+        clientSend("".join(msgList), HOST,PORT)
     
     
-##   def stop
-#    msgList = addTag(["StopServer"],"sig")
-#    msgList = addTagWithAttr(msgList,"laspview","user=shiyf")
-#    sendMsg("".join(msgList),ADDR)
+###   def stop
+#    if args.kill != None:
+#        msgList = addTag(["StopServer"],"sig")
+#        msgList = addTagWithAttr(msgList,"laspview","user=shiyf")
+#        clientSend("".join(msgList),HOST,PORT)
 
 #    def sendFIle
 #    sendFile(os.getcwd()+'/'+filename)
