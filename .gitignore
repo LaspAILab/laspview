@@ -39,3 +39,11 @@ Thumbs.db
 # ============ #
 /.spyproject
 /template
+
+#=============#
+#Test File#
+#=============#
+1.arc
+2.arc
+UserAddress.log
+

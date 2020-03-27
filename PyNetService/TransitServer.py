@@ -245,30 +245,38 @@ class Server(threading.Thread):
                 print("Server has STOP")
                 #in Linux
                 os.kill(os.getpid(), signal.SIGKILL)#kill himself 
-                
-                
-                
-            elif type(rtn) == str:
+
+            elif type(rtn) == str:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
                 writer.write(("<laspview user=echo><RtnMsg>"+rtn+"</RtnMsg></laspview>").encode())
                 writer.write_eof()
                 await writer.drain()
             
+            elif type(rtn) == list:
+                for buf in rtn:
+                    writer.write(buf)
+                writer.write_eof()
+                print("succeed to send back.")   
+                
         except TimeoutError as e:
-            errMsg =  "TransitError: Network Failure. Plz Check Network Condition"+str(e.args)
+            errMsg =  "TransitError: Network Failure. Plz Check Network Condition"+str(e)
             print(errMsg)
         except ConnectionRefusedError as e:
-            errMsg = "TransitError: Link Succeed but Reused. Plz Check Network Condition"+str(e.args)
+            errMsg = "TransitError: Link Succeed but Reused. Plz Check Network Condition"+str(e)
+            print(errMsg)
+        except FileNotFoundError as e:
+            errMsg = "TransitError: Unknown Path. "+str(e)
             print(errMsg)
         except TransitError as e:
             errMsg = e.msg
             print(e)
+
 #        except BaseException as e:
 #            errMsg = e
 #            print((type(e),(e.args)))
         finally:
             if errMsg != None:
                 try:
-                    print("1"+"<laspview user=echo><ErrMsg>"+errMsg+"</ErrMsg></laspview>")
+                    print(errMsg)
                     writer.write(("<laspview user=echo><ErrMsg>"+errMsg+"</ErrMsg></laspview>").encode())
                     writer.write_eof()
                     await writer.drain()
@@ -388,7 +396,24 @@ class InternalServer(Server):
                 if msg == "StopServer":
                     print("STOP Server now...")
                     return False
-                
+                elif msg == "ls":
+                    return "   ".join(os.listdir(TEMPLATE+user))
+                elif re.match("cp", msg):
+                    print("start to cp " + " ".join(msg.split()[1:]))
+                    rtn = []
+                    rtn.append("<laspview user=echo><CpRtn>".encode())
+                    for file in msg.split()[1:]:        
+                        rtn.append(("<file name=%s>"%file).encode())
+                        f = open(TEMPLATE+user+"/"+file,'rb')
+                        while True:
+                            buf = f.read(BUFIZ)
+                            if not buf:
+                                  break
+                            rtn.append(buf)
+                        f.close()
+                        rtn.append("</file>".encode())
+                    rtn.append("</CpRtb></laspview>".encode())
+                    return rtn
 #            elif tag == "file":
 #                typ = attr.get("type")
 #                nam = attr.get("name")
@@ -447,12 +472,12 @@ class ExternalServer(Server):
                     return "IP received"
                     
             if tag == "file":
-                if os.path.isdir("./template/"+user) == False:
-                    os.makedirs("./template/"+user)
+                if os.path.isdir(TEMPLATE+user) == False:
+                    os.makedirs(TEMPLATE+user)
                 filename = attr.get("name", None)
                 if filename == None:
                     filename = datetime.datetime.now().strftime('%m%d%H%M%S.xx')
-                with open("./template/"+user+"/"+filename, 'w') as wfile:
+                with open(TEMPLATE+user+"/"+filename, 'w') as wfile:
                     wfile.write(msg)
                 print("Receive %s from %"%(filename, user))
                 return "File received"

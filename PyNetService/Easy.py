@@ -76,28 +76,33 @@ async def asyncSendMsg(msg, addr, port):
         print(e)
     
 def msgProcess(msg):
-
+    print(msg)
     msg, tag, attr = rmTag(msg)
-
+    
     """First tag: laspview"""
     if tag == "laspview":
-        
         user = attr.get("user", None)
         """ tag laspview should contain attribute user which is in UserList
             otherwise return"""
         if user == None:
             print("unknown user: %s"%msg)
             return
-        
-        msg, tag, attr = rmTag(msg)
-        if tag == "rtnMsg":
-            print(msg)
-
-        elif tag == "ErrMsg":
-            print("\033[41;1m"+msg+"\033[0m")
-        else:
-            print("unknown tag %s"%msg)
-        
+        elif user == "echo":
+            msg, tag, attr = rmTag(msg)
+            if tag == "RtnMsg":
+                print("ls: "+msg)
+    
+            elif tag == "ErrMsg":
+                print("\033[41;1m"+msg+"\033[0m")
+                
+            elif tag == "CpRtn":
+                flist = re.findall(r"<file ([^/<>]*)>([^/<>]*)</file>",msg)
+                for file in flist:
+                    name = file[0].split('=')[1]
+                    with open(name,"w") as fp:
+                        fp.write(file[1])
+            else:
+                print("unknown tag %s"%tag)
     else:
         print("unknown message: %s"%msg)
         return
@@ -204,11 +209,12 @@ if __name__ == "__main__":
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
         clientSend("".join(msgList),HOST,PORT)
         
-    elif args.copy != None:
-        msg = "cp "+" ".join(args.copy) 
-        msgList = addTag(["C"],"sig")
+    elif args.copy == None:
+        msg = "cp "+ "1.arc 2.arc"#" ".join(args.copy) 
+        msgList = addTag(msg,"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
         clientSend("".join(msgList),HOST,PORT)
+        
     
     elif args.send != None:
         """send Path of filename to Transit Server"""
