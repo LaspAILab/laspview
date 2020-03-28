@@ -97,7 +97,7 @@ def msgProcess(msg):
                     name = file[0].split('=')[1]
                     with open(name,"w") as fp:
                         fp.write(file[1])
-                print("cp succeed: "+name)
+                    print("cp succeed: "+name)
             else:
                 print("unknown tag %s"%tag)
     else:
@@ -176,17 +176,20 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Script to Send Message To Local LaspView, and to Make Lasp Calculation Project',epilog='')
     parser.add_argument('-u',  "--user", type = str,  default = USER, nargs = 1 ,
-                        help = "Change default user to given argument, Default to $USER in the file.")
+                        help = "Change default user to given argument, Default to $USER in the file")
     parser.add_argument('-s',  "--send", type = str, default = ["best.arc"],
-                        help = "Path of file to send. Default to best.arc.")
+                        help = "Path of file to send. Default to best.arc")
     parser.add_argument('-ls', "--list",  action = "store_true",
-                        help = "List the file in /$TEMP/$USER .")
+                        help = "List the file in /$TEMP/$USER")
     parser.add_argument('-cp', "--copy",  type = str, nargs = '+',
                         help = "Copy file and file with same prefix name to current dir.")
     parser.add_argument('-m',  "--make",  action = "store_true",
                         help = "Make LASP computation project")
     parser.add_argument('-kill',  "--kill",  action = "store_true",
-                        help = "Ask TransitServer to kill himself.")
+                        help = "Ask TransitServer to kill himself")
+    parser.add_argument('-clear', "--clear",  action = "store_true",
+                        help = "remove  all file in /$TEMP/$USER  ")
+
     args = parser.parse_args()
 
 
@@ -211,7 +214,12 @@ if __name__ == "__main__":
         msgList = addTag(msg,"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
         clientSend("".join(msgList),HOST,PORT)
-        
+    
+    elif args.clear == True:
+        msgList = addTag(["clear"],"sig")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        clientSend("".join(msgList),HOST,PORT)
+    
     
     elif args.send != None:
         """send Path of filename to Transit Server"""

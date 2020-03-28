@@ -236,7 +236,7 @@ class Server(threading.Thread):
             rtn = await self.msgProcess(message)
 #            await asyncio.sleep(100)
             if rtn == False:
-                writer.write("Server start to close".encode())
+                writer.write(("<laspview user=echo><RtnMsg>Server start to close</RtnMsg></laspview>").encode())
                 self.server.close()
                 await self.server.wait_closed()
 #                self.loop.close()  # 终止事件循环
@@ -396,6 +396,11 @@ class InternalServer(Server):
                     return False
                 elif msg == "ls":
                     return "   ".join(os.listdir(TEMPLATE+user))
+                elif msg == "clear":
+                     files = os.listdir(TEMPLATE+user)
+                     for file in files:
+                         os.remove(TEMPLATE+user+"/"+file)
+                     return "All file in template is cleared"
                 elif re.match("cp", msg):
                     print("start to cp " + " ".join(msg.split()[1:]))
                     rtn = []
