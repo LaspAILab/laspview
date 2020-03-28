@@ -45,16 +45,16 @@ import datetime
 BUFIZ = 1024
 TEMPLATE = "./template/"
 
-###liu-node1
-#EXTERNAL_IP = '10.158.134.241'
-#EXTERNAL_PORT = 9538
-#INTERNAL_IP = '192.168.5.201'
-#INTERNAL_PORT = 9539
-
-EXTERNAL_IP = '127.0.0.1'
+##liu-node1
+EXTERNAL_IP = '10.158.134.241'
 EXTERNAL_PORT = 9538
-INTERNAL_IP = '127.0.0.1'
+INTERNAL_IP = '192.168.5.201'
 INTERNAL_PORT = 9539
+
+#EXTERNAL_IP = '127.0.0.1'
+#EXTERNAL_PORT = 9538
+#INTERNAL_IP = '127.0.0.1'
+#INTERNAL_PORT = 9539
 
 LOCAL_PORT=9540
 #ADDR = (IP,PORT)
@@ -84,7 +84,6 @@ def addTag(msgList, tag):
 
 def rmTag(msg):
     """"get tag name and attributes, than remove tag contents"""
-    print(msg)
     st = re.match(r"<([^/<>]*)>",msg)
     if st == None:
         print("wrong XML message")
@@ -239,14 +238,13 @@ class Server(threading.Thread):
             if rtn == False:
                 writer.write("Server start to close".encode())
                 self.server.close()
-                print(type(self.server))
                 await self.server.wait_closed()
 #                self.loop.close()  # 终止事件循环
                 print("Server has STOP")
                 #in Linux
                 os.kill(os.getpid(), signal.SIGKILL)#kill himself 
 
-            elif type(rtn) == str:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+            elif type(rtn) == str:
                 writer.write(("<laspview user=echo><RtnMsg>"+rtn+"</RtnMsg></laspview>").encode())
                 writer.write_eof()
                 await writer.drain()
@@ -270,9 +268,9 @@ class Server(threading.Thread):
             errMsg = e.msg
             print(e)
 
-#        except BaseException as e:
-#            errMsg = e
-#            print((type(e),(e.args)))
+        except BaseException as e:
+            errMsg = e
+            print((type(e),(e.args)))
         finally:
             if errMsg != None:
                 try:
