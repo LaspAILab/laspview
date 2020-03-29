@@ -4,14 +4,13 @@
 #Tribute to Dr.Li WL
 """
 Transit Server of LaspView File Transport 
-LaspView文件传输功能的中转服务端
-Mainly running on node1, listenning and waiting for file from Local & storage4
+Mainly run on node1, listen and wait for file from Local & storage4
 And transfer file between them. 
 (Limited to the fact that only node1 has network card and can run python)
 
 Containing: 
 1. A Server to listen Local file
-2. A File manager for storage template arc file from Local on /home9/LaspViewTemplate
+2. A File manager for storage template arc file from Local on /home/LaspViewTransit/template
 3. A Server to listen Remote file from Remote computer like storage4
 4. A Client to send file to Local Server
 """

@@ -5,7 +5,7 @@ Often used python Script for transfer file to Local,
 and grab file from template directory
 
 Containing:
-1. A File grabber to catch file from /home9/LaspViewTemplate,
+1. A File grabber to catch file from /home/LaspViewTransit/template on node1,
    which is managed by TransitServer,  to running directory
 2. A remote Client to send file to Transit Server
 """
