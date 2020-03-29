@@ -268,7 +268,7 @@ class Server(threading.Thread):
             print(e)
 
         except BaseException as e:
-            errMsg = e
+            errMsg = e.msg
             print((type(e),(e.args)))
         finally:
             if errMsg != None:
@@ -333,7 +333,7 @@ class Server(threading.Thread):
         addr = self.userAddr.get(user, None)
         if addr == None:
             msg = "TransitError: No IP Address for user %s, plz check username and use checkIP signal in local LaspView First"%user
-            raise BaseException(msg)
+            raise TransitError(msg)
         else:
             return addr
     

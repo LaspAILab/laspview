@@ -175,7 +175,7 @@ def sendPath():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Script to Send Message To Local LaspView, and to Make Lasp Calculation Project',epilog='')
-    parser.add_argument('-u',  "--user", type = str,  default = USER, nargs = 1 ,
+    parser.add_argument('-u',  "--user", type = str,  default = [USER], nargs = 1 ,
                         help = "Change default user to given argument, Default to $USER in the file")
     parser.add_argument('-s',  "--send", type = str, default = ["best.arc"],
                         help = "Path of file to send. Default to best.arc")
