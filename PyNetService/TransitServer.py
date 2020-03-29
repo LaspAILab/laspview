@@ -394,12 +394,18 @@ class InternalServer(Server):
                     print("STOP Server now...")
                     return False
                 elif msg == "ls":
+                    print("ls for "+user)
+                    if os.path.isdir(TEMPLATE+user) == False:
+                        os.makedirs(TEMPLATE+user)
                     return "   ".join(os.listdir(TEMPLATE+user))
                 elif msg == "clear":
-                     files = os.listdir(TEMPLATE+user)
-                     for file in files:
-                         os.remove(TEMPLATE+user+"/"+file)
-                     return "All file in template is cleared"
+                    print("clear for "+user)
+                    if os.path.isdir(TEMPLATE+user) == False:
+                        os.makedirs(TEMPLATE+user)
+                    files = os.listdir(TEMPLATE+user)
+                    for file in files:
+                        os.remove(TEMPLATE+user+"/"+file)
+                    return "All file in template is cleared"
                 elif re.match("cp", msg):
                     print("start to cp " + " ".join(msg.split()[1:]))
                     rtn = []

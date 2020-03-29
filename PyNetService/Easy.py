@@ -194,30 +194,30 @@ if __name__ == "__main__":
 
 
 
-    #print(args)
+    print(args)
     
     ##   def stop
 
     
     if args.kill == True:
         msgList = addTag(["StopServer"],"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
         
     elif args.list == True:
         msgList = addTag(["ls"],"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
         
     elif args.copy != None:
         msg = "cp "+ " ".join(args.copy) 
         msgList = addTag(msg,"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
     
     elif args.clear == True:
         msgList = addTag(["clear"],"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
     
     
@@ -228,13 +228,9 @@ if __name__ == "__main__":
         else:
             print("Start to send %s"%args.send)
             msgList = addTag([os.getcwd()+"/"+args.send],"path")
-            msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+            msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
             clientSend("".join(msgList), HOST,PORT)
 
-#    def sendFIle
-#    sendFile(os.getcwd()+'/'+filename)
     
-#    def sendPath
-
     
 #    def grabLatest
