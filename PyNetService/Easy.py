@@ -52,8 +52,6 @@ BUFSIZ = 1024
 
 def clientSend(msg, addr, port):
     """msg is a string"""
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
     asyncio.ensure_future(asyncSendMsg(msg, addr, port))
 
    

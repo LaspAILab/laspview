@@ -138,7 +138,7 @@ namespace ViewerNetwork
             StringBuilder msgList;
             byte[] buffer;
             int byteRead;
-            int status;
+            string msgRtn;
 
             tlistener.Start();
             printOnMainTrhead("Socket: start listening" + tlistener.LocalEndpoint);
@@ -168,7 +168,7 @@ namespace ViewerNetwork
                         throw new Exception("Server Error: Unkown Message. Wrong head format or user name different from allkey.log");
                     }
 
-                    //2.接收完整信息，最大接收约3M
+                    //2.接收完整信息，//文件长度超过1M强制停止接收
                     int i = 0;
                     do
                     {
@@ -193,12 +193,15 @@ namespace ViewerNetwork
 
 
                     //信息处理
-                    status = this.MsgProcess(msgList.ToString());
-                    if (status == 0)
+                    msgRtn = this.MsgProcess(msgList.ToString());
+                    if (msgRtn == "Stop")
                     {
                         break;
                     }
+                    else 
+                    {
 
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -212,7 +215,9 @@ namespace ViewerNetwork
                     streamToClient.Close();
                 }
             }
+            printOnMainTrhead("Stop Listening");
             tlistener.Stop();
+            
 
         }
 
@@ -240,6 +245,7 @@ namespace ViewerNetwork
             if (tag != "laspview")
             {
                 printOnMainTrhead($"unknown message: {msg}");
+                return "";
             }
             else
             {
@@ -262,15 +268,13 @@ namespace ViewerNetwork
                 }
                 else if (tag == "sig")
                 {
-                    //if (msg == "StopLocalServer")
-                    //{
-                    //    printOnMainTrhead("Local server has stopped");
-                    //    return 0; //means closer server
-                    //}
+                    if (msg == "StopLocalServer")
+                    {
+                        return "Stop"; //means closer server
+                    }
                 }
-
+                return ConFun.S.globalPara["user"] + "local reveive" + tag + "succeed";
             }
-            return 1;//means common
 
         }
 

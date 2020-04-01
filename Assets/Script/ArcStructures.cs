@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System;
@@ -69,7 +70,7 @@ public class ArcStructures : MonoBehaviour
 
         structureList[i].DrawModel(modelPara);
         currentStr = i;
-        ConFun.S.printStructureInfo("Structure: "+currentStr+" of "+structureList.Count+"\t\t Energy  =  "+ structureList[currentStr].energy);
+        ConFun.S.printStructureInfo("Structure: "+(currentStr+1)+" of "+structureList.Count+"\t\t Energy  =  "+ structureList[currentStr].energy);
         GuiLogic.S.FocusCameraCenter();
 
         bool upper = true;
@@ -103,12 +104,19 @@ public class ArcStructures : MonoBehaviour
         
     }
 
+    //async public void ArcRead(string filename, string[] lines, bool noE = false, string fname = null)
+    //{
+    //    await Task.Run(() =>
+    //    {
+    //        _ArcRead(filename, lines, noE, fname);
+    //    });
+    //}
+
     public void ArcRead(string filename, string[] lines, bool noE = false, string fname = null)
     {   //Initilization function outside Unity3d frame. Need to be call soon after Instantiation.
         this.filename = filename;
         currentStr = -1;
         int startingPoint = 0;
-        print(1);
         //若文件行数大于(300个原子，100个结构，约等于30000行)，只执行25000个原子的结构
         if (lines.Length > 30000)
         {

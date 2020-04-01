@@ -755,18 +755,21 @@ public class GuiLogic : MonoBehaviour
     {
         string text = MainScr.S.CurrentArc().ArcWrite();
 
-        //Btn of "Send LaspIn"
+        //Btn of "Send Structures"
         Button serverBtn = serverPanel.transform.GetChild(3).GetChild(1).gameObject.GetComponent<Button>();
         serverBtn.interactable = false;
         LocalClient client = gameObject.AddComponent<LocalClient>();
         string ip = serverPanel.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
+        string attr = string.Format("name={0:d5}-{1:d}.arc", Random.Range(10000, 99999),
+                     System.DateTime.Now.ToString("MMddhhmmss"));
         await Task.Run(() =>
         {
+
             if (client.StartClient(ip) == true)
             {
                 StringBuilder msgList = new StringBuilder(text);
-                msgList = client.AddTag(msgList, "file", string.Format("name=lasp-{0:d7}.arc", Mathf.Abs(MainScr.S.CurrentArc().GetHashCode())));
+                msgList = client.AddTag(msgList, "file", attr);
                 msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.S.globalPara["user"]);
 
                 str = client.SynSendMsg(msgList.ToString());
@@ -774,7 +777,7 @@ public class GuiLogic : MonoBehaviour
         });
         if (str == null)
         {
-            ConFun.S.printStatusInfo(string.Format("lasp-{0:d7}.arc", Mathf.Abs(MainScr.S.CurrentArc().GetHashCode())) + " has been sent.");
+            ConFun.S.printStatusInfo(attr + " has been sent.");
         }
         else
         {
@@ -815,13 +818,15 @@ public class GuiLogic : MonoBehaviour
         LocalClient client = gameObject.AddComponent<LocalClient>();
         string ip = serverPanel.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
+        string attr = string.Format("name={0:d5}-{1:d}.laspin", Random.Range(10000, 99999),
+             System.DateTime.Now.ToString("MMddhhmmss"));
         await Task.Run(() =>
         {
             if (client.StartClient(ip) == true)
             {
                 StringBuilder msgList = new StringBuilder(text);
 
-                msgList = client.AddTag(msgList, "file", string.Format("name={0:d7}.laspin", MainScr.S.CurrentArc().GetHashCode()));
+                msgList = client.AddTag(msgList, "file", attr);
                 msgList = client.AddTag(msgList, "laspview", "user="+ConFun.S.globalPara["user"]);
 
                 str = client.SynSendMsg(msgList.ToString());
