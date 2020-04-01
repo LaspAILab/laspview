@@ -1,4 +1,3 @@
-#! python
 #! /home10/program/anaconda3/bin/python 
 # -*- coding: utf-8 -*-
 """
@@ -6,7 +5,7 @@ Often used python Script for transfer file to Local,
 and grab file from template directory
 
 Containing:
-1. A File grabber to catch file from /home9/LaspViewTemplate,
+1. A File grabber to catch file from /home/LaspViewTransit/template on node1,
    which is managed by TransitServer,  to running directory
 2. A remote Client to send file to Transit Server
 """
@@ -41,9 +40,9 @@ TEMP = './template'
 
 
 
-HOST = '127.0.0.1'
+#HOST = '127.0.0.1'
 #liu-node1
-#HOST = '192.168.5.201'
+HOST = '192.168.5.201'
 PORT = 9539
 BUFSIZ = 1024
 
@@ -52,29 +51,28 @@ BUFSIZ = 1024
 
 def clientSend(msg, addr, port):
     """msg is a string"""
-    asyncio.ensure_future(asyncSendMsg(msg, addr, port))
-
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncSendMsg(msg, addr, port))
+    loop.close()    
    
 async def asyncSendMsg(msg, addr, port):
     try:
         reader, writer = await asyncio.open_connection(
             addr, port)
-        print(f"connect to {addr!r}:{port!r}")
+        #print(f"connect to {addr!r}:{port!r}")
         writer.write(msg.encode())
         writer.write_eof()
         await writer.drain()
-    #
+    
         data = await reader.read()
         rtnMsg = data.decode()
         msgProcess(rtnMsg)
-        print('Client Closed')
+        #print("client closed")
         writer.close()
-        await writer.wait_closed()
     except ConnectionRefusedError as e:
         print(e)
     
 def msgProcess(msg):
-    print(msg)
     msg, tag, attr = rmTag(msg)
     
     """First tag: laspview"""
@@ -88,7 +86,7 @@ def msgProcess(msg):
         elif user == "echo":
             msg, tag, attr = rmTag(msg)
             if tag == "RtnMsg":
-                print("ls: "+msg)
+                print(msg)
     
             elif tag == "ErrMsg":
                 print("\033[41;1m"+msg+"\033[0m")
@@ -99,6 +97,7 @@ def msgProcess(msg):
                     name = file[0].split('=')[1]
                     with open(name,"w") as fp:
                         fp.write(file[1])
+                    print("cp succeed: "+name)
             else:
                 print("unknown tag %s"%tag)
     else:
@@ -176,18 +175,21 @@ def sendPath():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Script to Send Message To Local LaspView, and to Make Lasp Calculation Project',epilog='')
-    parser.add_argument('-u',  "--user", type = str,  default = USER, nargs = 1 ,
-                        help = "Change default user to given argument, Default to $USER in the file.")
-    parser.add_argument('-s',  "--send", type = str, default = "best.arc", nargs = 1,
-                        help = "Path of file to send. Default to best.arc.")
+    parser.add_argument('-u',  "--user", type = str,  default = [USER], nargs = 1 ,
+                        help = "Change default user to given argument, Default to $USER in the file")
+    parser.add_argument('-s',  "--send", type = str, default = ["best.arc"],
+                        help = "Path of file to send. Default to best.arc")
     parser.add_argument('-ls', "--list",  action = "store_true",
-                        help = "List the file in /$TEMP/$USER .")
+                        help = "List the file in /$TEMP/$USER")
     parser.add_argument('-cp', "--copy",  type = str, nargs = '+',
                         help = "Copy file and file with same prefix name to current dir.")
     parser.add_argument('-m',  "--make",  action = "store_true",
                         help = "Make LASP computation project")
     parser.add_argument('-kill',  "--kill",  action = "store_true",
-                        help = "Ask TransitServer to kill himself.")
+                        help = "Ask TransitServer to kill himself")
+    parser.add_argument('-clear', "--clear",  action = "store_true",
+                        help = "remove  all file in /$TEMP/$USER  ")
+
     args = parser.parse_args()
 
 
@@ -199,20 +201,25 @@ if __name__ == "__main__":
     
     if args.kill == True:
         msgList = addTag(["StopServer"],"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
         
     elif args.list == True:
         msgList = addTag(["ls"],"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
         
-    elif args.copy == None:
-        msg = "cp "+ "1.arc 2.arc"#" ".join(args.copy) 
+    elif args.copy != None:
+        msg = "cp "+ " ".join(args.copy) 
         msgList = addTag(msg,"sig")
-        msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
-        
+    
+    elif args.clear == True:
+        msgList = addTag(["clear"],"sig")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
+        clientSend("".join(msgList),HOST,PORT)
+    
     
     elif args.send != None:
         """send Path of filename to Transit Server"""
@@ -221,13 +228,9 @@ if __name__ == "__main__":
         else:
             print("Start to send %s"%args.send)
             msgList = addTag([os.getcwd()+"/"+args.send],"path")
-            msgList = addTagWithAttr(msgList,"laspview","user="+args.user)
+            msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
             clientSend("".join(msgList), HOST,PORT)
 
-#    def sendFIle
-#    sendFile(os.getcwd()+'/'+filename)
     
-#    def sendPath
-
     
-#    def grabLatest
+#   def grabLatest

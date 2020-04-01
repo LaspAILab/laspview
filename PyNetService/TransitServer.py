@@ -4,14 +4,13 @@
 #Tribute to Dr.Li WL
 """
 Transit Server of LaspView File Transport 
-LaspView文件传输功能的中转服务端
-Mainly running on node1, listenning and waiting for file from Local & storage4
+Mainly run on node1, listen and wait for file from Local & storage4
 And transfer file between them. 
 (Limited to the fact that only node1 has network card and can run python)
 
 Containing: 
 1. A Server to listen Local file
-2. A File manager for storage template arc file from Local on /home9/LaspViewTemplate
+2. A File manager for storage template arc file from Local on /home/LaspViewTransit/template
 3. A Server to listen Remote file from Remote computer like storage4
 4. A Client to send file to Local Server
 """
@@ -45,16 +44,16 @@ import datetime
 BUFIZ = 1024
 TEMPLATE = "./template/"
 
-###liu-node1
-#EXTERNAL_IP = '10.158.134.241'
-#EXTERNAL_PORT = 9538
-#INTERNAL_IP = '192.168.5.201'
-#INTERNAL_PORT = 9539
-
-EXTERNAL_IP = '127.0.0.1'
+##liu-node1
+EXTERNAL_IP = '10.158.134.241'
 EXTERNAL_PORT = 9538
-INTERNAL_IP = '127.0.0.1'
+INTERNAL_IP = '192.168.5.201'
 INTERNAL_PORT = 9539
+
+#EXTERNAL_IP = '127.0.0.1'
+#EXTERNAL_PORT = 9538
+#INTERNAL_IP = '127.0.0.1'
+#INTERNAL_PORT = 9539
 
 LOCAL_PORT=9540
 #ADDR = (IP,PORT)
@@ -84,7 +83,6 @@ def addTag(msgList, tag):
 
 def rmTag(msg):
     """"get tag name and attributes, than remove tag contents"""
-    print(msg)
     st = re.match(r"<([^/<>]*)>",msg)
     if st == None:
         print("wrong XML message")
@@ -237,16 +235,15 @@ class Server(threading.Thread):
             rtn = await self.msgProcess(message)
 #            await asyncio.sleep(100)
             if rtn == False:
-                writer.write("Server start to close".encode())
+                writer.write(("<laspview user=echo><RtnMsg>Server start to close</RtnMsg></laspview>").encode())
                 self.server.close()
-                print(type(self.server))
                 await self.server.wait_closed()
 #                self.loop.close()  # 终止事件循环
                 print("Server has STOP")
                 #in Linux
                 os.kill(os.getpid(), signal.SIGKILL)#kill himself 
 
-            elif type(rtn) == str:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+            elif type(rtn) == str:
                 writer.write(("<laspview user=echo><RtnMsg>"+rtn+"</RtnMsg></laspview>").encode())
                 writer.write_eof()
                 await writer.drain()
@@ -270,9 +267,9 @@ class Server(threading.Thread):
             errMsg = e.msg
             print(e)
 
-#        except BaseException as e:
-#            errMsg = e
-#            print((type(e),(e.args)))
+        except BaseException as e:
+            errMsg = e.msg
+            print((type(e),(e.args)))
         finally:
             if errMsg != None:
                 try:
@@ -336,7 +333,7 @@ class Server(threading.Thread):
         addr = self.userAddr.get(user, None)
         if addr == None:
             msg = "TransitError: No IP Address for user %s, plz check username and use checkIP signal in local LaspView First"%user
-            raise BaseException(msg)
+            raise TransitError(msg)
         else:
             return addr
     
@@ -397,7 +394,18 @@ class InternalServer(Server):
                     print("STOP Server now...")
                     return False
                 elif msg == "ls":
+                    print("ls for "+user)
+                    if os.path.isdir(TEMPLATE+user) == False:
+                        os.makedirs(TEMPLATE+user)
                     return "   ".join(os.listdir(TEMPLATE+user))
+                elif msg == "clear":
+                    print("clear for "+user)
+                    if os.path.isdir(TEMPLATE+user) == False:
+                        os.makedirs(TEMPLATE+user)
+                    files = os.listdir(TEMPLATE+user)
+                    for file in files:
+                        os.remove(TEMPLATE+user+"/"+file)
+                    return "All file in template is cleared"
                 elif re.match("cp", msg):
                     print("start to cp " + " ".join(msg.split()[1:]))
                     rtn = []
