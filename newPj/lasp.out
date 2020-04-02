@@ -1,0 +1,81 @@
++--------------------------------------------------------------------------------+
+|                 Welcome to Fantastic Atomic World in Neural Network            |
+|                              ---------                                         |
+|                               L A S P                                          |
+|                              ---------                                         |
+|           Large-scale Atomic Simulation with neural network Potential          |
+|                             Version 2.1.7     JUL. 2019                        |
+|                                Shanghai, China                                 |
+|                   More on Website: www.lasphub.com                             |
+|                                                                                |
+|      Please cite: S.D. Huang, C. Shang, P.L. Kang, X.J. Zhang and Z.P. Liu ,   |
+|                   "LASP: Fast Global Potential Energy Surface Exploration" ,   |
+|                   WIREs. Comp. Mole. Sci. 2019;e1415 (DOI: 10.1002/wcms.1415)  |
+|                                                                                |
+|                  Compiled by IntelFortran version: ifort      18               |
+|                  CPU Parallel Run on    1      cores                           |
++--------------------------------------------------------------------------------+
+ 
++--------------------------------------------------------------------------------+
++   The PES is calculated by 
++   nn
++--------------------------------------------------------------------------------+
+ 
+|********************************************************************************|
+|                             Welcome to SSW package                             |
+|               Stochastic Surface Walking Global Optimization 2.0               |
+|                     ----  now as a part of LASP program                        |
+|                        Fudan University Liu group 2013-2019                    |
+|               Developers: Cheng Shang, Xiaojie Zhang, Sida Huang, Zhipan Liu   |
+|********************************************************************************|
+ 
+         SSW Job Start at 18:29:17  1st April      2020                               
+|   --Key Parameter from input: lasp.in   
+|-->System size: Number of atoms        14
+|-->Fix Cell Structure Search: Run_type=5
+|-->SSW quick_setting Level         1
+|-->Number of Gaussian for atomic move         9
+|-->Monte Carlo Temperature    100.00
+|-->Gaussian ds for each atomic move      0.60
+|-->Maximum Localmode-to-Globalmode ratio        50
+|-->Maximum SSW steps        10
+|   --Please also check allkeys.log for SSW Parameters    
+|                                                                
+|               SSW cycles start now                                               
+|********************************************************************************|
+|********************************************************************************|
+Str symm and Q       0     0 longQ T          -77.917263   C1       1.2412      0.9741      0.9779
+ adding internal LJcore Repulsion
+Str symm and Q       0     0 longQ T          -79.334976   C1       1.2124      0.9108      0.8564
+Minimum found       0        0            -77.917263            -79.334976   C1     100.00   T    0.0000       0.091      0.00
+Str symm and Q       1     0 longQ T          -79.334976   C1       1.2124      0.9108      0.8564
+Str symm and Q       1     0 longQ T          -79.563719   C1       1.3476      0.9270      0.8701
+Minimum found       1        0            -79.334976            -79.563719   C1     100.00   T    5.1000       0.075      1.58
+Str symm and Q       2     0 longQ T          -79.563719   C1       1.3476      0.9270      0.8701
+Str symm and Q       2     0 longQ T          -79.300522   C1       1.3402      0.9777      0.8843
+Minimum found       2        1            -79.563719            -79.300522   C1     100.00   T    5.1000       0.093      3.42
+Str symm and Q       3     0 longQ T          -79.300522   C1       1.3402      0.9777      0.8843
+Str symm and Q       3     0 longQ T          -79.508435   C1       1.3073      0.9769      0.8843
+Minimum found       3        2            -79.300522            -79.508435   C1     100.00   T    5.1000       0.092      3.05
+Str symm and Q       4     0 longQ T          -79.508435   C1       1.3073      0.9769      0.8843
+Str symm and Q       4     0 longQ T          -79.304569   C1       1.3370      0.9722      0.8662
+Minimum found       4        3            -79.508435            -79.304569   C1     100.00   F    5.1000       0.095      1.98
+Str symm and Q       5     0 longQ T          -79.508435   C1       1.3073      0.9769      0.8843
+Str symm and Q       5     0 longQ T          -79.111715   C1       1.3088      0.9234      0.8637
+Minimum found       5        3            -79.508435            -79.111715   C1     100.00   F    5.1000       0.081      2.60
+Str symm and Q       6     0 longQ T          -79.508435   C1       1.3073      0.9769      0.8843
+Str symm and Q       6     0 longQ T          -73.898010   C1       1.2571      0.9231      0.8497
+Minimum found       6        3            -79.508435            -73.898010   C1     100.00   F    5.1000       0.096      6.67
+Str symm and Q       7     0 longQ T          -79.508435   C1       1.3073      0.9769      0.8843
+Str symm and Q       7     0 longQ T          -79.580289   C1       1.3258      0.9150      0.8645
+Minimum found       7        3            -79.508435            -79.580289   C1     100.00   T    5.1000       0.094      0.80
+Str symm and Q       8     0 longQ T          -79.580289   C1       1.3258      0.9150      0.8645
+Str symm and Q       8     0 longQ T          -80.145392   C1       1.2604      0.8917      0.9078
+Minimum found       8        7            -79.580289            -80.145392   C1     100.00   T    5.1000       0.081      2.71
+Str symm and Q       9     0 longQ T          -80.145392   C1       1.2604      0.8917      0.9078
+ Hard region in PES  -389.207103721887     
+Str symm and Q       9     0 longQ T          -80.145392   C1       1.2604      0.8917      0.9078
+Minimum found       9        8            -80.145392            -80.145392   C1     100.00   T    4.4144       0.081      7.96
+  SSW all done ! 
+          SSW Job Stop at 18:31:49  1st April      2020                               
+ elapse_time   152.640000000000      seconds
