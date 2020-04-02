@@ -1,3 +1,4 @@
+######LaspViewGenerate######
 potential nn
 explore_type ssw
 Ewaldflag    
@@ -14,7 +15,7 @@ SSW.SSWsteps  4     # 0 single point
                     # 1 stru opt
                     # > 1  SSW global opt
 
-
+######LaspViewGenerateEnd######
 #  for SSW search  start
 SSW.Temp   100
 SSW.DimerdR 0.01
