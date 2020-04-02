@@ -7,7 +7,7 @@ namespace Lasp4Win
 {
     class LaspWinProgress
     {
-        public bool ExecuteProgram(string exeFilename = "1.bat", string workDir= ".\\", string args ="")
+        public bool ExecuteProgram(string exeFilename = "run_lasp.bat", string workDir= ".\\", string args ="")
         {
             System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo();
             info.FileName = exeFilename;

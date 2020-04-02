@@ -21,6 +21,7 @@ public class GuiLogic : MonoBehaviour
     static public GameObject statusPanel;
     static public GameObject toolbarPaenl;
     static public GameObject serverPanel;
+    static public GameObject laspPanel;
     static public GameObject projectPanel;
     static public GameObject fileList;
     static public GameObject laspInEditorpanel;
@@ -41,7 +42,7 @@ public class GuiLogic : MonoBehaviour
     private Vector3 mouseLastPos;
 
     public bool updateBond;
-    public bool pickEnable = true;          //Pick Enalble
+    public bool pickEnable;          //Pick Enalble
     private bool rotationMode3d = false;    //for rotate
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
@@ -63,6 +64,7 @@ public class GuiLogic : MonoBehaviour
         statusPanel = GameObject.Find("StatusPanel");
         toolbarPaenl = GameObject.Find("ToolbarPanel");
         serverPanel = GameObject.Find("ServerPanel");
+        laspPanel = GameObject.Find("LASPPanel");
         projectPanel = GameObject.Find("ProjectPanel");
         fileList = projectPanel.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
 
@@ -75,13 +77,11 @@ public class GuiLogic : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-#if !UNITY_WEBGL
-        SetServerPanel();
-#else
+#if UNITY_WEBGL
         laspInEditorpanel.SetActive(false);
 #endif
         openbFilePath = GameObject.Find("OpenFileInputField").GetComponent<InputField>();
-        SetMenuBtnClicked();
+        SetMenuBtn();
     }
 
     //relate Button with GameObjects, mainly panels, that can be hidden.
@@ -100,8 +100,49 @@ public class GuiLogic : MonoBehaviour
         }
     }
 
-    public void SetMenuBtnClicked()
+    public void SetMenuBtn()
     {
+        //Set Edit panel
+        GameObject.Find("EditBtn").GetComponent<Button>().onClick.AddListener(() =>
+        {
+            if (pickEnable) pickEnable = false;
+            else pickEnable = true;
+        });
+        pickEnable = false;
+
+        //Set Server panel
+#if !UNITY_WEBGL
+        //print default remote ip on ServerIP inputfield;
+        serverPanel.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.S.globalPara["remote_ip"];
+        //check local IP   
+        NetLocalBtn1();
+        //Set LaspInEditor
+        laspInEditorpanel = GameObject.Find("LaspInEditor");
+        laspInEditorText = laspInEditorpanel.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetComponent<InputField>();
+        NetEditLaspIn();
+#endif
+
+
+#if !UNITY_WEBGL
+        //Set LASP Panel
+        GameObject.Find("LaspBtn").GetComponent<Button>().onClick.AddListener(() =>
+        {
+            //when Btn1.text = "Check Local IP"
+            Dropdown prefabDirDp = laspPanel.GetComponentsInChildren<Dropdown>()[0];
+            List<string> prefabNames = new List<string> (Directory.GetDirectories("./LaspPrefab"));
+            print(prefabNames);
+            List<Dropdown.OptionData> prefabDrop = new List<Dropdown.OptionData>();
+            foreach (string str in prefabNames)
+            {
+                string[] spl = str.Split('\\');
+                prefabDrop.Add(new Dropdown.OptionData(spl[spl.Length-1]));
+            }
+            prefabDirDp.options = prefabDrop;
+        });
+#endif
+
+
+
         // Read Text.text of the Button, Search Panel GameObjct by the text, and AddListener 
         foreach (Button btn in menuPanel.GetComponentsInChildren<Button>())
         {
@@ -110,31 +151,11 @@ public class GuiLogic : MonoBehaviour
             btn.onClick.AddListener(() => BtnHideObject(btn, panel));
             panel.SetActive(false);
         }
-    }
 
-    public void SetEditPanel()
-    {
-        Button btn = GameObject.Find("EditBtn").GetComponent<Button>();
-        btn.onClick.AddListener(() =>
-        {   
-        });
 
     }
 
-#if !UNITY_WEBGL
-    public void SetServerPanel()
-    {
-        //print default remote ip on ServerIP inputfield;
-        serverPanel.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.S.globalPara["remote_ip"];
-        //check local IP   
-        NetLocalBtn1();
 
-        //Set LaspInEditor
-        laspInEditorpanel = GameObject.Find("LaspInEditor");
-        laspInEditorText = laspInEditorpanel.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetComponent<InputField>();
-        NetEditLaspIn();
-    }
-#endif
 
 
     //*************************** CAMERA CONTROL **********************************
