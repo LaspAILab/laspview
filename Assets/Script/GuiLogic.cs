@@ -369,8 +369,8 @@ public class GuiLogic : MonoBehaviour
             }
             if (pickGO.Count != 0)
             {
-                //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子
-                if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Mouse1))
+                //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子(鼠标右键可用LShift替换)
+                if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Mouse1) || Input.GetKeyDown(KeyCode.LeftShift)))
                 {
 
                     pickAtomAvgPos = Vector3.zero;
@@ -399,8 +399,8 @@ public class GuiLogic : MonoBehaviour
                     MainScr.S.CurrentStructure().PickControlStart(pickGO);
 
                 }
-                //LC+鼠标右键按住时：旋转选中原子
-                else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
+                //LC+鼠标右键按住时：旋转选中原子(鼠标右键可用LShift替换)
+                else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse1) || Input.GetKey(KeyCode.LeftShift)))
                 {
                     if (this.rotationMode3d)
                     {
@@ -429,9 +429,9 @@ public class GuiLogic : MonoBehaviour
 
 
                 }
-                //松开LC或鼠标右键：收尾
-                else if ((Input.GetKeyUp(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
-                      || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse1)))
+                //松开LC或鼠标右键：收尾(鼠标右键可用LShift替换)
+                else if ((Input.GetKeyUp(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse1)|| Input.GetKey(KeyCode.LeftShift)))
+                      || (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyUp(KeyCode.Mouse1)|| Input.GetKeyUp(KeyCode.LeftShift))))
                 {
 
                     MainScr.S.CurrentStructure().PickControlEnd();
@@ -462,7 +462,8 @@ public class GuiLogic : MonoBehaviour
                 {
                     MainScr.S.CurrentStructure().PickControlEnd();
                 }
-                else if (Input.GetKeyDown(KeyCode.Delete))
+                //DELETE/Backspace删除原子
+                else if (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
                 {
                     foreach(GameObject go in pickGO)
                     {
@@ -481,8 +482,8 @@ public class GuiLogic : MonoBehaviour
         //*************************** Gernal Camera Control *******************************
 
 
-        // When Mouse1 was clicked(GetKeyDown) ,check rotation mode
-        if (Input.GetKeyDown(KeyCode.Mouse1))
+        // When Mouse1 / LShit+mous0 was clicked(GetKeyDown) ,check rotation mode(鼠标右键可用LShift替换)
+        if (Input.GetKeyDown(KeyCode.Mouse1) || (Input.GetKeyDown(KeyCode.LeftShift)))
         {
             //Right click of mouse: Rotation. Within tha lattice radius, 3D rotate. Beyond the radius, 2D rotate.
             //Judge By Ray Pickup
@@ -506,8 +507,8 @@ public class GuiLogic : MonoBehaviour
                 this.rotationMode3d = false;
             }
         }
-        //when mouse1 is pressed, rotate
-        else if (Input.GetKey(KeyCode.Mouse1))
+        //when mouse1 / LShit+mous0 is pressed, rotate(鼠标右键可用LShift替换)
+        else if (Input.GetKey(KeyCode.Mouse1)|| (Input.GetKey(KeyCode.LeftShift)))
         {
             if (this.rotationMode3d)
             {
@@ -526,7 +527,7 @@ public class GuiLogic : MonoBehaviour
                 cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
             }
         }
-        if (Input.GetKeyDown(KeyCode.Mouse2))
+        else if (Input.GetKeyDown(KeyCode.Mouse2))
         {
             offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         }
