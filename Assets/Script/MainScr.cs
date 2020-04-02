@@ -8,6 +8,7 @@ using System.IO;
 using System.Text;
 using System;
 using ViewerNetwork;
+using Lasp4Win;
 public class MainScr : MonoBehaviour
 {
     //static public Transform cameraCenter;//获取旋转目标
@@ -40,6 +41,8 @@ public class MainScr : MonoBehaviour
     {
         string filename = ConFun.S.globalPara["arc_default"];
         AddArc(filename);
+        LaspWinProgress pro = new LaspWinProgress();
+        pro.ExecuteProgram();
     }
     //public void Start()
     //{

@@ -703,7 +703,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0.1328125, y: 0.05078125, z: 0.01171875, w: -0.05078125}
+  m_BoundingSphereOverride: {x: 3e-45, y: 9e-44, z: 1.1e-44, w: 0.0001}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -1539,7 +1539,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 639786548}
   m_HandleRect: {fileID: 639786547}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2996,7 +2996,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1403254869}
   m_HandleRect: {fileID: 1403254868}
   m_Direction: 0
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -3512,7 +3512,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 720428967}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -7459,8 +7459,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1596062206}
   m_HandleRect: {fileID: 1596062205}
   m_Direction: 0
-  m_Value: 0
-  m_Size: 0.99999994
+  m_Value: 1
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
