@@ -38,6 +38,8 @@ public class GuiLogic : MonoBehaviour
 
     public Transform cameraTransform;
     private Transform cameraCenter;
+    private Vector3 mouseLastPos;
+
     public bool updateBond;
     public bool pickEnable = true;          //Pick Enalble
     private bool rotationMode3d = false;    //for rotate
@@ -199,8 +201,17 @@ public class GuiLogic : MonoBehaviour
     {
 
         //transform.RotateAround(cameraCenter.position, Vector3.up, speed * Time.deltaTime); //摄像机围绕目标旋转
-        var mouse_x = Input.GetAxis("Mouse X");//获取鼠标X轴移动
-        var mouse_y = -Input.GetAxis("Mouse Y");//获取鼠标Y轴移动
+        //float mouse_x = Input.GetAxis("Mouse X");//获取鼠标X轴移动
+        //float mouse_y = -Input.GetAxis("Mouse Y");//获取鼠标Y轴移动
+        //print(mouse_x);
+        if (mouseLastPos == null)
+        {
+            mouseLastPos = Input.mousePosition;
+        }
+        float mouse_x = (Input.mousePosition - mouseLastPos).x/Screen.width*24;
+        float mouse_y = -(Input.mousePosition - mouseLastPos).y/Screen.height*24;
+        mouseLastPos = Input.mousePosition;
+
         Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         //************************** Pick Atom & Control  ******************************
@@ -408,8 +419,8 @@ public class GuiLogic : MonoBehaviour
                         foreach (GameObject ga in pickGO)
                         {
                             //3D rotate
-                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, -mouse_x * 5);
-                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y * 5);
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, -mouse_x * 8);
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y * 8);
                         }
                     }
                     else
@@ -421,7 +432,7 @@ public class GuiLogic : MonoBehaviour
                             float y = (mouseViewport.y - 0.5f);// theta of mouse to center
                             float x = (mouseViewport.x - 0.5f);
                             float square = y * y + x * x;//theta to rotate
-                            float degree = (y / square * mouse_x + x / square * mouse_y) * 2.1F;
+                            float degree = (y / square * mouse_x + x / square * mouse_y) * 2.4f;
                             ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.forward, -degree);
                         }
                     }
@@ -523,7 +534,7 @@ public class GuiLogic : MonoBehaviour
                 float y = (mouseViewport.y - 0.5f);// theta of mouse to center
                 float x = (mouseViewport.x - 0.5f);
                 float square = y * y + x * x;//theta to rotate
-                float degree = (y / square * mouse_x + x / square * mouse_y) * 2.1F;
+                float degree = (y / square * mouse_x + x / square * mouse_y)*2.4f;
                 cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
             }
         }
