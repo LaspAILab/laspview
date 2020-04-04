@@ -1,20 +1,16 @@
+######AutoGenerate######
 potential nn
 explore_type ssw
-Ewaldflag    0
+Ewaldflag    
 %block netinfo
+  C CHON.pot
   O CHON.pot
   H CHON.pot
-  C CHON.pot
+  N CHON.pot
 %endblock netinfo
-PrintChg 0
-
-Run_type 5    #    5  for SSW with fixed cell
-
-SSW.SSWsteps  10     # 0 single point
-                    # 1 stru opt
-                    # > 1  SSW global opt
-
-
+Run_type 5
+SSW.SSWsteps  4
+######End######
 #  for SSW search  start
 SSW.Temp   100
 SSW.DimerdR 0.01

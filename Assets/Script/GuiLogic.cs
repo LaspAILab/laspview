@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,6 +23,7 @@ public class GuiLogic : MonoBehaviour
     static public GameObject toolbarPaenl;
     static public GameObject serverPanel;
     static public GameObject laspPanel;
+    static public syfPanelPara laspPanelPara;
     static public GameObject projectPanel;
     static public GameObject fileList;
     static public GameObject laspInEditorpanel;
@@ -102,6 +104,16 @@ public class GuiLogic : MonoBehaviour
 
     public void SetMenuBtn()
     {
+        // Read Text.text of the Button, Search Panel GameObjct by the text, and AddListener 
+        foreach (Button btn in menuPanel.GetComponentsInChildren<Button>())
+        {
+            string panelName = btn.GetComponentInChildren<Text>().text + "Panel";
+            GameObject panel = GameObject.Find(panelName);
+            btn.onClick.AddListener(() => BtnHideObject(btn, panel));
+        }
+
+
+
         //Set Edit panel
         GameObject.Find("EditBtn").GetComponent<Button>().onClick.AddListener(() =>
         {
@@ -127,32 +139,26 @@ public class GuiLogic : MonoBehaviour
         //Set LASP Panel
         GameObject.Find("LaspBtn").GetComponent<Button>().onClick.AddListener(() =>
         {
-            //when Btn1.text = "Check Local IP"
-            Dropdown prefabDirDp = laspPanel.GetComponentsInChildren<Dropdown>()[0];
-            List<string> prefabNames = new List<string> (Directory.GetDirectories("./LaspPrefab"));
-            print(prefabNames);
-            List<Dropdown.OptionData> prefabDrop = new List<Dropdown.OptionData>();
-            foreach (string str in prefabNames)
+            //print(laspPanel.active);
+            if (laspPanel.active == true)
             {
-                string[] spl = str.Split('\\');
-                prefabDrop.Add(new Dropdown.OptionData(spl[spl.Length-1]));
+                LaspSetPanel();
+                LaspChangePrefab();
             }
-            prefabDirDp.options = prefabDrop;
         });
+        laspPanelPara = laspPanel.GetComponent<syfPanelPara>();
+        laspPanelPara.SetParaDict();
 #endif
 
 
 
-        // Read Text.text of the Button, Search Panel GameObjct by the text, and AddListener 
+        // Set Panel active False
         foreach (Button btn in menuPanel.GetComponentsInChildren<Button>())
         {
             string panelName = btn.GetComponentInChildren<Text>().text + "Panel";
             GameObject panel = GameObject.Find(panelName);
-            btn.onClick.AddListener(() => BtnHideObject(btn, panel));
             panel.SetActive(false);
         }
-
-
     }
 
 
@@ -670,6 +676,106 @@ public class GuiLogic : MonoBehaviour
     }
 
     //**************************** Player Bar End **************************************
+
+    //**************************** LASP Panel **************************************
+
+    public void LaspSetPanel()
+    {
+        //Set Lasp Panel, Mainly Selectable Item in Prefav dir
+        Dropdown prefabDirDp = laspPanelPara.paraDict["Prefab dir"].transform.GetComponentInParent<Dropdown>();
+        //print(laspPanelPara.paraDict["Prefab dir"].transform);
+        List<string> prefabNames = new List<string>(Directory.GetDirectories("./LaspPrefab"));
+        List<Dropdown.OptionData> prefabDrop = new List<Dropdown.OptionData>();
+        foreach (string str in prefabNames)
+        {
+            string[] spl = str.Split('\\');
+            prefabDrop.Add(new Dropdown.OptionData(spl[spl.Length - 1]));
+        }
+        prefabDirDp.options = prefabDrop;
+    }
+
+    public void LaspSetNNPot()
+    {
+        //Set Lasp Panel, Mainly Selectable Item in Prefav dir
+        Dropdown prefabDirDp = laspPanelPara.paraDict["NN Pot"].transform.GetComponentInParent<Dropdown>();
+        //print(laspPanelPara.paraDict["NN Pot"]);
+        List<string> prefabNames = new List<string>(Directory.GetFiles("./LaspNNPot"));
+        List<Dropdown.OptionData> prefabDrop = new List<Dropdown.OptionData>();
+        foreach (string str in prefabNames)
+        {
+            string[] spl = str.Split('\\');
+            prefabDrop.Add(new Dropdown.OptionData(spl[spl.Length - 1]));
+        }
+        prefabDirDp.options = prefabDrop;
+    }
+
+    public void LaspChangePrefab()
+    {
+        //Open target lasp.in
+        string dirName = laspPanelPara.paraDict["Prefab dir"].transform.GetComponentInParent<Dropdown>().captionText.text;
+        string[] lines = File.ReadAllLines("./LaspPrefab/" + dirName + "/lasp.in");
+
+        //Read lasp.in
+        Dictionary<string, int> uiPara = new Dictionary<string, int>
+                { { "potential", 0 } ,{ "explore_type",0 },{ "%block netinfo",0 },{ "run_type",0 }, {"ssw.sswsteps",0 } };
+        int i = 0;
+        StringBuilder otherPara = new StringBuilder { };
+        while (!Regex.IsMatch(lines[i], @"\#*AutoGenerate*\#*"))
+        {
+            otherPara.Append(lines[i]);
+            i++;
+        }
+        while (!Regex.IsMatch(lines[i], @"\#*End*\#*"))
+        {
+            string[] para = ConFun.S.PySplit(lines[i]);
+            para[0] = para[0].ToLower();
+            if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
+            {
+                if(para[0] == "potentail" )
+                {
+                    //laspPanelPara.paraDict["Potential"]
+
+                }
+                else if (para[0] == "explore_type")
+                {
+
+                }
+                else if (para[0] == "explore_type")
+                {
+
+                }
+                else if (para[0] == "explore_type")
+                {
+
+                }
+                else if (para[0] == "explore_type")
+                {
+
+                }
+                print(lines[i]);
+            }
+            else
+            {
+                otherPara.Append(lines[i]);
+            }
+            i++;
+        }
+
+        LaspChangePotential();
+    }
+
+    public void LaspChangePotential()
+    {
+        LaspSetNNPot();
+        laspPanelPara.SetParaDict();
+    }
+
+
+
+
+    //**************************** LASP Panel End **************************************
+
+
 
 #if !UNITY_WEBGL
     //**************************** Server Panel **************************************

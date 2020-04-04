@@ -98,7 +98,7 @@ GameObject:
   - component: {fileID: 5504875691742477930}
   - component: {fileID: 5504875691742477931}
   m_Layer: 5
-  m_Name: LocalAddrDropdown
+  m_Name: syfDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1232,7 +1232,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Local IP
+  m_Text: Prefab dir
 --- !u!114 &4633214330511716747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1246,8 +1246,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
-  m_MinWidth: 80
-  m_MinHeight: -1
+  m_MinWidth: 90
+  m_MinHeight: 34
   m_PreferredWidth: -1
   m_PreferredHeight: -1
   m_FlexibleWidth: -1
