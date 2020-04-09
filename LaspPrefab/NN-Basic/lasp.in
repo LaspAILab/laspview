@@ -1,16 +1,16 @@
-######AutoGenerate######
-potential nn
-explore_type ssw
-Ewaldflag    
+######AutoGernerate######
+potential    NN
+explore_type    SSW
 %block netinfo
-  C CHON.pot
-  O CHON.pot
-  H CHON.pot
-  N CHON.pot
+    C   CHON.pot
+    H   CHON.pot
+    O   CHON.pot
+    N   CHON.pot
 %endblock netinfo
-Run_type 5
-SSW.SSWsteps  4
-######End######
+run_type    5    #GO
+ssw.sswsteps    10
+######EndGernerate######
+Ewaldflag    
 #  for SSW search  start
 SSW.Temp   100
 SSW.DimerdR 0.01

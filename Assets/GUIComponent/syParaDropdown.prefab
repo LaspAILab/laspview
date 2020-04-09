@@ -1232,7 +1232,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Prefab dir
+  m_Text: NN Pot
 --- !u!114 &4633214330511716747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1246,7 +1246,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_IgnoreLayout: 0
-  m_MinWidth: 90
+  m_MinWidth: 120
   m_MinHeight: 34
   m_PreferredWidth: -1
   m_PreferredHeight: -1
