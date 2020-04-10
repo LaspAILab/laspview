@@ -8,7 +8,7 @@ explore_type    SSW
     N   CHON.pot
 %endblock netinfo
 run_type    5    #GO
-ssw.sswsteps    10
+ssw.sswsteps    3
 ######EndGernerate######
 
 Ewaldflag    0

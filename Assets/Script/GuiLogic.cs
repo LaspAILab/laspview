@@ -876,6 +876,7 @@ public class GuiLogic : MonoBehaviour
             else if (laspPanelPara.paraDict[key].GetComponentInChildren<InputField>() != null)
             {
                 outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<InputField>().text + "\n");
+                //print(outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<InputField>().text));
             }
         }
         outputlines.Append("######EndGernerate######\n");
@@ -899,6 +900,8 @@ public class GuiLogic : MonoBehaviour
         
         laspInEditorText = laspInEditorpanel.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetComponent<InputField>();
         string dirName = laspPanelPara.paraDict["prefab dir"].GetComponentInParent<Dropdown>().captionText.text;
+
+        LaspWriteLaspin("./LaspPrefab/" + dirName + "/lasp.in");
         string lines = File.ReadAllText("./LaspPrefab/" + dirName + "/lasp.in");
 
         
@@ -931,13 +934,14 @@ public class GuiLogic : MonoBehaviour
         Directory.CreateDirectory(targetDir);
 
         //Copy prefab / lasp.in
+        LaspWriteLaspin(prefabDir+"/lasp.in");
         string[] fileList = Directory.GetFiles(prefabDir, "*");
         foreach (string f in fileList)
         {
             // Remove path from the file name.
-            print(f);
+            //print(f);
             string fName = f.Substring(prefabDir.Length + 1);
-            print(fName);
+            //print(fName);
             //Use the Path.Combine method to safely append the file name to the path.
             // Will overwrite if the destination file already exists.
             File.Copy(Path.Combine(prefabDir, fName), Path.Combine(targetDir, fName), true);
