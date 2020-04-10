@@ -10,7 +10,8 @@ explore_type    SSW
 run_type    5    #GO
 ssw.sswsteps    10
 ######EndGernerate######
-Ewaldflag    
+
+Ewaldflag    0
 #  for SSW search  start
 SSW.Temp   100
 SSW.DimerdR 0.01

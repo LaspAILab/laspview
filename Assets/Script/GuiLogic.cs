@@ -965,7 +965,7 @@ public class GuiLogic : MonoBehaviour
 
         //run lasp
         LaspWinProgress pro = new LaspWinProgress();
-        pro.ExecuteProgram(args:targetDir);
+        pro.ExecuteProgram(args:targetDir+"> output.txt 2>&1");
 
     }
 

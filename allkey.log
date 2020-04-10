@@ -3,4 +3,4 @@ remote_port=9538
 local_port=9540
 laspin_default=lasp.in
 user=shiyf
-arc_default=10-12-10best.arc
+arc_default=methanol.arc

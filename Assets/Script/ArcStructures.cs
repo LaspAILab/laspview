@@ -231,7 +231,7 @@ public class ArcStructures : MonoBehaviour
     public string ArcWrite(int startStruc , int count = 0)
     {
         StringBuilder lines = new StringBuilder ();
-        lines.Append("!BIOSYM archive 2\nPBC = ON\n");
+        lines.Append("!BIOSYM archive 2\nPBC=ON\n");
         int id = 0;
         for(int i = startStruc ;i<= startStruc+count; i++, id++)
         {
@@ -247,7 +247,7 @@ public class ArcStructures : MonoBehaviour
                 lines.Append(string.Format(" CORE{0,5:d} {1,-3}{2,-3}{3,8:f4}{4,5:d}\n", h + 1, at.ele, at.ele, 0.0f, h + 1));
             }
 
-            lines.Append("end\nend\n\n");
+            lines.Append("end\nend\n");
         }
         lines.Append("end\n");
         return lines.ToString();
