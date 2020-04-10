@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using ViewerNetwork;
+using Lasp4Win;
 
 
 public class GuiLogic : MonoBehaviour
@@ -719,9 +720,7 @@ public class GuiLogic : MonoBehaviour
         //{
         for(i = 0; i< lines.Length; i++)
         {
-
             string[] para = ConFun.S.PySplit(lines[i].ToLower());
-            para[0] = para[0];
             if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
             {
                 if (para[0] == "potential")
@@ -916,6 +915,58 @@ public class GuiLogic : MonoBehaviour
             btn.image.color = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
             Object.Destroy(laspInEditorpanel);
         });
+    }
+
+    public void LaspRun()
+    {
+        
+        if (false == System.IO.Directory.Exists("./LaspRun"))
+        {
+            Directory.CreateDirectory("./LaspRun");
+        }
+        //creat LASP Work Directory
+        string targetDir = "./LaspRun/" + string.Format("{0:d5}-{1:d}", Random.Range(10000, 99999),
+                System.DateTime.Now.ToString("MMddhhmmss"))+"/";
+        string prefabDir = "./LaspPrefab/" + laspPanelPara.paraDict["prefab dir"].GetComponentInParent<Dropdown>().captionText.text;
+        Directory.CreateDirectory(targetDir);
+
+        //Copy prefab / lasp.in
+        string[] fileList = Directory.GetFiles(prefabDir, "*");
+        foreach (string f in fileList)
+        {
+            // Remove path from the file name.
+            print(f);
+            string fName = f.Substring(prefabDir.Length + 1);
+            print(fName);
+            //Use the Path.Combine method to safely append the file name to the path.
+            // Will overwrite if the destination file already exists.
+            File.Copy(Path.Combine(prefabDir, fName), Path.Combine(targetDir, fName), true);
+        }
+
+        //cp NN Pot
+        string pot = "";
+        string[] lines = File.ReadAllLines(prefabDir + "/lasp.in");
+        for (int i = 0; i < lines.Length; i++)
+        {
+            string[] para = ConFun.S.PySplit(lines[i]);
+            if (para[0] == "%block" && para[1] == "netinfo")
+            {
+                i++;
+                pot = ConFun.S.PySplit(lines[i])[2];
+                break;
+            }
+        }
+        print(pot);
+        File.Copy(Path.Combine("./LaspNNPot", pot), Path.Combine(targetDir, pot), true);
+
+        //Write current arc
+        string arc = MainScr.S.CurrentArc().ArcWrite();
+        File.WriteAllText(Path.Combine(targetDir, "input.arc"), arc);
+
+        //run lasp
+        LaspWinProgress pro = new LaspWinProgress();
+        pro.ExecuteProgram(args:targetDir);
+
     }
 
     //**************************** LASP Panel End **************************************

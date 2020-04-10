@@ -41,8 +41,6 @@ public class MainScr : MonoBehaviour
     {
         string filename = ConFun.S.globalPara["arc_default"];
         AddArc(filename);
-        //LaspWinProgress pro = new LaspWinProgress();
-        //pro.ExecuteProgram();
     }
     //public void Start()
     //{

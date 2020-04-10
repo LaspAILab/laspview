@@ -1,0 +1,9 @@
+explore_type   ssw
+SSW.SSWsteps            10
+Run_type             5
+MD.dt     1.00000000000000     
+SSW.mdfreq             0
+potential  nn
+Symm_lattice   F
+Bravice_cell   F
+D3.func   pbe

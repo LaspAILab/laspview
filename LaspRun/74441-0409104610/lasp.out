@@ -1,0 +1,26 @@
++--------------------------------------------------------------------------------+
+|                 Welcome to Fantastic Atomic World in Neural Network            |
+|                              ---------                                         |
+|                               L A S P                                          |
+|                              ---------                                         |
+|           Large-scale Atomic Simulation with neural network Potential          |
+|                             Version 2.1.7     JUL. 2019                        |
+|                                Shanghai, China                                 |
+|                   More on Website: www.lasphub.com                             |
+|                                                                                |
+|      Please cite: S.D. Huang, C. Shang, P.L. Kang, X.J. Zhang and Z.P. Liu ,   |
+|                   "LASP: Fast Global Potential Energy Surface Exploration" ,   |
+|                   WIREs. Comp. Mole. Sci. 2019;e1415 (DOI: 10.1002/wcms.1415)  |
+|                                                                                |
+|                  Compiled by IntelFortran version: ifort      18               |
+|                  CPU Parallel Run on    1      cores                           |
++--------------------------------------------------------------------------------+
+ 
++--------------------------------------------------------------------------------+
++   The PES is calculated by 
++   nn
++--------------------------------------------------------------------------------+
+ 
+ 
+ Error: No lasp.str file found
+ 
