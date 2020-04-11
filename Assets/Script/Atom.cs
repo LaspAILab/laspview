@@ -40,7 +40,7 @@ public class Atom : MonoBehaviour
 
     public void ChangeRadius(float rate)
     {
-        float scale = this.radius * rate;
+        float scale = Mathf.Max( this.radius * rate, 0.4f);
         this.transform.localScale = scale * Vector3.one;
     }
 

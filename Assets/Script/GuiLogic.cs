@@ -47,17 +47,19 @@ public class GuiLogic : MonoBehaviour
     private Vector3 mouseLastPos;
 
     public bool updateBond;
-    public bool pickEnable;          //Pick Enalble
+    public bool editEnable;          //Pick Enalble
     private bool rotationMode3d = false;    //for rotate
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 offsetTemp;             //for tranlate    
     public List<GameObject> pickGO;         //for Pick
+    public List<GameObject> copyGO;         //for Pick
     public GameObject expandAtom;           //for RayCastPick, expand Atom
     private Vector3 expandAtomScale = new Vector3(0.3f, 0.3f, 0.3f);//for RayCastPick, expand Atom
     private float mouse0PressedTime;        //for Pick
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
+
 
     //************************** END  *****************************
 
@@ -120,10 +122,10 @@ public class GuiLogic : MonoBehaviour
         //Set Edit panel
         GameObject.Find("EditBtn").GetComponent<Button>().onClick.AddListener(() =>
         {
-            if (pickEnable) pickEnable = false;
-            else pickEnable = true;
+            if (editEnable) editEnable = false;
+            else editEnable = true;
         });
-        pickEnable = false;
+        editEnable = false;
 
         //Set Server panel
 #if !UNITY_WEBGL
@@ -214,8 +216,10 @@ public class GuiLogic : MonoBehaviour
         }
         else if (rayStartOnUI == false)
         {
-            MouseOnScene();
+            SceneInteractionMouse();
         }
+
+        SceneInteractionWithouMouse();
     }
 
     public List<RaycastResult> ClickObject()
@@ -227,7 +231,7 @@ public class GuiLogic : MonoBehaviour
         return results;
     }
 
-    public void MouseOnScene() //摄像机围绕目标旋转操作
+    void SceneInteractionMouse()
     {
 
         //transform.RotateAround(cameraCenter.position, Vector3.up, speed * Time.deltaTime); //摄像机围绕目标旋转
@@ -238,155 +242,121 @@ public class GuiLogic : MonoBehaviour
         {
             mouseLastPos = Input.mousePosition;
         }
-        float mouse_x = (Input.mousePosition - mouseLastPos).x/Screen.width*24;
-        float mouse_y = -(Input.mousePosition - mouseLastPos).y/Screen.height*24;
+        float mouse_x = (Input.mousePosition - mouseLastPos).x / Screen.width * 24;
+        float mouse_y = -(Input.mousePosition - mouseLastPos).y / Screen.height * 24;
         mouseLastPos = Input.mousePosition;
 
         Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         //************************** Pick Atom & Control  ******************************
-        if (pickEnable)
+
+        GameObject castGO;
+        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hitInfo;
+        if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
         {
-            GameObject castGO;
-            Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hitInfo;
-            if(Physics.Raycast(mouseRay,out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
+            castGO = hitInfo.collider.gameObject;
+        }
+        else
+        {
+            castGO = null;
+        }
+
+        //鼠标位置上的原子变大
+        if (true)
+        {
+            if (castGO == null)
             {
-                castGO = hitInfo.collider.gameObject;
+                //No atom is cast
+                if (expandAtom != null)
+                {
+                    // A -> null
+                    expandAtom.transform.localScale -= expandAtomScale;
+                    expandAtom = null;
+                }
             }
+            else if (expandAtom == null)
+            {
+                //null -> A
+                expandAtom = castGO;
+                castGO.transform.localScale += expandAtomScale;
+            }
+            else if (castGO == expandAtom)
+            {
+                //cast atom unchange
+                //A -> A
+            }
+            else if (castGO != expandAtom)
+            {
+                //cast atom change
+                //A -> B
+                expandAtom.transform.localScale -= expandAtomScale;
+                expandAtom = castGO;
+                castGO.transform.localScale += expandAtomScale;
+            }
+        }
+
+        //鼠标左键按下，无LeftCronl: 取消所有选中的原子，开始计时
+        if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
+        {
+            mouse0PressedTime = Time.time;
+            mouseStart = Input.mousePosition;
+            if (pickGO.Count != 0)
+            {
+                //Cancel pickGO
+                foreach (GameObject go in pickGO)
+                {
+                    foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+                    {
+                        ren.material.color = go.GetComponent<Atom>().color;
+                    }
+                }
+                pickGO.Clear();
+            }
+
+            //mouseBox reset
+            if (mouseBox.Length == 0)
+            {
+                mouseBox = new LineRenderer[4];
+            }
+        }
+        //鼠标左键按下，有LeftCronl: 不取消所有选中的原子，开始计时（增加选中的原子）
+        else if (Input.GetKeyDown(KeyCode.Mouse0) && Input.GetKey(KeyCode.LeftControl))
+        {
+            mouse0PressedTime = Time.time;
+            mouseStart = Input.mousePosition;
+
+            //mouseBox reset
+            if (mouseBox.Length == 0)
+            {
+                mouseBox = new LineRenderer[4];
+            }
+        }
+        //按下鼠标时：按下的时间短，单选射线拾取选中的原子；按下事件长，框选中心位置在框内的原子，并更新颜色和框
+        else if (Input.GetKey(KeyCode.Mouse0))
+        {
+            //shout presse, Select the castGO
+            if (Time.time - mouse0PressedTime < 0.2f)
+            {
+                if (castGO != null)
+                {
+                    if (!pickGO.Contains(castGO))
+                    {
+                        pickGO.Add(castGO);
+                    }
+                }
+            }
+            //Long press, Project All the Atom and than Judge if should be Select
             else
             {
-                castGO = null;
-            }
-            
-            //鼠标位置上的原子变大
-            if (true)
-            {
-                if (castGO == null)
+                foreach (Atom a in MainScr.S.CurrentStructure().atomList)
                 {
-                    //No atom is cast
-                    if (expandAtom != null)
-                    {
-                        // A -> null
-                        expandAtom.transform.localScale -= expandAtomScale;
-                        expandAtom = null;
-                    }
+                    Vector3 screenPos = Camera.main.WorldToScreenPoint(a.nodeTrans.position);
+                    if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
+                        if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
+                            if (!pickGO.Contains(a.gameObject))
+                                pickGO.Add(a.gameObject);
                 }
-                else if (expandAtom == null)
-                {
-                    //null -> A
-                    expandAtom = castGO;
-                    castGO.transform.localScale += expandAtomScale;
-                }
-                else if (castGO == expandAtom)
-                {
-                    //cast atom unchange
-                    //A -> A
-                }
-                else if (castGO != expandAtom)
-                {
-                    //cast atom change
-                    //A -> B
-                    expandAtom.transform.localScale -= expandAtomScale;
-                    expandAtom = castGO;
-                    castGO.transform.localScale += expandAtomScale;
-                }
-            }
-
-            //鼠标左键按下，无LeftCronl: 取消所有选中的原子，开始计时
-            if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
-            {
-                mouse0PressedTime = Time.time;
-                mouseStart = Input.mousePosition;
-                if (pickGO.Count != 0)
-                {
-                    //Cancel pickGO
-                    foreach (GameObject go in pickGO)
-                    {
-                        foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                        {
-                            ren.material.color = go.GetComponent<Atom>().color;
-                        }
-                    }
-                    pickGO.Clear();
-                }
-
-                //mouseBox reset
-                if (mouseBox.Length == 0)
-                {
-                    mouseBox = new LineRenderer[4];
-                }
-            }
-            //鼠标左键按下，有LeftCronl: 不取消所有选中的原子，开始计时（增加选中的原子）
-            else if (Input.GetKeyDown(KeyCode.Mouse0) && Input.GetKey(KeyCode.LeftControl))
-            {
-                mouse0PressedTime = Time.time;
-                mouseStart = Input.mousePosition;
-
-                //mouseBox reset
-                if (mouseBox.Length == 0)
-                {
-                    mouseBox = new LineRenderer[4];
-                }
-            }
-            //按下鼠标时：按下的时间短，单选射线拾取选中的原子；按下事件长，框选中心位置在框内的原子，并更新颜色和框
-            else if (Input.GetKey(KeyCode.Mouse0))
-            {
-                //shout presse, Select the castGO
-                if (Time.time - mouse0PressedTime < 0.2f)
-                {
-                    if (castGO != null)
-                    {
-                        if (!pickGO.Contains(castGO))
-                        {
-                            pickGO.Add(castGO);
-                        }
-                    }
-                }
-                //Long press, Project All the Atom and than Judge if should be Select
-                else
-                {
-                    foreach (Atom a in MainScr.S.CurrentStructure().atomList)
-                    {
-                        Vector3 screenPos = Camera.main.WorldToScreenPoint(a.nodeTrans.position);
-                        if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
-                            if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
-                                if (!pickGO.Contains(a.gameObject))
-                                    pickGO.Add(a.gameObject);
-                    }
-                    if (pickGO.Count != 0)
-                    {
-                        foreach (GameObject go in pickGO)
-                        {
-                            foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                            {
-                                ren.material.color = Color.yellow;
-                            }
-                        }
-                    }
-
-
-                    foreach (LineRenderer r in mouseBox)
-                    {
-                        if (r != null)
-                        {
-                            Object.Destroy(r.gameObject);
-                        }
-                    }
-                    Vector3 v1 = Input.mousePosition;
-                    Vector3 v2 = mouseStart;
-                    mouseBox[0] = this.mouseBoxLine(v1, new Vector3(v1.x, v2.y, 0f));
-                    mouseBox[1] = this.mouseBoxLine(v1, new Vector3(v2.x, v1.y, 0f));
-                    mouseBox[2] = this.mouseBoxLine(v2, new Vector3(v1.x, v2.y, 0f));
-                    mouseBox[3] = this.mouseBoxLine(v2, new Vector3(v2.x, v1.y, 0f));
-
-
-                }
-            }
-            //鼠标左键抬起时：确保所有选中原子的颜色，移去框
-            else if (Input.GetKeyUp(KeyCode.Mouse0))
-            {
-
                 if (pickGO.Count != 0)
                 {
                     foreach (GameObject go in pickGO)
@@ -396,7 +366,6 @@ public class GuiLogic : MonoBehaviour
                             ren.material.color = Color.yellow;
                         }
                     }
-
                 }
 
 
@@ -407,8 +376,47 @@ public class GuiLogic : MonoBehaviour
                         Object.Destroy(r.gameObject);
                     }
                 }
+                Vector3 v1 = Input.mousePosition;
+                Vector3 v2 = mouseStart;
+                mouseBox[0] = this.mouseBoxLine(v1, new Vector3(v1.x, v2.y, 0f));
+                mouseBox[1] = this.mouseBoxLine(v1, new Vector3(v2.x, v1.y, 0f));
+                mouseBox[2] = this.mouseBoxLine(v2, new Vector3(v1.x, v2.y, 0f));
+                mouseBox[3] = this.mouseBoxLine(v2, new Vector3(v2.x, v1.y, 0f));
+
+
             }
+        }
+        //鼠标左键抬起时：确保所有选中原子的颜色，移去框
+        else if (Input.GetKeyUp(KeyCode.Mouse0))
+        {
+
             if (pickGO.Count != 0)
+            {
+                foreach (GameObject go in pickGO)
+                {
+                    foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+                    {
+                        ren.material.color = Color.yellow;
+                    }
+                }
+
+            }
+
+
+            foreach (LineRenderer r in mouseBox)
+            {
+                if (r != null)
+                {
+                    Object.Destroy(r.gameObject);
+                }
+            }
+        }
+
+
+
+        if (editEnable)
+        {
+            if (pickGO.Count != 0 || copyGO.Count != 0)
             {
                 //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子(鼠标右键可用LShift替换)
                 if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Mouse1) || Input.GetKeyDown(KeyCode.LeftShift)))
@@ -476,6 +484,7 @@ public class GuiLogic : MonoBehaviour
                 {
 
                     MainScr.S.CurrentStructure().PickControlEnd();
+                    EditSaveSturc();
                 }
 
                 //LC(LeftControl)+鼠标中键按下： 准备开始平移选中原子
@@ -502,22 +511,11 @@ public class GuiLogic : MonoBehaviour
                       || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse2)))
                 {
                     MainScr.S.CurrentStructure().PickControlEnd();
-                }
-                //DELETE/Backspace删除原子
-                else if (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
-                {
-                    foreach(GameObject go in pickGO)
-                    {
-                        MainScr.S.CurrentStructure().atomList.Remove(go.GetComponent<Atom>());
-                        Object.Destroy(go.transform.parent.gameObject);
-                    }
-                    MainScr.S.CurrentStructure().AddAllBond();
-                    pickGO.Clear();
+                    EditSaveSturc();
                 }
             }
         }
-        //Only process one kind of Input information at one time
-        if (Input.GetKey(KeyCode.Mouse0) || Input.GetKey(KeyCode.LeftControl)) return;
+
 
         //************************** Pick Atom & Control End ******************************
         //*************************** Gernal Camera Control *******************************
@@ -528,19 +526,10 @@ public class GuiLogic : MonoBehaviour
         {
             //Right click of mouse: Rotation. Within tha lattice radius, 3D rotate. Beyond the radius, 2D rotate.
             //Judge By Ray Pickup
-            Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit[] hitInfo;
-            hitInfo = Physics.RaycastAll(mouseRay, 500f, 1 << LayerMask.NameToLayer("Default"));
-
-            if (hitInfo.Length != 0)
+            if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("Default")))
             {
                 //对"SturcturePrefab(Clone)"的拾取，决定旋转模式
-                this.rotationMode3d = false;
-                foreach (RaycastHit r in hitInfo)
-                {
-                    this.rotationMode3d = true;
-                    break;
-                }
+                this.rotationMode3d = true;
             }
             else
             {
@@ -590,6 +579,73 @@ public class GuiLogic : MonoBehaviour
         }
     }
 
+    void SceneInteractionWithouMouse()
+    {
+
+        if (editEnable)
+        {
+            //DELETE/Backspace删除原子
+            if (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
+            {
+                foreach (GameObject go in pickGO)
+                {
+                    MainScr.S.CurrentStructure().atomList.Remove(go.GetComponent<Atom>());
+                    Object.Destroy(go.transform.parent.gameObject);
+                }
+                MainScr.S.CurrentStructure().AddAllBond();
+                pickGO.Clear();
+            }
+            //Ctrl_C 复制原子
+            else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
+            {
+                //pickGO.CopyTo(copyGO);
+                copyGO = new List<GameObject>();
+                foreach (GameObject go in pickGO)
+                {
+                    copyGO.Add(go);
+                }
+            }
+            //Ctrl+V 粘贴原子
+            else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
+            {
+                List<GameObject> pasteGO = new List<GameObject>();
+                foreach (GameObject go in copyGO)
+                {
+                    Atom a = go.GetComponent<Atom>();
+                    Vector3 bias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized;
+                    Atom p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * bias, a.charge);
+                    pasteGO.Add(p.gameObject);
+                }
+
+                //Cancel pickGO
+                foreach (GameObject go in pickGO)
+                {
+                    foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+                    {
+                        ren.material.color = go.GetComponent<Atom>().color;
+                    }
+                }
+                pickGO.Clear();
+                MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
+
+                pickGO = pasteGO;
+                foreach (GameObject go in pasteGO)
+                {
+                    foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+                    {
+                        ren.material.color = Color.yellow;
+                    }
+                }
+
+
+            }
+            //Ctrl+Z 撤回Undo
+            else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
+            {
+                //wait!
+            }
+        }
+    }
     private LineRenderer mouseBoxLine(Vector3 v1, Vector3 v2)
     {
         //drawLine

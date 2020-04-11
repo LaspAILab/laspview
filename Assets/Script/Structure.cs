@@ -49,30 +49,29 @@ public class Structure : MonoBehaviour
 
     public void AddAtom(string line, int type = 1)
     {
-        string ele = "";
-        Vector3 cdnt = Vector3.zero;
-        int charge = 0;
-
         string[] lineSp = ConFun.S.PySplit(line);
         if (type == 1)
         {
-            ele = lineSp[0];
-            cdnt = new Vector3 ( float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]) );
-            charge = (int)float.Parse(lineSp[8]);
+            Vector3 cdnt = new Vector3(float.Parse(lineSp[1]), float.Parse(lineSp[1]), float.Parse(lineSp[3]));
+            AddAtom(lineSp[0],cdnt,  (int)float.Parse(lineSp[8]));
         }
+    }
 
+    public Atom AddAtom(string ele, Vector3 cdnt,  int charge = 0)
+    {
+        
         GameObject node = Instantiate(nodePrefabVar);
         node.transform.position = cdnt;
         node.transform.SetParent(this.transform);
 
         Atom newAtom = Instantiate(atomPrefabVar).GetComponent<Atom>();
-        newAtom.Init(cdnt, ele, node.transform, charge );
+        newAtom.Init(cdnt, ele, node.transform, charge);
         this.atomList.Add(newAtom);
         newAtom.transform.SetParent(node.transform, true);
         newAtom.transform.localPosition = Vector3.zero;
 
         node.SetActive(false);
-
+        return newAtom;
     }
 
     public void MoveIntoLatticAtoms(List<Atom> alist)
@@ -305,7 +304,6 @@ public class Structure : MonoBehaviour
         this.AddAllBond(this.parent.GetComponent<ArcStructures>().modelPara["bound_boundry"]);
 
         MoveIntoLatticAtoms(pickAtom);
-        GuiLogic.S.EditSaveSturc();
 
         changeBond.Clear();
         pickAtom.Clear();  
