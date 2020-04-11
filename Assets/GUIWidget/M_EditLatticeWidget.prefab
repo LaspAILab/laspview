@@ -188,10 +188,11 @@ GameObject:
   - component: {fileID: 539081823233144029}
   - component: {fileID: 539081823233144027}
   - component: {fileID: 539081823233144026}
+  - component: {fileID: -908311290294776988}
   m_Layer: 5
-  m_Name: EditLatticeWidget
+  m_Name: M_EditLatticeWidget
   m_TagString: Untagged
-  m_Icon: {fileID: 7174288486110832750, guid: 0000000000000000d000000000000000, type: 0}
+  m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -291,6 +292,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HorizontalFit: 0
   m_VerticalFit: 1
+--- !u!114 &-908311290294776988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539081823233144031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3a7ae2d8a5c3be40ad404ea6f6b8e93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &539081823282589619
 GameObject:
   m_ObjectHideFlags: 0

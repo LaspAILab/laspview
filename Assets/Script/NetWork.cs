@@ -300,7 +300,7 @@ namespace ViewerNetwork
                 }
                 Loom.QueueOnMainThread((param) =>
                 {
-                    GuiLogic.S.NetLocalBtnChange();
+                    R_ServerPanelSrc.S.NetLocalBtnChange();
                     ConFun.S.printStatusInfo("Stop Listening");
                 }, null);
             });
@@ -322,7 +322,7 @@ namespace ViewerNetwork
                 }
             });
             UnityEngine.Object.Destroy(client);
-            GuiLogic.S.NetLocalBtnChange();
+            R_ServerPanelSrc.S.NetLocalBtnChange();
 
         }
 

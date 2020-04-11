@@ -55,7 +55,7 @@ public class MainScr : MonoBehaviour
         ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
         newArc.ArcRead(filename,lines);
         arcList.Add(newArc);
-        GuiLogic.S.FileListAddCell(filename);
+        L_ProjectPanelSrc.S.ProjectListAddCell(filename);
         DrawArc(arcList.Count - 1);
     }
 
@@ -64,7 +64,7 @@ public class MainScr : MonoBehaviour
         ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
         newArc.ArcRead(filename, lines);
         arcList.Add(newArc);
-        GuiLogic.S.FileListAddCell(filename);
+        L_ProjectPanelSrc.S.ProjectListAddCell(filename);
         DrawArc(arcList.Count - 1);
     }
 
@@ -82,7 +82,7 @@ public class MainScr : MonoBehaviour
         currentArc = arcIndex;
         //print(arcList[currentArc].filename);
         (bool, bool) playerStatus = targetArc.DrawStructure(targetArc.currentStr);
-        GuiLogic.S.PlayerBtnChecked(playerStatus);
+        B_ToolbarPanelSrc.S.PlayerBtnChecked(playerStatus);
     }
 
     public ArcStructures CurrentArc()
