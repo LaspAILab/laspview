@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class syfPanelPara : MonoBehaviour
 {
     public Dictionary<string, GameObject> paraDict;
-
     // Start is called before the first frame update
     public void SetParaDict()
     {
@@ -23,7 +22,7 @@ public class syfPanelPara : MonoBehaviour
         }
         foreach (Button c in this.GetComponentsInChildren<Button>())
         {
-            string key = c.transform.parent.GetComponentInChildren<Text>().text;
+            string key = c.GetComponentInChildren<Text>().text;
             paraDict.Add(key.ToLower(), c.gameObject);
         }
     }

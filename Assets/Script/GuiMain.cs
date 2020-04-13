@@ -183,6 +183,13 @@ public class GuiMain : MonoBehaviour
         lpPanel.SetActive(false);
 #endif
 
+#if !UNITY_WEBGL
+        //Set lasp.in Editor Widget
+        GameObject iePanel = Instantiate(M_LaspInWidgetPrefab);
+        iePanel.transform.SetParent(GameObject.Find("Canvas").transform);
+        iePanel.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
+        iePanel.SetActive(false);
+#endif
 
     }
 
