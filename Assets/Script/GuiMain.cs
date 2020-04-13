@@ -113,6 +113,7 @@ public class GuiMain : MonoBehaviour
         GameObject pjPanel = Instantiate(L_ProjectPanelPrefab);
         pjPanel.transform.SetParent(leftCanvas.transform);
         pjPanel.transform.SetAsFirstSibling();
+        pjPanel.transform.localScale = Vector3.one;
         Button pjButton = GameObject.Find("ProjectBtn").GetComponent<Button>();
         pjButton.onClick.AddListener(()=> 
         {
@@ -124,6 +125,7 @@ public class GuiMain : MonoBehaviour
         GameObject flPanel = Instantiate(L_FilePanelPrefab);
         flPanel.transform.SetParent(leftCanvas.transform);
         flPanel.transform.SetAsFirstSibling();
+        flPanel.transform.localScale = Vector3.one;
         Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
         flButton.onClick.AddListener(() => 
         {
@@ -135,6 +137,7 @@ public class GuiMain : MonoBehaviour
         GameObject edPanel = Instantiate(L_EditPanelPrefab);
         edPanel.transform.SetParent(leftCanvas.transform);
         edPanel.transform.SetAsFirstSibling();
+        edPanel.transform.localScale = Vector3.one;
         Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
         edButton.onClick.AddListener(() =>
         {
@@ -150,6 +153,7 @@ public class GuiMain : MonoBehaviour
         GameObject svrPanel = Instantiate(R_ServerPanelPrefab);
         svrPanel.transform.SetParent(rightCanvas.transform);
         svrPanel.transform.SetAsFirstSibling();
+        svrPanel.transform.localScale = Vector3.one;
         Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
         svrButton.onClick.AddListener(() =>
         {
@@ -168,12 +172,14 @@ public class GuiMain : MonoBehaviour
         GameObject lpPanel = Instantiate(R_LASPPanelPrefab);
         lpPanel.transform.SetParent(rightCanvas.transform);
         lpPanel.transform.SetAsFirstSibling();
+        lpPanel.transform.localScale = Vector3.one;
         Button lpButton = GameObject.Find("LaspBtn").GetComponent<Button>();
         lpButton.onClick.AddListener(() =>
         {
             BtnHideObject(lpButton, lpPanel);
-            if (lpPanel.active) R_LASPPanelSrc.S.LaspSetPanel();
+            if (lpPanel.activeSelf) R_LASPPanelSrc.S.LaspSetPanel();
         });
+
         lpPanel.SetActive(false);
 #endif
 
