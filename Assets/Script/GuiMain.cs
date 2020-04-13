@@ -104,13 +104,19 @@ public class GuiMain : MonoBehaviour
 
     public void SetMenuBtn()
     {
-        //Set toolbar 
         GameObject toolBar = Instantiate(B_ToolbarPanelPrefab);
+        GameObject pjPanel = Instantiate(L_ProjectPanelPrefab);
+        GameObject flPanel = Instantiate(L_FilePanelPrefab);
+        GameObject edPanel = Instantiate(L_EditPanelPrefab);
+        GameObject svrPanel = Instantiate(R_ServerPanelPrefab);
+        GameObject lpPanel = Instantiate(R_LASPPanelPrefab);
+        GameObject iePanel = Instantiate(M_LaspInWidgetPrefab);
+
+        //Set toolbar 
         toolBar.transform.SetParent(statusPanel.transform);
         toolBar.transform.SetSiblingIndex(1);
 
         //Set ProjectPanel
-        GameObject pjPanel = Instantiate(L_ProjectPanelPrefab);
         pjPanel.transform.SetParent(leftCanvas.transform);
         pjPanel.transform.SetAsFirstSibling();
         pjPanel.transform.localScale = Vector3.one;
@@ -122,7 +128,6 @@ public class GuiMain : MonoBehaviour
         pjPanel.SetActive(false);
 
         //Set ProjectPanel
-        GameObject flPanel = Instantiate(L_FilePanelPrefab);
         flPanel.transform.SetParent(leftCanvas.transform);
         flPanel.transform.SetAsFirstSibling();
         flPanel.transform.localScale = Vector3.one;
@@ -134,7 +139,6 @@ public class GuiMain : MonoBehaviour
         flPanel.SetActive(false);
 
         //Set Edit panel
-        GameObject edPanel = Instantiate(L_EditPanelPrefab);
         edPanel.transform.SetParent(leftCanvas.transform);
         edPanel.transform.SetAsFirstSibling();
         edPanel.transform.localScale = Vector3.one;
@@ -142,15 +146,17 @@ public class GuiMain : MonoBehaviour
         edButton.onClick.AddListener(() =>
         {
             BtnHideObject(edButton, edPanel);
-            if (editEnable) editEnable = false;
-            else editEnable = true;
+            editEnable = !editEnable;
+            foreach(GameObject pan in new List<GameObject> {toolBar,pjPanel, flPanel, svrPanel, lpPanel})
+            {
+                SetUIInteract(pan, !editEnable);
+            }
         });
         editEnable = false;
         edPanel.SetActive(false);
 
 #if !UNITY_WEBGL
         //Set Server panel
-        GameObject svrPanel = Instantiate(R_ServerPanelPrefab);
         svrPanel.transform.SetParent(rightCanvas.transform);
         svrPanel.transform.SetAsFirstSibling();
         svrPanel.transform.localScale = Vector3.one;
@@ -169,7 +175,7 @@ public class GuiMain : MonoBehaviour
 
 #if !UNITY_WEBGL
         //Set LASP Panel
-        GameObject lpPanel = Instantiate(R_LASPPanelPrefab);
+
         lpPanel.transform.SetParent(rightCanvas.transform);
         lpPanel.transform.SetAsFirstSibling();
         lpPanel.transform.localScale = Vector3.one;
@@ -185,7 +191,6 @@ public class GuiMain : MonoBehaviour
 
 #if !UNITY_WEBGL
         //Set lasp.in Editor Widget
-        GameObject iePanel = Instantiate(M_LaspInWidgetPrefab);
         iePanel.transform.SetParent(GameObject.Find("Canvas").transform);
         iePanel.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
         iePanel.SetActive(false);
@@ -193,7 +198,21 @@ public class GuiMain : MonoBehaviour
 
     }
 
-
+    public void SetUIInteract(GameObject go, bool interactable)
+    {
+        foreach (Dropdown c in this.GetComponentsInChildren<Dropdown>())
+        {
+            c.interactable = interactable;
+        }
+        foreach (InputField c in this.GetComponentsInChildren<InputField>())
+        {
+            c.interactable = interactable;
+        }
+        foreach (Button c in this.GetComponentsInChildren<Button>())
+        {
+            c.interactable = interactable;
+        }
+    }
 
 
     //*************************** CAMERA CONTROL **********************************
