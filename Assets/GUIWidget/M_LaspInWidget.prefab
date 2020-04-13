@@ -637,6 +637,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f097ae5f972db24f83308a1ec10b2f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainText: {fileID: 0}
+  closeBtn: {fileID: 0}
+  saveBtn: {fileID: 0}
+  returnToString: 
+  returnToButton: {fileID: 0}
 --- !u!1 &2236528130829344759
 GameObject:
   m_ObjectHideFlags: 0
@@ -1369,16 +1374,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: NetEditLaspInSave
-      objectReference: {fileID: 0}
     - target: {fileID: 424101933027883873, guid: e02c284f9dd5999448b6fedc64633807,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -1408,6 +1403,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e02c284f9dd5999448b6fedc64633807, type: 3}
@@ -1534,16 +1539,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
-        type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: NetEditLaspInQuit
-      objectReference: {fileID: 0}
     - target: {fileID: 424101933027883873, guid: e02c284f9dd5999448b6fedc64633807,
         type: 3}
       propertyPath: m_AnchorMin.y
@@ -1574,6 +1569,26 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4465929115609054158, guid: e02c284f9dd5999448b6fedc64633807,
+        type: 3}
+      propertyPath: m_MinWidth
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 4465929115609054158, guid: e02c284f9dd5999448b6fedc64633807,
+        type: 3}
+      propertyPath: m_MinHeight
+      value: 32
+      objectReference: {fileID: 0}
+    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8642266310221581038, guid: e02c284f9dd5999448b6fedc64633807,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 6211486063315856894, guid: e02c284f9dd5999448b6fedc64633807,
         type: 3}
       propertyPath: m_Sprite
@@ -1584,16 +1599,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Color.a
       value: 0.8039216
-      objectReference: {fileID: 0}
-    - target: {fileID: 4465929115609054158, guid: e02c284f9dd5999448b6fedc64633807,
-        type: 3}
-      propertyPath: m_MinWidth
-      value: 32
-      objectReference: {fileID: 0}
-    - target: {fileID: 4465929115609054158, guid: e02c284f9dd5999448b6fedc64633807,
-        type: 3}
-      propertyPath: m_MinHeight
-      value: 32
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e02c284f9dd5999448b6fedc64633807, type: 3}

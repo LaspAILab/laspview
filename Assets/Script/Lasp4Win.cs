@@ -12,9 +12,9 @@ namespace Lasp4Win
             System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo();
             info.FileName = exeFilename;
             info.WorkingDirectory = workDir;
-            info.UseShellExecute = true;
+            info.UseShellExecute = false;
+            //info.CreateNoWindow = true;
             info.Arguments = args;
-            info.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
 
             System.Diagnostics.Process task = null;
             bool rt = true;

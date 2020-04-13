@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 using System.Text;
 using UnityEngine.UI;
 using System.IO;
@@ -11,14 +12,12 @@ public class R_LASPPanelSrc : MonoBehaviour
     static public R_LASPPanelSrc S;
 
     static public syfPanelPara laspPanelPara;
-    GameObject laspInEditorpanel;
-    InputField laspInEditorText;
-
     string workDirName;
     string prefabDirName;
     GameObject laspParaSet;
     bool laspParaSetActive;
-    string laspInText;
+
+    string laspInTextSaved;
 
     void Awake()
     {
@@ -32,7 +31,6 @@ public class R_LASPPanelSrc : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
     }
 
     // Update is called once per frame
@@ -59,16 +57,138 @@ public class R_LASPPanelSrc : MonoBehaviour
 
     public void LaspCreateNewTask()
     {
-        laspParaSetActive = true;
+
+        if (laspParaSetActive == false)
+        {
+
+            laspParaSetActive = true;
+            laspParaSet.SetActive(laspParaSetActive);
+
+            laspPanelPara.paraDict["new lasp task"].GetComponentInChildren<Text>().text = "Cancel Task";
+
+            prefabDirName = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().captionText.text;
+            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
+            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = false;
+
+            //Open target lasp.in
+            string[] lines = File.ReadAllLines("./LaspPrefab/" + prefabDirName + "/lasp.in");
+            //Read lasp.in
+            StringBuilder otherPara = LoadLaspIn(lines);
+            laspInTextSaved = WriteLaspin(otherPara);
+        }
+        else if (laspParaSetActive == true)
+        {
+            laspParaSetActive = false;
+            laspParaSet.SetActive(laspParaSetActive);
+            laspPanelPara.paraDict["new lasp task"].GetComponentInChildren<Text>().text = "New Lasp Task";
+
+            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((195 / 255f), (195 / 255f), (195 / 255f), (255 / 255f));
+            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = true;
+        }
+
+
+    }
+
+    public void LaspResetTask()
+    {
+        laspParaSetActive = false;
         laspParaSet.SetActive(laspParaSetActive);
 
-        prefabDirName = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().captionText.text;
         laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-        laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = false;
+        laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = true;
+    }
 
-        //Open target lasp.in
-        string[] lines = File.ReadAllLines("./LaspPrefab/" + prefabDirName + "/lasp.in");
-        //Read lasp.in
+    public void LaspSetNNPot()
+    {
+        //Set Lasp Panel, Mainly Selectable Item in Prefav dir
+        Dropdown prefabDirDp = laspPanelPara.paraDict["nn pot"].transform.GetComponentInParent<Dropdown>();
+        //print(laspPanelPara.paraDict["NN Pot"]);
+        List<string> prefabNames = new List<string>(Directory.GetFiles("./LaspNNPot"));
+        List<Dropdown.OptionData> prefabDrop = new List<Dropdown.OptionData>();
+        foreach (string str in prefabNames)
+        {
+            string[] spl = str.Split('\\');
+            prefabDrop.Add(new Dropdown.OptionData(spl[spl.Length - 1]));
+        }
+        prefabDirDp.options = prefabDrop;
+    }
+
+    public string WriteLaspin(StringBuilder otherPara = null)
+    {
+
+        if (otherPara == null)
+        {
+            string dirName = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().captionText.text;
+            string[] lines = File.ReadAllLines("./LaspPrefab/" + dirName + "/lasp.in");
+            otherPara = new StringBuilder { };
+            //Read lasp.in
+            Dictionary<string, int> uiPara = new Dictionary<string, int>
+                { { "potential", 0 } ,{ "explore_type",0 },{ "%block netinfo",0 },{ "run_type",0 }, {"ssw.sswsteps",0 } };
+            int i = 0;
+            for (i = 0; i < lines.Length; i++)
+            {
+                string[] para = ConFun.S.PySplit(lines[i].ToLower());
+                para[0] = para[0];
+                if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
+                {
+                    if (para[0] == "%block" && para[1] == "netinfo")
+                    {
+                        while (!Regex.IsMatch(lines[i], @"%endblock netinfo") && i < lines.Length)
+                        {
+                            i++;
+                        }
+                    }
+                }
+                else
+                {
+                    if (!Regex.IsMatch(lines[i].Trim(), @"^\#(.)*\#$"))
+                    {
+                        otherPara.AppendLine(lines[i]);
+                        //print(lines[i]);
+                    }
+                }
+            }
+        }
+
+        StringBuilder outputlines = new StringBuilder { };
+        outputlines.AppendLine("######AutoGernerate######");
+        foreach (string key in laspPanelPara.paraDict.Keys)
+        {
+            if (key == "prefab directory" || key == "running directory") continue;
+            else if (key == "nn pot")
+            {
+                outputlines.AppendLine("%block netinfo");
+                string name = laspPanelPara.paraDict[key].GetComponentInChildren<Dropdown>().captionText.text;
+                foreach (Match ele in Regex.Matches(name.Replace(".pot", ""), @"([A-Z][a-z]?)"))
+                {
+                    outputlines.Append("    " + ele + "   " + name + "\n");
+                }
+                outputlines.AppendLine("%endblock netinfo");
+            }
+            else if (laspPanelPara.paraDict[key].GetComponentInChildren<Dropdown>() != null)
+            {
+                outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<Dropdown>().captionText.text + "\n");
+            }
+            else if (laspPanelPara.paraDict[key].GetComponentInChildren<InputField>() != null)
+            {
+                outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<InputField>().text + "\n");
+                //print(outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<InputField>().text));
+            }
+        }
+        outputlines.Append("######EndGernerate######\n");
+
+        outputlines.Append(otherPara);
+
+        return outputlines.ToString(); 
+        //if (filename == null)
+        //{
+        //    filename = "./LaspPrefab/" + laspPanelPara.paraDict["prefab directory"].GetComponentInChildren<InputField>().text + "/lasp.in";
+        //}
+        //File.WriteAllText(filename, outputlines.ToString());
+    }
+
+    public  StringBuilder  LoadLaspIn(string[] lines)
+    {
         Dictionary<string, int> uiPara = new Dictionary<string, int>
                 { { "potential", 0 } ,{ "explore_type",0 },{ "%block netinfo",0 },{ "run_type",0 }, {"ssw.sswsteps",0 } };
         int i = 0;
@@ -76,6 +196,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
         for (i = 0; i < lines.Length; i++)
         {
+            string st = lines[i];
             string[] para = ConFun.S.PySplit(lines[i].ToLower());
             if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
             {
@@ -147,143 +268,39 @@ public class R_LASPPanelSrc : MonoBehaviour
             }
             else
             {
-                if (!Regex.IsMatch(lines[i], @"^\#\#\#(.)*\#\#\#$"))
+                if (!Regex.IsMatch(lines[i].Trim(), @"^\#\#\#(.)*\#\#\#$"))
                 {
                     otherPara.AppendLine(lines[i]);
                 }
             }
         }
 
-        laspInText = LaspWriteLaspin();
-
+        return otherPara;
     }
-
-    public void LaspResetTask()
-    {
-        laspParaSetActive = false;
-        laspParaSet.SetActive(laspParaSetActive);
-
-        laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-        laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = true;
-    }
-
-    public void LaspSetNNPot()
-    {
-        //Set Lasp Panel, Mainly Selectable Item in Prefav dir
-        Dropdown prefabDirDp = laspPanelPara.paraDict["nn pot"].transform.GetComponentInParent<Dropdown>();
-        print(prefabDirDp);
-        //print(laspPanelPara.paraDict["NN Pot"]);
-        List<string> prefabNames = new List<string>(Directory.GetFiles("./LaspNNPot"));
-        List<Dropdown.OptionData> prefabDrop = new List<Dropdown.OptionData>();
-        foreach (string str in prefabNames)
-        {
-            string[] spl = str.Split('\\');
-            prefabDrop.Add(new Dropdown.OptionData(spl[spl.Length - 1]));
-        }
-        prefabDirDp.options = prefabDrop;
-    }
-
-    public string LaspWriteLaspin(StringBuilder otherPara = null)
-    {
-
-        if (otherPara == null)
-        {
-            string dirName = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().captionText.text;
-            string[] lines = File.ReadAllLines("./LaspPrefab/" + dirName + "/lasp.in");
-            otherPara = new StringBuilder { };
-            //Read lasp.in
-            Dictionary<string, int> uiPara = new Dictionary<string, int>
-                { { "potential", 0 } ,{ "explore_type",0 },{ "%block netinfo",0 },{ "run_type",0 }, {"ssw.sswsteps",0 } };
-            int i = 0;
-            for (i = 0; i < lines.Length; i++)
-            {
-                string[] para = ConFun.S.PySplit(lines[i].ToLower());
-                para[0] = para[0];
-                if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
-                {
-                    if (para[0] == "%block" && para[1] == "netinfo")
-                    {
-                        while (!Regex.IsMatch(lines[i], @"%endblock netinfo") && i < lines.Length)
-                        {
-                            i++;
-                        }
-                    }
-                }
-                else
-                {
-                    if (!Regex.IsMatch(lines[i], @"^\#(.)*\#$"))
-                    {
-                        otherPara.AppendLine(lines[i]);
-                        //print(lines[i]);
-                    }
-                }
-            }
-        }
-
-        StringBuilder outputlines = new StringBuilder { };
-        outputlines.AppendLine("######AutoGernerate######");
-        foreach (string key in laspPanelPara.paraDict.Keys)
-        {
-            if (key == "prefab directory" || key == "running directory") continue;
-            else if (key == "nn pot")
-            {
-                outputlines.AppendLine("%block netinfo");
-                string name = laspPanelPara.paraDict[key].GetComponentInChildren<Dropdown>().captionText.text;
-                foreach (Match ele in Regex.Matches(name.Replace(".pot", ""), @"([A-Z][a-z]?)"))
-                {
-                    outputlines.Append("    " + ele + "   " + name + "\n");
-                }
-                outputlines.AppendLine("%endblock netinfo");
-            }
-            else if (laspPanelPara.paraDict[key].GetComponentInChildren<Dropdown>() != null)
-            {
-                outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<Dropdown>().captionText.text + "\n");
-            }
-            else if (laspPanelPara.paraDict[key].GetComponentInChildren<InputField>() != null)
-            {
-                outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<InputField>().text + "\n");
-                //print(outputlines.Append(key + "    " + laspPanelPara.paraDict[key].GetComponentInChildren<InputField>().text));
-            }
-        }
-        outputlines.Append("######EndGernerate######\n");
-
-        outputlines.Append(otherPara);
-
-        return outputlines.ToString(); 
-        //if (filename == null)
-        //{
-        //    filename = "./LaspPrefab/" + laspPanelPara.paraDict["prefab directory"].GetComponentInChildren<InputField>().text + "/lasp.in";
-        //}
-        //File.WriteAllText(filename, outputlines.ToString());
-    }
-
     public void LaspEditLaspIn()
     {
-        //Button btn = this.transform.GetChild(2).GetChild(4).gameObject.GetComponent<Button>();
-        //laspInEditorpanel = Instantiate(GuiMain.S.M_LaspInWidgetPrefab);
-        //laspInEditorpanel.transform.SetParent(GameObject.Find("Canvas").transform);
-        //laspInEditorpanel.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
+        Button btn = laspPanelPara.paraDict["edit lasp.in"].GetComponent<Button>();
+        btn.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
+        btn.interactable = false;
 
-        //laspInEditorText = laspInEditorpanel.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetComponent<InputField>();
-        //string dirName = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().captionText.text;
+        M_LaspInWidgetSrc.S.gameObject.SetActive(true);
+        M_LaspInWidgetSrc.S.mainText.text = string.Copy(laspInTextSaved);
+        M_LaspInWidgetSrc.S.saveBtn.onClick.AddListener(() => 
+        {
+            string[] lines = M_LaspInWidgetSrc.S.mainText.text.Split(new string[] { "\n" }, StringSplitOptions.None);
+            print(lines);
+            StringBuilder otherPara = LoadLaspIn(lines);
+            laspInTextSaved = WriteLaspin(otherPara);
+        });
+        M_LaspInWidgetSrc.S.closeBtn.onClick.AddListener(() =>
+        {
+            btn.interactable = true;
+            btn.image.color = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
 
-        //LaspWriteLaspin("./LaspPrefab/" + dirName + "/lasp.in");
-        //string lines = File.ReadAllText("./LaspPrefab/" + dirName + "/lasp.in");
-
-
-        //btn.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-        //laspInEditorText.text = lines;
-        //laspInEditorpanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = "./" + dirName + "/lasp.in";
-        //laspInEditorpanel.transform.GetChild(0).GetChild(1).GetComponent<Button>().onClick.AddListener(() =>
-        //{
-        //    File.WriteAllText("./LaspPrefab/" + dirName + "/lasp.in", laspInEditorText.text);
-        //});
-        //laspInEditorpanel.transform.GetChild(0).GetChild(2).GetComponent<Button>().onClick.AddListener(() =>
-        //{
-        //    btn.interactable = true;
-        //    btn.image.color = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
-        //    Object.Destroy(laspInEditorpanel);
-        //});
+            M_LaspInWidgetSrc.S.saveBtn.onClick.RemoveAllListeners();
+            M_LaspInWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+            M_LaspInWidgetSrc.S.gameObject.SetActive(false);
+        });
     }
 
     public void LaspRun()
@@ -295,13 +312,13 @@ public class R_LASPPanelSrc : MonoBehaviour
         }
 
         //creat LASP Work Directory
-        workDirName = string.Format("{0:d5}-{1:d}", Random.Range(10000, 99999),
+        workDirName = string.Format("{0:d5}-{1:d}", UnityEngine.Random.Range(10000, 99999),
                 System.DateTime.Now.ToString("MMddhhmmss")) + "/";
         string wholeWorkDir = "./LaspRun/" + workDirName;
         Directory.CreateDirectory(wholeWorkDir);
 
         //write lasp.in
-        File.WriteAllText(wholeWorkDir+"/lasp.in", laspInText);
+        File.WriteAllText(wholeWorkDir+"/lasp.in", laspInTextSaved);
 
         //Copy prefab except
         string[] fileList = Directory.GetFiles("./LaspPrefab/" + prefabDirName, "*");
@@ -335,7 +352,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
         //run lasp
         LaspWinProgress pro = new LaspWinProgress();
-        pro.ExecuteProgram(args: wholeWorkDir + "> output.txt 2>&1");
-
+        //pro.ExecuteProgram(args: wholeWorkDir + "> output.txt 2>&1");
+        pro.ExecuteProgram(args: "/B "+wholeWorkDir+ " 1>nul 2>nul");
     }
 }
