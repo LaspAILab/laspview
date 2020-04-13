@@ -67,8 +67,7 @@ public class R_LASPPanelSrc : MonoBehaviour
             laspPanelPara.paraDict["new lasp task"].GetComponentInChildren<Text>().text = "Cancel Task";
 
             prefabDirName = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().captionText.text;
-            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = false;
+            GuiMain.S.SetUIInteract(laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>(), false);
 
             //Open target lasp.in
             string[] lines = File.ReadAllLines("./LaspPrefab/" + prefabDirName + "/lasp.in");
@@ -81,22 +80,12 @@ public class R_LASPPanelSrc : MonoBehaviour
             laspParaSetActive = false;
             laspParaSet.SetActive(laspParaSetActive);
             laspPanelPara.paraDict["new lasp task"].GetComponentInChildren<Text>().text = "New Lasp Task";
-
-            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((195 / 255f), (195 / 255f), (195 / 255f), (255 / 255f));
-            laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = true;
+            GuiMain.S.SetUIInteract(laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>(), true);
         }
 
 
     }
 
-    public void LaspResetTask()
-    {
-        laspParaSetActive = false;
-        laspParaSet.SetActive(laspParaSetActive);
-
-        laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-        laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>().interactable = true;
-    }
 
     public void LaspSetNNPot()
     {
@@ -280,8 +269,7 @@ public class R_LASPPanelSrc : MonoBehaviour
     public void LaspEditLaspIn()
     {
         Button btn = laspPanelPara.paraDict["edit lasp.in"].GetComponent<Button>();
-        btn.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-        btn.interactable = false;
+        GuiMain.S.SetUIInteract(btn, false);
 
         M_LaspInWidgetSrc.S.gameObject.SetActive(true);
         M_LaspInWidgetSrc.S.mainText.text = string.Copy(laspInTextSaved);
@@ -294,8 +282,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         });
         M_LaspInWidgetSrc.S.closeBtn.onClick.AddListener(() =>
         {
-            btn.interactable = true;
-            btn.image.color = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
+            GuiMain.S.SetUIInteract(btn,true);
 
             M_LaspInWidgetSrc.S.saveBtn.onClick.RemoveAllListeners();
             M_LaspInWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();

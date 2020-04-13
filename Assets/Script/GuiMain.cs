@@ -149,7 +149,7 @@ public class GuiMain : MonoBehaviour
             editEnable = !editEnable;
             foreach(GameObject pan in new List<GameObject> {toolBar,pjPanel, flPanel, svrPanel, lpPanel})
             {
-                SetUIInteract(pan, !editEnable);
+                SetAllUIInteract(pan, !editEnable);
             }
         });
         editEnable = false;
@@ -198,19 +198,24 @@ public class GuiMain : MonoBehaviour
 
     }
 
-    public void SetUIInteract(GameObject go, bool interactable)
+    public void SetAllUIInteract(GameObject go, bool interactable)
     {
-        foreach (Dropdown c in this.GetComponentsInChildren<Dropdown>())
+        foreach (Selectable c in go.GetComponentsInChildren<Selectable>())
         {
-            c.interactable = interactable;
+            SetUIInteract(c, interactable);
         }
-        foreach (InputField c in this.GetComponentsInChildren<InputField>())
+    }
+    public  void SetUIInteract(Selectable s, bool interactable)
+    {
+        if (interactable == true)
         {
-            c.interactable = interactable;
+            s.image.color = new Color((195 / 255f), (195 / 255f), (195 / 255f), (255 / 255f));
+            s.interactable = true;
         }
-        foreach (Button c in this.GetComponentsInChildren<Button>())
+        else
         {
-            c.interactable = interactable;
+            s.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
+            s.interactable = false;
         }
     }
 
