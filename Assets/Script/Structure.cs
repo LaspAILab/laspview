@@ -52,7 +52,7 @@ public class Structure : MonoBehaviour
         string[] lineSp = ConFun.S.PySplit(line);
         if (type == 1)
         {
-            Vector3 cdnt = new Vector3(float.Parse(lineSp[1]), float.Parse(lineSp[1]), float.Parse(lineSp[3]));
+            Vector3 cdnt = new Vector3(float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]));
             AddAtom(lineSp[0],cdnt,  (int)float.Parse(lineSp[8]));
         }
     }
