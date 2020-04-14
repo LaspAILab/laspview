@@ -108,6 +108,7 @@ public class GuiMain : MonoBehaviour
         GameObject pjPanel = Instantiate(L_ProjectPanelPrefab);
         GameObject flPanel = Instantiate(L_FilePanelPrefab);
         GameObject edPanel = Instantiate(L_EditPanelPrefab);
+        GameObject adAtWidget = Instantiate(M_AddAtomWidgetPrefab);
         GameObject svrPanel = Instantiate(R_ServerPanelPrefab);
         GameObject lpPanel = Instantiate(R_LASPPanelPrefab);
         GameObject iePanel = Instantiate(M_LaspInWidgetPrefab);
@@ -155,6 +156,13 @@ public class GuiMain : MonoBehaviour
         editEnable = false;
         edPanel.SetActive(false);
 
+        //Set lasp.in Editor Widget
+        adAtWidget.transform.SetParent(GameObject.Find("Canvas").transform);
+        adAtWidget.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
+        adAtWidget.SetActive(false);
+
+
+
 #if !UNITY_WEBGL
         //Set Server panel
         svrPanel.transform.SetParent(rightCanvas.transform);
@@ -175,7 +183,6 @@ public class GuiMain : MonoBehaviour
 
 #if !UNITY_WEBGL
         //Set LASP Panel
-
         lpPanel.transform.SetParent(rightCanvas.transform);
         lpPanel.transform.SetAsFirstSibling();
         lpPanel.transform.localScale = Vector3.one;
@@ -185,7 +192,6 @@ public class GuiMain : MonoBehaviour
             BtnHideObject(lpButton, lpPanel);
             if (lpPanel.activeSelf) R_LASPPanelSrc.S.LaspSetPanel();
         });
-
         lpPanel.SetActive(false);
 #endif
 
@@ -697,6 +703,7 @@ public class GuiMain : MonoBehaviour
             }
         }
     }
+
     private LineRenderer mouseBoxLine(Vector3 v1, Vector3 v2)
     {
         //drawLine

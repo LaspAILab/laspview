@@ -10,20 +10,23 @@ public class syfPanelPara : MonoBehaviour
     public void SetParaDict()
     {
         paraDict = new Dictionary<string, GameObject>();
-        foreach (Dropdown c in this.GetComponentsInChildren<Dropdown>())
+        foreach (Dropdown c in this.gameObject.GetComponentsInChildren<Dropdown>())
         {
             string key = c.transform.parent.GetComponentInChildren<Text>().text;
-            paraDict.Add(key.ToLower(), c.gameObject);
+            paraDict.Add(key.ToLower().Trim(), c.gameObject);
         }
-        foreach (InputField c in this.GetComponentsInChildren<InputField>())
+        foreach (InputField c in this.gameObject.GetComponentsInChildren<InputField>())
         {
             string key = c.transform.parent.GetComponentInChildren<Text>().text;
-            paraDict.Add(key.ToLower(), c.gameObject);
+            paraDict.Add(key.ToLower().Trim(), c.gameObject);
         }
         foreach (Button c in this.GetComponentsInChildren<Button>())
         {
-            string key = c.GetComponentInChildren<Text>().text;
-            paraDict.Add(key.ToLower(), c.gameObject);
+            if (c.GetComponentInChildren<Text>())
+            {
+                string key = c.GetComponentInChildren<Text>().text;
+                paraDict.Add(key.ToLower().Trim(), c.gameObject);
+            }
         }
     }
 }
