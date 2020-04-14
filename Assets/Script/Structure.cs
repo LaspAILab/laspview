@@ -309,12 +309,23 @@ public class Structure : MonoBehaviour
         pickAtom.Clear();  
     }
 
+
     public void AddLat(string line)
     {
         string[] lineSp = ConFun.S.PySplit(line);
 
         float[] abc = new float[6] { float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]),
                                      float.Parse(lineSp[4]),float.Parse(lineSp[5]),float.Parse(lineSp[6])};
+        AddLat(abc);
+    }
+
+
+    public void AddLat(float[] abc)
+    {
+        //string[] lineSp = ConFun.S.PySplit(line);
+
+        //float[] abc = new float[6] { float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]),
+        //                             float.Parse(lineSp[4]),float.Parse(lineSp[5]),float.Parse(lineSp[6])};
 
 
         //bc2 = b * *2 + c * *2 - 2 * b * c * m.cos(alpha)
@@ -347,7 +358,7 @@ public class Structure : MonoBehaviour
         //设置碰撞器半径//！！！
         Vector3 latticeMid = GetCellTransfer(1, 1, 1) / 2;
         this.GetComponent<SphereCollider>().center = latticeMid;
-        this.GetComponent<SphereCollider>().radius = Vector3.Magnitude(latticeMid)+2.0f;
+        this.GetComponent<SphereCollider>().radius = Vector3.Magnitude(latticeMid)+1.0f;
 
     }
 
@@ -370,6 +381,17 @@ public class Structure : MonoBehaviour
                     latList.Add(DrawLine(strucCorner[i], strucCorner[j]));
 
     }
+
+    public Vector3 RmLattice() 
+    {   
+        foreach(LineRenderer l in latList)
+        {
+            Object.Destroy(l);
+        }
+        latList.Clear();
+        return GetCellTransfer(1,1,1);
+    }
+
 
     public void DrawModel(Dictionary<string,float> modelPara)
     {

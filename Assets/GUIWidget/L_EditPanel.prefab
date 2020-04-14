@@ -389,6 +389,16 @@ PrefabInstance:
       propertyPath: m_Text
       value: Edit Lattice
       objectReference: {fileID: 0}
+    - target: {fileID: 1712412935815199725, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: -2047234392221754124}
+    - target: {fileID: 1712412935815199725, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: EditPanelEditLattice
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5, type: 3}
 --- !u!224 &7923781338010623509 stripped

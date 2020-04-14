@@ -31,5 +31,18 @@ public class L_EditPanelSrc : MonoBehaviour
             M_AddAtomWidgetSrc.S.gameObject.SetActive(false);
         });
     }
+    public void EditPanelEditLattice()
+    {
+        Button btn = paraDict["edit lattice"].GetComponent<Button>();
+        GuiMain.S.SetUIInteract(btn, false);
 
+        M_EditLatticeWidgetSrc.S.gameObject.SetActive(true);
+        M_EditLatticeWidgetSrc.S.SetLatPara(MainScr.S.CurrentStructure().abc);
+        M_EditLatticeWidgetSrc.S.closeBtn.onClick.AddListener(() =>
+        {
+            GuiMain.S.SetUIInteract(btn, true);
+            M_EditLatticeWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+            M_EditLatticeWidgetSrc.S.gameObject.SetActive(false);
+        });
+    }
 }

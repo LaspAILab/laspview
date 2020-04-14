@@ -109,6 +109,7 @@ public class GuiMain : MonoBehaviour
         GameObject flPanel = Instantiate(L_FilePanelPrefab);
         GameObject edPanel = Instantiate(L_EditPanelPrefab);
         GameObject adAtWidget = Instantiate(M_AddAtomWidgetPrefab);
+        GameObject edLtWidget = Instantiate(M_EditLatticeWidgetPrefab);
         GameObject svrPanel = Instantiate(R_ServerPanelPrefab);
         GameObject lpPanel = Instantiate(R_LASPPanelPrefab);
         GameObject iePanel = Instantiate(M_LaspInWidgetPrefab);
@@ -156,11 +157,15 @@ public class GuiMain : MonoBehaviour
         editEnable = false;
         edPanel.SetActive(false);
 
-        //Set lasp.in Editor Widget
+        //Set Add Atom Widget
         adAtWidget.transform.SetParent(GameObject.Find("Canvas").transform);
         adAtWidget.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
         adAtWidget.SetActive(false);
 
+        //Set Edit Lattice Widget
+        edLtWidget.transform.SetParent(GameObject.Find("Canvas").transform);
+        edLtWidget.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
+        edLtWidget.SetActive(false);
 
 
 #if !UNITY_WEBGL

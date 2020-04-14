@@ -2013,6 +2013,11 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3884387655707990448, guid: 17bcf4a13c3c12243a5d86635ee866c1,
+        type: 3}
+      propertyPath: m_Text
+      value: Local IP
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 17bcf4a13c3c12243a5d86635ee866c1, type: 3}
 --- !u!224 &6122155036774905922 stripped

@@ -18,23 +18,27 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         paraDict = p.paraDict;
 
         closeBtn = this.transform.GetChild(0).GetComponentInChildren<Button>();
-        foreach (GameObject g in paraDict.Values) print(g);
     }
-    // Start is called before the first frame update
-    
+
     public void EditWidgetAddAtom()
     {
         string ele = paraDict["element"].GetComponent<InputField>().text;
-        if (!ConFun.S.eleTable.ContainsKey(ele))
-        {
-            ConFun.S.printStatusInfo(ele + "is not an available element.Use element name such as H, Si, Cu, Uup.");
-            return;
-        }
         float x = float.Parse(paraDict["x"].GetComponent<InputField>().textComponent.text);
         float y = float.Parse(paraDict["y"].GetComponent<InputField>().textComponent.text);
         float z = float.Parse(paraDict["z"].GetComponent<InputField>().textComponent.text);
-
         Vector3 pos = new Vector3(x, y, z);
+
+        if (ele.Trim() == "")
+        {
+            ConFun.S.printStatusInfo("Err: No Element");
+            return;
+        }
+        if (!ConFun.S.eleTable.ContainsKey(ele))
+        {
+            ConFun.S.printStatusInfo("Err: "+ ele + "is not an available element.");
+            return;
+        }
+
         Atom p = MainScr.S.CurrentStructure().AddAtom(ele, pos);
 
         //Cancel pickGO
@@ -52,6 +56,7 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         {
             ren.material.color = Color.yellow;
         }
+        GuiMain.S.EditSaveSturc();
     }
 
 
