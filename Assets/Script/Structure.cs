@@ -188,7 +188,7 @@ public class Structure : MonoBehaviour
         Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
         newBond.Init(b, otherCell);
         newBond.transform.position = a.nodeTrans.position;
-        newBond.transform.Translate(direction * 0.25f);
+        newBond.transform.Translate(direction * 0.5f * rate);
         newBond.transform.Rotate(new Vector3(-direction.z, 0, direction.x), -Vector3.Angle(Vector3.up, direction));
         newBond.transform.localScale = Vector3.Scale(newBond.transform.localScale, new Vector3(1, direction.magnitude * rate / 2, 1));
         newBond.GetComponent<Renderer>().material.color = a.GetComponent<Renderer>().material.color;

@@ -24,7 +24,6 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
     
     public void EditWidgetAddAtom()
     {
-        print(paraDict["x"].GetComponent<InputField>().textComponent);
         string ele = paraDict["element"].GetComponent<InputField>().text;
         if (!ConFun.S.eleTable.ContainsKey(ele))
         {
