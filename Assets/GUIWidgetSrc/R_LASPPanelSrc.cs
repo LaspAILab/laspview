@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Lasp4Win;
 public class R_LASPPanelSrc : MonoBehaviour
 {
+#if !UNITY_WEBGL
     static public R_LASPPanelSrc S;
 
     static public syfPanelPara laspPanelPara;
@@ -342,4 +343,5 @@ public class R_LASPPanelSrc : MonoBehaviour
         //pro.ExecuteProgram(args: wholeWorkDir + "> output.txt 2>&1");
         pro.ExecuteProgram(args: "/B "+wholeWorkDir+ " 1>nul 2>nul");
     }
+#endif
 }

@@ -137,6 +137,7 @@ public class ConFun : MonoBehaviour
     public void readGlobalPara()
     {
         globalPara = new Dictionary<string, string>();
+#if !UNITY_WEBGL
         string[] lines = File.ReadAllLines("allkey.log");
         foreach(string lin in lines)
         {
@@ -151,6 +152,9 @@ public class ConFun : MonoBehaviour
                 printStatusInfo("NOT Cantain KEY " + para+" ,plz check allkey.log and RESTART the program");
             }
         }
+#else
+
+#endif
     }
 
     public void printStructureInfo(string str)

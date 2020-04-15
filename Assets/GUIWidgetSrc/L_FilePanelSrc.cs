@@ -7,7 +7,7 @@ public class L_FilePanelSrc : MonoBehaviour
 {
     static public L_FilePanelSrc S;
     static public InputField openbFilePath;
-
+#if !UNITY_WEBGL
     void Awake()
     {
         S = this;
@@ -34,4 +34,5 @@ public class L_FilePanelSrc : MonoBehaviour
         string str = MainScr.S.CurrentArc().ArcWrite();
         File.WriteAllText(openbFilePath.text, str);
     }
+#endif
 }

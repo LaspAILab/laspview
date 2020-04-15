@@ -51,12 +51,14 @@ public class MainScr : MonoBehaviour
     //}
     public void AddArc(string filename)
     {
+#if !UNITY_WEBGL
         string[] lines = File.ReadAllLines(filename);
         ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
         newArc.ArcRead(filename,lines);
         arcList.Add(newArc);
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
         DrawArc(arcList.Count - 1);
+#endif
     }
 
     public void AddArc(string filename, string[] lines)
