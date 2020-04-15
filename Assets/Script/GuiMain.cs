@@ -179,10 +179,6 @@ public class GuiMain : MonoBehaviour
             BtnHideObject(svrButton, svrPanel);
         });
         svrPanel.SetActive(false);
-        //Set LaspInEditor
-        //laspInEditorpanel = GameObject.Find("LaspInEditor");
-        //laspInEditorText = laspInEditorpanel.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetComponent<InputField>();
-        //NetEditLaspIn();
 #endif
 
 

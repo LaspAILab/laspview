@@ -49,11 +49,12 @@ public class MainScr : MonoBehaviour
     //    string tag = "";
     //    localServer.RmTag("<laspview user=shiyf><file>3.arc</file></laspview>",out tag, attr);
     //}
-    public void AddArc(string filename)
+    public void AddArc(string wholeFilename)
     {
 #if !UNITY_WEBGL
-        string[] lines = File.ReadAllLines(filename);
+        string[] lines = File.ReadAllLines(wholeFilename);
         ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
+        string filename = Path.GetFileName(wholeFilename);
         newArc.ArcRead(filename,lines);
         arcList.Add(newArc);
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);

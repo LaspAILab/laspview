@@ -3,36 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using SFB;
 public class L_FilePanelSrc : MonoBehaviour
 {
     static public L_FilePanelSrc S;
-    static public InputField openbFilePath;
+
 #if !UNITY_WEBGL
     void Awake()
     {
         S = this;
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-        openbFilePath = GameObject.Find("OpenFileInputField").GetComponent<InputField>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void FileOpen()
     {
-        MainScr.S.AddArc(openbFilePath.text);
+        // Open file with filter
+        var extensions = new[] {
+            new ExtensionFilter("arc Files", "arc", "car"),
+            new ExtensionFilter("All Files", "*" ),
+            };
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", extensions, true, (string[] paths) =>
+        {
+            foreach(string str in paths)
+            {
+                MainScr.S.AddArc(str);
+            }
+        });
     }
 
-    public void FileSave()
+    public void FileSaveSingle()
     {
-        string str = MainScr.S.CurrentArc().ArcWrite();
-        File.WriteAllText(openbFilePath.text, str);
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", ".arc", "", (string path) => 
+        { 
+            string str = MainScr.S.CurrentArc().ArcWrite();
+            File.WriteAllText(path, str);
+        });
+    }
+
+    public void FileSaveAll()
+    {
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", ".arc", "", (string path) =>
+        {
+            string str = MainScr.S.CurrentArc().ArcWriteAll();
+            File.WriteAllText(path, str);
+        });
     }
 #endif
 }
