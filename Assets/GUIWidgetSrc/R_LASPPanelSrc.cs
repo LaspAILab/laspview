@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using System.IO;
 using System.Text.RegularExpressions;
 using Lasp4Win;
+using UnityEditor;
 public class R_LASPPanelSrc : MonoBehaviour
 {
 #if !UNITY_WEBGL
@@ -14,6 +15,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
     static public syfPanelPara laspPanelPara;
     string workDirName;
+    string wholeWorkDir;
     string prefabDirName;
     GameObject laspParaSet;
     bool laspParaSetActive;
@@ -37,6 +39,11 @@ public class R_LASPPanelSrc : MonoBehaviour
         {
             if (timer >= 5.0f)
             {
+
+                string[] lines = File.ReadAllLines(Path.Combine(wholeWorkDir, "best.arc"));
+                print(lines.Length);
+
+
                 timer = 0;
             }
             timer += Time.deltaTime;
@@ -308,7 +315,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         //creat LASP Work Directory
         workDirName = string.Format("{0:d5}-{1:d}", UnityEngine.Random.Range(10000, 99999),
                 System.DateTime.Now.ToString("MMddhhmmss")) + "/";
-        string wholeWorkDir = "./LaspRun/" + workDirName;
+        wholeWorkDir = "./LaspRun/" + workDirName;
         Directory.CreateDirectory(wholeWorkDir);
 
         //Write current arc

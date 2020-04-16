@@ -9,6 +9,7 @@ using System.Text;
 using System;
 using ViewerNetwork;
 using Lasp4Win;
+
 public class MainScr : MonoBehaviour
 {
     //static public Transform cameraCenter;//获取旋转目标
@@ -111,4 +112,8 @@ public class MainScr : MonoBehaviour
         localServer.Quit1();
     }
 #endif
+
+
+
+
 }

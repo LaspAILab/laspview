@@ -7,7 +7,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-
+using B83.Win32;
 
 
 
@@ -57,7 +57,6 @@ public class GuiMain : MonoBehaviour
     private float mouse0PressedTime;        //for Pick
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
-
 
     //************************** END  *****************************
 
@@ -739,6 +738,30 @@ public class GuiMain : MonoBehaviour
         {
             a.cdnt = a.transform.parent.position;
         }
+    }
+
+
+
+    void OnEnable()
+    {
+        // must be installed on the main thread to get the right thread id.
+        UnityDragAndDropHook.InstallHook();
+        UnityDragAndDropHook.OnDroppedFiles += OnFiles;
+    }
+    void OnDisable()
+    {
+        UnityDragAndDropHook.UninstallHook();
+    }
+
+    void OnFiles(List<string> aFiles, POINT aPos)
+    {
+        // do something with the dropped file names. aPos will contain the 
+        // mouse position within the window where the files has been dropped.
+        ConFun.S.printStatusInfo("Dropped " + string.Join(" ", aFiles) + " files");
+        foreach (string file in aFiles)
+        {
+            MainScr.S.AddArc(file);
+        }    
     }
 }
 
