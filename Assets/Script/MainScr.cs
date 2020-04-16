@@ -53,19 +53,23 @@ public class MainScr : MonoBehaviour
     {
 #if !UNITY_WEBGL
         string[] lines = File.ReadAllLines(wholeFilename);
-        ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
         string filename = Path.GetFileName(wholeFilename);
-        newArc.ArcRead(filename,lines);
-        arcList.Add(newArc);
-        L_ProjectPanelSrc.S.ProjectListAddCell(filename);
-        DrawArc(arcList.Count - 1);
+        this.AddArc(filename, lines);
 #endif
     }
 
     public void AddArc(string filename, string[] lines)
     {
         ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
-        newArc.ArcRead(filename, lines);
+        try
+        {
+            newArc.ArcRead(filename, lines);
+        }
+        catch(Exception ex)
+        {
+            GameObject.Destroy(newArc.gameObject);
+            ConFun.S.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
+        }
         arcList.Add(newArc);
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
         DrawArc(arcList.Count - 1);

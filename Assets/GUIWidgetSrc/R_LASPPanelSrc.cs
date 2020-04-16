@@ -19,6 +19,8 @@ public class R_LASPPanelSrc : MonoBehaviour
     bool laspParaSetActive;
 
     string laspInTextSaved;
+    bool laspRunning = false;
+    float timer = 0;
 
     void Awake()
     {
@@ -29,6 +31,17 @@ public class R_LASPPanelSrc : MonoBehaviour
         laspParaSet = this.transform.GetChild(this.transform.childCount - 1).gameObject;
     }
 
+    void Update()
+    {
+        if (laspRunning)
+        {
+            if (timer >= 5.0f)
+            {
+                timer = 0;
+            }
+            timer += Time.deltaTime;
+        }
+    }
 
     public void LaspSetPanel()
     {
@@ -325,6 +338,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         LaspWinProgress pro = new LaspWinProgress();
         //pro.ExecuteProgram(args: wholeWorkDir + "> output.txt 2>&1");
         pro.ExecuteProgram(args: "/B "+wholeWorkDir+ " 1>nul 2>nul");
+        laspRunning = true;
     }
 #endif
 }
