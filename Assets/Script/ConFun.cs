@@ -139,7 +139,10 @@ public class ConFun : MonoBehaviour
         globalPara = new Dictionary<string, string>();
 #if !UNITY_WEBGL
         string[] lines = File.ReadAllLines("allkey.log");
-        foreach(string lin in lines)
+#else
+
+#endif
+        foreach (string lin in lines)
         {
             if (lin.Trim() == "") continue;
             string[] kv = lin.Split('=');
@@ -152,9 +155,6 @@ public class ConFun : MonoBehaviour
                 printStatusInfo("NOT Cantain KEY " + para+" ,plz check allkey.log and RESTART the program");
             }
         }
-#else
-
-#endif
     }
 
     public void printStructureInfo(string str)
@@ -174,4 +174,15 @@ public class ConFun : MonoBehaviour
         //print to File
     }
 
+
+    public void UnityToWeb(string str)
+    {
+        //参数一：Web里面接收数据的方法，参数二：Unity传递的数据（我这里是输入就传递）
+        Application.ExternalCall("GetFromUnity", str);
+    }
+
+    public string WebToUnity(string s)
+    {
+        return s;
+    }
 }

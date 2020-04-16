@@ -29,16 +29,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         laspParaSet = this.transform.GetChild(this.transform.childCount - 1).gameObject;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     public void LaspSetPanel()
     {
         laspParaSet.SetActive(laspParaSetActive);
@@ -267,6 +258,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
         return otherPara;
     }
+
     public void LaspEditLaspIn()
     {
         Button btn = laspPanelPara.paraDict["edit lasp.in"].GetComponent<Button>();
@@ -293,6 +285,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
     public void LaspRun()
     {
+
         //creak work directory
         if (false == System.IO.Directory.Exists("./LaspRun"))
         {
@@ -305,10 +298,14 @@ public class R_LASPPanelSrc : MonoBehaviour
         string wholeWorkDir = "./LaspRun/" + workDirName;
         Directory.CreateDirectory(wholeWorkDir);
 
+        //Write current arc
+        string arc = MainScr.S.CurrentArc().ArcWrite();
+        File.WriteAllText(Path.Combine(wholeWorkDir, "input.arc"), arc);
+
         //write lasp.in
         File.WriteAllText(wholeWorkDir+"/lasp.in", laspInTextSaved);
 
-        //Copy prefab except
+        //Copy prefab except lasp.in
         string[] fileList = Directory.GetFiles("./LaspPrefab/" + prefabDirName, "*");
         foreach (string f in fileList)
         {
@@ -318,25 +315,11 @@ public class R_LASPPanelSrc : MonoBehaviour
                 File.Copy(Path.Combine(prefabDirName, fName), Path.Combine(wholeWorkDir, fName), true);
         }
 
-
         //cp NN Pot
         string pot = laspPanelPara.paraDict["nn pot"].GetComponent<Dropdown>().captionText.text;
-        //string[] lines = File.ReadAllLines(prefabDir + "/lasp.in");
-        //for (int i = 0; i < lines.Length; i++)
-        //{
-        //    string[] para = ConFun.S.PySplit(lines[i]);
-        //    if (para[0] == "%block" && para[1] == "netinfo")
-        //    {
-        //        i++;
-        //        pot = ConFun.S.PySplit(lines[i])[2];
-        //        break;
-        //    }
-        //}
         File.Copy(Path.Combine("./LaspNNPot", pot), Path.Combine(wholeWorkDir, pot), true);
 
-        //Write current arc
-        string arc = MainScr.S.CurrentArc().ArcWrite();
-        File.WriteAllText(Path.Combine(wholeWorkDir, "input.arc"), arc);
+
 
         //run lasp
         LaspWinProgress pro = new LaspWinProgress();

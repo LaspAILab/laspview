@@ -77,15 +77,6 @@ public class GuiMain : MonoBehaviour
         cameraCenter.gameObject.name = "NodePrefab(CameraCenter)";
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-#if UNITY_WEBGL
-        laspInEditorpanel.SetActive(false);
-#endif
-
-    }
-
     //relate Button with GameObjects, mainly panels, that can be hidden.
     void BtnHideObject(Button btn, GameObject go = null)
     {
@@ -232,6 +223,65 @@ public class GuiMain : MonoBehaviour
     //************************** MOUSE INTERACTION *******************************+
     void Update()
     {
+        //处理鼠标位置，如果鼠标没动就跳过一些处理
+        if (mouseLastPos == null)
+        {
+            mouseLastPos = Input.mousePosition;
+        }
+        float mouse_x = (Input.mousePosition - mouseLastPos).x / Screen.width * 24;
+        float mouse_y = -(Input.mousePosition - mouseLastPos).y / Screen.height * 24;
+        mouseLastPos = Input.mousePosition;
+
+
+        //Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        GameObject castGO = null;
+        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hitInfo;
+        if  (mouseLastPos != Vector3.zero)
+        {
+            if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
+            {
+                castGO = hitInfo.collider.gameObject;
+            }
+            else
+            {
+                castGO = null;
+            }
+            //鼠标位置上的原子变大
+            if (true)
+            {
+                if (castGO == null)
+                {
+                    //No atom is cast
+                    if (expandAtom != null)
+                    {
+                        // A -> null
+                        expandAtom.transform.localScale -= expandAtomScale;
+                        expandAtom = null;
+                    }
+                }
+                else if (expandAtom == null)
+                {
+                    //null -> A
+                    expandAtom = castGO;
+                    castGO.transform.localScale += expandAtomScale;
+                }
+                else if (castGO == expandAtom)
+                {
+                    //cast atom unchange
+                    //A -> A
+                }
+                else if (castGO != expandAtom)
+                {
+                    //cast atom change
+                    //A -> B
+                    expandAtom.transform.localScale -= expandAtomScale;
+                    expandAtom = castGO;
+                    castGO.transform.localScale += expandAtomScale;
+                }
+            }
+        }
+
         // 如果没有鼠标操作(纯键盘操作)
         if (!(Input.GetKey(KeyCode.Mouse0) || Input.GetKeyUp(KeyCode.Mouse0) ||
             Input.GetKey(KeyCode.Mouse1) || Input.GetKeyUp(KeyCode.Mouse1) ||
@@ -335,7 +385,6 @@ public class GuiMain : MonoBehaviour
                 }
             }
 
-            
             if (rayStartOnUI == true)
             {
                 //To move a Draggable Widget(GameObject that syfDragUI component poiting to)
@@ -355,68 +404,6 @@ public class GuiMain : MonoBehaviour
             }
             else if (rayStartOnUI == false)
             {
-                //transform.RotateAround(cameraCenter.position, Vector3.up, speed * Time.deltaTime); //摄像机围绕目标旋转
-                //float mouse_x = Input.GetAxis("Mouse X");//获取鼠标X轴移动
-                //float mouse_y = -Input.GetAxis("Mouse Y");//获取鼠标Y轴移动
-                //print(mouse_x);
-                if (mouseLastPos == null)
-                {
-                    mouseLastPos = Input.mousePosition;
-                }
-                float mouse_x = (Input.mousePosition - mouseLastPos).x / Screen.width * 24;
-                float mouse_y = -(Input.mousePosition - mouseLastPos).y / Screen.height * 24;
-                mouseLastPos = Input.mousePosition;
-
-                Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-                //************************** Pick Atom & Control  ******************************
-
-                GameObject castGO;
-                Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hitInfo;
-                if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
-                {
-                    castGO = hitInfo.collider.gameObject;
-                }
-                else
-                {
-                    castGO = null;
-                }
-
-                //鼠标位置上的原子变大
-                if (true)
-                {
-                    if (castGO == null)
-                    {
-                        //No atom is cast
-                        if (expandAtom != null)
-                        {
-                            // A -> null
-                            expandAtom.transform.localScale -= expandAtomScale;
-                            expandAtom = null;
-                        }
-                    }
-                    else if (expandAtom == null)
-                    {
-                        //null -> A
-                        expandAtom = castGO;
-                        castGO.transform.localScale += expandAtomScale;
-                    }
-                    else if (castGO == expandAtom)
-                    {
-                        //cast atom unchange
-                        //A -> A
-                    }
-                    else if (castGO != expandAtom)
-                    {
-                        //cast atom change
-                        //A -> B
-                        expandAtom.transform.localScale -= expandAtomScale;
-                        expandAtom = castGO;
-                        castGO.transform.localScale += expandAtomScale;
-                    }
-                }
-
 
                 //鼠标左键按下，无LeftCronl: 取消所有选中的原子，开始计时
                 if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
@@ -617,9 +604,11 @@ public class GuiMain : MonoBehaviour
                             foreach (GameObject ga in pickGO)
                             {
                                 Vector3 vec = Camera.main.WorldToScreenPoint(ga.transform.position);
+                                print(vec);
                                 pickAtomFurthestDis = Mathf.Max((vec - pickAtomAvgPosScreen).magnitude, pickAtomFurthestDis);
                             }
-                            if ((Input.mousePosition - pickAtomAvgPosScreen).magnitude < 1.5f * pickAtomFurthestDis)
+                            pickAtomFurthestDis = Mathf.Max(100.0f, pickAtomFurthestDis);
+                            if ((Input.mousePosition - pickAtomAvgPosScreen).magnitude < pickAtomFurthestDis)
                             {
                                 rotationMode3d = true;
                             }
@@ -627,6 +616,10 @@ public class GuiMain : MonoBehaviour
                             {
                                 rotationMode3d = false;
                             }
+                            print((Input.mousePosition - pickAtomAvgPosScreen).magnitude);
+                            print(pickAtomFurthestDis);
+                            print(pickAtomAvgPosScreen);
+                            print(rotationMode3d);
                             MainScr.S.CurrentStructure().PickControlStart(pickGO);
 
                         }
