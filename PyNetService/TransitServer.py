@@ -268,7 +268,7 @@ class Server(threading.Thread):
             print(e)
 
         except BaseException as e:
-            errMsg = e.msg
+            errMsg = str(e.msg)
             print((type(e),(e.args)))
         finally:
             if errMsg != None:
