@@ -741,7 +741,7 @@ public class GuiMain : MonoBehaviour
     }
 
 
-
+#if UNITY_STANDALONE_WIN
     void OnEnable()
     {
         // must be installed on the main thread to get the right thread id.
@@ -761,7 +761,8 @@ public class GuiMain : MonoBehaviour
         foreach (string file in aFiles)
         {
             MainScr.S.AddArc(file);
-        }    
+        }
     }
+#endif
 }
 
