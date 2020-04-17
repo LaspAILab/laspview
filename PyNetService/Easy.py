@@ -92,8 +92,8 @@ def msgProcess(msg):
                 print("\033[41;1m"+msg+"\033[0m")
                 
             elif tag == "CpRtn":
-                flist = re.findall(r"<file ([^/<>]*)>([^/<>]*)</file>",msg)
-                for file in flist:
+                fmatch = re.findall(r"<file ([^/<>]*)>([^/<>]*)</file>",msg)
+                for file in fmatch:
                     name = file[0].split('=')[1]
                     with open(name,"w") as fp:
                         fp.write(file[1])
@@ -176,13 +176,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Script to Send Message To Local LaspView, and to Make Lasp Calculation Project',epilog='')
     parser.add_argument('-u',  "--user", type = str,  default = [USER], nargs = 1 ,
-                        help = "Change default user to given argument, Default to $USER in the file")
+                        help = """Change default user to given argument, Default to $USER in the file.""")
     parser.add_argument('-s',  "--send", type = str, default = ["best.arc"],
-                        help = "Path of file to send. Default to best.arc")
+                        help = "Path of file to send. Default option. Default to send best.arc")
     parser.add_argument('-ls', "--list",  action = "store_true",
                         help = "List the file in /$TEMP/$USER")
     parser.add_argument('-cp', "--copy",  type = str, nargs = '+',
-                        help = "Copy file and file with same prefix name to current dir.")
+                        help = "Copy file in /$TEMP/$USER to current dir. Allowed Py-style Regular expression ")
+    parser.add_argument('-cl', "--copylatest",  action = "store_true",
+                        help = "Copy latest received file to current dir.")
     parser.add_argument('-m',  "--make",  action = "store_true",
                         help = "Make LASP computation project")
     parser.add_argument('-kill',  "--kill",  action = "store_true",
@@ -192,20 +194,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-
-
     print(args)
     
-    ##   def stop
-
-    
-    if args.kill == True:
-        msgList = addTag(["StopServer"],"sig")
+    if args.list == True:
+        msgList = addTag(["ls"],"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
-        
-    elif args.list == True:
-        msgList = addTag(["ls"],"sig")
+    
+    elif args.copylatest != None:
+        msg = "cl " 
+        msgList = addTag(msg,"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
         
@@ -219,14 +217,18 @@ if __name__ == "__main__":
         msgList = addTag(["clear"],"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
+        
+    elif args.kill == True:
+        msgList = addTag(["StopServer"],"sig")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
+        clientSend("".join(msgList),HOST,PORT)
     
-    
-    elif args.send != None:
+    else:
+        print("Start to send %s"%args.send)
         """send Path of filename to Transit Server"""
         if not os.path.isfile(args.send):
             print("Error: "+args.send + " not exist")
         else:
-            print("Start to send %s"%args.send)
             msgList = addTag([os.getcwd()+"/"+args.send],"path")
             msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
             clientSend("".join(msgList), HOST,PORT)

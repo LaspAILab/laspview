@@ -390,27 +390,37 @@ class InternalServer(Server):
             
             
             if tag == "sig":
+                
                 if msg == "StopServer":
                     print("STOP Server now...")
                     return False
+                
                 elif msg == "ls":
                     print("ls for "+user)
                     if os.path.isdir(TEMPLATE+user) == False:
                         os.makedirs(TEMPLATE+user)
                     return "   ".join(os.listdir(TEMPLATE+user))
+                
                 elif msg == "clear":
                     print("clear for "+user)
                     if os.path.isdir(TEMPLATE+user) == False:
                         os.makedirs(TEMPLATE+user)
-                    files = os.listdir(TEMPLATE+user)
-                    for file in files:
+                    fldir = os.listdir(TEMPLATE+user)
+                    for file in fldir:
                         os.remove(TEMPLATE+user+"/"+file)
                     return "All file in template is cleared"
+                
                 elif re.match("cp", msg):
                     print("start to cp " + " ".join(msg.split()[1:]))
                     rtn = []
                     rtn.append("<laspview user=echo><CpRtn>".encode())
-                    for file in msg.split()[1:]:        
+                    fldir = os.listdir(TEMPLATE+user)
+                    files = []
+                    for f in fldir:
+                        for pattern in msg.split()[1:]:
+                            if re.match(pattern,f) and f not in files:
+                                files.append(f)
+                    for f in files:
                         rtn.append(("<file name=%s>"%file).encode())
                         f = open(TEMPLATE+user+"/"+file,'rb')
                         while True:
@@ -422,6 +432,26 @@ class InternalServer(Server):
                         rtn.append("</file>".encode())
                     rtn.append("</CpRtb></laspview>".encode())
                     return rtn
+                
+                elif re.match("cl", msg):
+                    print("start to cp latest file")
+                    rtn = []
+                    rtn.append("<laspview user=echo><CpRtn>".encode())
+                    fldir = os.listdir(TEMPLATE+user)
+                    fldir = sorted(fldir, 
+                                   key=lambda x: os.path.getmtime(os.path.join(TEMPLATE+user, x)))
+                    rtn.append(("<file name=%s>"%fldir[0]).encode())
+                    f = open(TEMPLATE+user+"/"+file,'rb')
+                    while True:
+                        buf = f.read(BUFIZ)
+                        if not buf:
+                            break
+                        rtn.append(buf)
+                    f.close()
+                    rtn.append("</file>".encode())
+                    rtn.append("</CpRtb></laspview>".encode())
+                    return rtn
+                
 #            elif tag == "file":
 #                typ = attr.get("type")
 #                nam = attr.get("name")
