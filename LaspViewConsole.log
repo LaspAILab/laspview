@@ -1,7 +1,6 @@
 remote_ip=10.158.134.241
 remote_port=9538
 local_port=9540
-laspin_default=lasp.in
 user=shiyf
 arc_default=lowestpath-1.arc
 lasp_dir=./LASP4win_release_x86_20191209
