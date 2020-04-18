@@ -206,7 +206,7 @@ if __name__ == "__main__":
         clientSend("".join(msgList),HOST,PORT)
     
     elif args.copylatest == True:
-        msg = "cl " 
+        msg = "cl" 
         msgList = addTag(msg,"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)

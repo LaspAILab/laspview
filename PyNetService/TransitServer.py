@@ -440,8 +440,8 @@ class InternalServer(Server):
                     fldir = os.listdir(TEMPLATE+user)
                     fldir = sorted(fldir, 
                                    key=lambda x: os.path.getmtime(os.path.join(TEMPLATE+user, x)))
-                    rtn.append(("<file name=%s>"%fldir[0]).encode())
-                    f = open(TEMPLATE+user+"/"+file,'rb')
+                    rtn.append(("<file name=%s>"%fldir[-1]).encode())
+                    f = open(TEMPLATE+user+"/"+fldir[-1],'rb')
                     while True:
                         buf = f.read(BUFIZ)
                         if not buf:
