@@ -524,7 +524,7 @@ public class GuiMain : MonoBehaviour
                 else if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.LeftControl)))
                 {
                     // When Mouse1 / LShit+mous0 was clicked(GetKeyDown) ,check rotation mode(鼠标右键可用LShift替换)
-                    if (Input.GetKeyDown(KeyCode.Mouse1) || (Input.GetKeyDown(KeyCode.LeftShift)))
+                    if (Input.GetKeyDown(KeyCode.Mouse1))
                     {
                         //Right click of mouse: Rotation. Within tha lattice radius, 3D rotate. Beyond the radius, 2D rotate.
                         //Judge By Ray Pickup
@@ -540,7 +540,7 @@ public class GuiMain : MonoBehaviour
                         }
                     }
                     //when mouse1 / LShit+mous0 is pressed, rotate(鼠标右键可用LShift替换)
-                    else if (Input.GetKey(KeyCode.Mouse1) || (Input.GetKey(KeyCode.LeftShift)))
+                    else if (Input.GetKey(KeyCode.Mouse1))
                     {
                         if (this.rotationMode3d)
                         {
@@ -559,11 +559,11 @@ public class GuiMain : MonoBehaviour
                             cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
                         }
                     }
-                    else if (Input.GetKeyDown(KeyCode.Mouse2))
+                    else if (Input.GetKeyDown(KeyCode.Mouse2) || (Input.GetKeyDown(KeyCode.LeftShift)))
                     {
                         offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                     }
-                    else if (Input.GetKey(KeyCode.Mouse2))
+                    else if (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift))
                     {
                         cameraTransform.position += (offsetTemp - Camera.main.ScreenToWorldPoint(Input.mousePosition));
                     }
@@ -585,9 +585,9 @@ public class GuiMain : MonoBehaviour
                     //如在编辑模式下，为编辑原子旋转、平移操作
                     if (editEnable && pickGO.Count != 0)
                     {
-                        //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子(鼠标右键可用LShift替换)
-                        if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Mouse1) || Input.GetKeyDown(KeyCode.LeftShift))
-                         || Input.GetKeyDown(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse1) || Input.GetKey(KeyCode.LeftShift)))
+                        //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子
+                        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Mouse1) 
+                         || Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
                         {
 
                             pickAtomAvgPos = Vector3.zero;
@@ -622,8 +622,8 @@ public class GuiMain : MonoBehaviour
                             MainScr.S.CurrentStructure().PickControlStart(pickGO);
 
                         }
-                        //LC+鼠标右键按住时：旋转选中原子(鼠标右键可用LShift替换)
-                        else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse1) || Input.GetKey(KeyCode.LeftShift)))
+                        //LC+鼠标右键按住时：旋转选中原子
+                        else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
                         {
                             if (this.rotationMode3d)
                             {
@@ -652,24 +652,24 @@ public class GuiMain : MonoBehaviour
 
 
                         }
-                        //松开LC或鼠标右键：收尾(鼠标右键可用LShift替换)
-                        else if ((Input.GetKeyUp(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse1) || Input.GetKey(KeyCode.LeftShift)))
-                              || (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyUp(KeyCode.Mouse1) || Input.GetKeyUp(KeyCode.LeftShift))))
+                        //松开LC或鼠标右键：收尾
+                        else if ((Input.GetKeyUp(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
+                              || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse1)))
                         {
 
                             MainScr.S.CurrentStructure().PickControlEnd();
                             EditSaveSturc();
                         }
 
-                        //LC(LeftControl)+鼠标中键按下： 准备开始平移选中原子
-                        else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Mouse2)
-                              || Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse2))
+                        //LC(LeftControl)+鼠标中键按下： 准备开始平移选中原子(鼠标右键可用LShift替换)
+                        else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Mouse2) || Input.GetKeyDown(KeyCode.LeftShift))
+                              || Input.GetKeyDown(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                         {
                             offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                             MainScr.S.CurrentStructure().PickControlStart(pickGO);
                         }
-                        //LC(LeftControl)+鼠标中键按下： 平移选中原子
-                        else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse2))
+                        //LC(LeftControl)+鼠标中键按下： 平移选中原子(鼠标右键可用LShift替换)
+                        else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                         {
                             Vector3 vec = Camera.main.ScreenToWorldPoint(Input.mousePosition) - offsetTemp;
                             foreach (GameObject ga in pickGO)
@@ -681,9 +681,9 @@ public class GuiMain : MonoBehaviour
 
                             MainScr.S.CurrentStructure().PickControlUpdate();
                         }
-                        //松开LC或鼠标中键：收尾
-                        else if ((Input.GetKeyUp(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse2))
-                              || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse2)))
+                        //松开LC或鼠标中键：收尾(鼠标右键可用LShift替换)
+                        else if ((Input.GetKeyUp(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
+                              || (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyUp(KeyCode.Mouse2) || Input.GetKeyUp(KeyCode.LeftShift))))
                         {
                             MainScr.S.CurrentStructure().PickControlEnd();
                             EditSaveSturc();
