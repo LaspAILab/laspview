@@ -471,10 +471,19 @@ class InternalServer(Server):
             
             elif tag == "path":
 #                self.sendFile(msg, (userAddr,LOCAL_PORT),user)
-                await self.asyncClientSendFile(msg, user, LOCAL_PORT)
-                print("Send %s to %s_local Successfully."%(msg,user))
-                return("Send %s to %s_local Successfully."%(msg,user))
-            
+                files = msg.split()
+                if len(files) >= 10:
+                    print("too many files")
+                    return("too many files")
+                elif len(files) == 1:
+                    await self.asyncClientSendFile(files[0], user, LOCAL_PORT)
+                    print("Send %s to %s_local Successfully."%(files[0],user))
+                    return("Send %s to %s_local Successfully."%(files[0],user))
+                elif len(files) > 1:
+                    for f in files:
+                        await self.asyncClientSendFile(f, user, LOCAL_PORT)
+                    print("Send %d files to %s_local Successfully."%(len(files),user))
+                    return "Send %d files to %s_local Successfully."%(len(files),user)
             
             else:
                 print("unknown tag in InternalServer.msgProcess():\n %s"%msg)

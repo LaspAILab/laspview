@@ -176,8 +176,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Script to Send Message To Local LaspView, and to Make Lasp Calculation Project',epilog='')
     parser.add_argument('-u',  "--user", type = str,  default = [USER], nargs = 1 ,
-                        help = """Change default user to given argument, Default to $USER in the file.""")
-    parser.add_argument('-s',  "--send", type = str, default = ["best.arc"],
+                        help = """Change default user to given argument. Default to $USER in the file.""")
+    parser.add_argument('-s',  "--send", type = str, default = ["best.arc"], nargs = '*',
                         help = "Path of file to send. Default option. Default to send best.arc")
     parser.add_argument('-ls', "--list",  action = "store_true",
                         help = "List the file in /$TEMP/$USER")
@@ -191,17 +191,21 @@ if __name__ == "__main__":
                         help = "Ask TransitServer to kill himself")
     parser.add_argument('-clear', "--clear",  action = "store_true",
                         help = "remove  all file in /$TEMP/$USER  ")
-
+    parser.add_argument('no_option_argument_send', nargs = '*',
+                        help = "Defalut to send file when no option is given") 
     args = parser.parse_args()
 
     print(args)
-    
+    if args.no_option_argument_send != None:
+        args.send = args.no_option_argument_send
+
+
     if args.list == True:
         msgList = addTag(["ls"],"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
     
-    elif args.copylatest != None:
+    elif args.copylatest == True:
         msg = "cl " 
         msgList = addTag(msg,"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
@@ -223,16 +227,22 @@ if __name__ == "__main__":
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
     
-    else:
+    elif args.send:
         print("Start to send %s"%args.send)
         """send Path of filename to Transit Server"""
-        if not os.path.isfile(args.send):
-            print("Error: "+args.send + " not exist")
-        else:
-            msgList = addTag([os.getcwd()+"/"+args.send],"path")
-            msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
-            clientSend("".join(msgList), HOST,PORT)
+        alist = args.send
+        for f in alist:
+            if not os.path.isfile(f):
+                print("Error: "+ f + " not exist")
+                exit() 
+        msgList = " ".join( [os.getcwd()+"/"+f for f in alist ])
+        msgList = addTag([msgList],"path")
+        msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
+        print(msgList)
+        clientSend("".join(msgList), HOST,PORT)
 
+    else:
+        print("Use Easy -h to see the help information")
     
     
 #   def grabLatest
