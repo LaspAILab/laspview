@@ -403,7 +403,6 @@ public class GuiMain : MonoBehaviour
             }
             else if (rayStartOnUI == false)
             {
-
                 //鼠标左键按下，无LeftCronl: 取消所有选中的原子，开始计时
                 if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
                 {

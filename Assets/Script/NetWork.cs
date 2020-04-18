@@ -97,27 +97,23 @@ namespace ViewerNetwork
         public string fileType;             //when receive file, fileWaiting, fileType, fileNam will not be Null
         //public string fileWainting = null;  //fileWaiting will be check if it is Null each Update() in MainScr
         public string fileName;             //After reading the file, fileWaiting will be set to Null again in MainScr
+        static string tempPath = "./Temp/";
 
         public void Start()
         {
+            //creak work directory
+            if (false == System.IO.Directory.Exists(tempPath))
+            {
+                Directory.CreateDirectory(tempPath);
+            }
+
+
             localPort = int.Parse(ConFun.S.globalPara["local_port"]);
-            //string[] lines = File.ReadAllLines("ip.txt");
-            //foreach (string line in lines)
-            //{
-            //    //if (line.Contains("local_ip=")) localIP = line.Replace("local_ip=", "").Trim();
-            //    if (line.Contains("local_port=")) localPort = int.Parse(line.Replace("local_port=", "").Trim());
-            //}
-            //if (!Regex.IsMatch(localIP, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$"))
-            //{
-            //    print("wrong local IP adress format");
-            //    return;
-            //}
             if (!(1000 < localPort && localPort < 99999))
             {
                 ConFun.S.printStatusInfo("wrong local Port format");
                 return;
             }
-
         }
 
         public void StartServer(string ip)
@@ -260,9 +256,7 @@ namespace ViewerNetwork
                         printOnMainTrhead($"filename：{attr["name"]}");
 
                         fileName = attr["name"];
-
-                        //fileType = "arc";
-                        //fileWainting = msg;
+                        File.WriteAllText(Path.Combine(tempPath, fileName), msg);
                         AddArc2MainThread(fileName, msg);
                     }
                 }

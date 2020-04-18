@@ -38,11 +38,6 @@ public class R_LASPPanelSrc : MonoBehaviour
         laspParaSet = this.transform.GetChild(this.transform.childCount - 1).gameObject;
     }
 
-    public void Set()
-    {
-
-    }
-
     void Update()
     {
 #if abc
@@ -70,7 +65,6 @@ public class R_LASPPanelSrc : MonoBehaviour
         lasp_run_dir = ConFun.S.globalPara["lasp_run_dir"];
 
         laspParaSet.SetActive(laspParaSetActive);
-        print(laspParaSetActive);
         //Set Lasp Panel, Mainly Selectable Item in Prefav dir
         Dropdown prefabDirDp = laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>();
         //print(laspPanelPara.paraDict["Prefab dir"].transform);
