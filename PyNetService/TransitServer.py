@@ -42,7 +42,7 @@ import threading
 import asyncio
 import datetime
 BUFIZ = 1024
-TEMPLATE = "./template/"
+TEMP = "./Temp/"
 
 ##liu-node1
 EXTERNAL_IP = '10.158.134.241'
@@ -268,7 +268,7 @@ class Server(threading.Thread):
             print(e)
 
         except BaseException as e:
-            errMsg = str(e.msg)
+            errMsg = str(e.args)
             print((type(e),(e.args)))
         finally:
             if errMsg != None:
@@ -397,24 +397,24 @@ class InternalServer(Server):
                 
                 elif msg == "ls":
                     print("ls for "+user)
-                    if os.path.isdir(TEMPLATE+user) == False:
-                        os.makedirs(TEMPLATE+user)
-                    return "   ".join(os.listdir(TEMPLATE+user))
+                    if os.path.isdir(TEMP+user) == False:
+                        os.makedirs(TEMP+user)
+                    return "   ".join(os.listdir(TEMP+user))
                 
                 elif msg == "clear":
                     print("clear for "+user)
-                    if os.path.isdir(TEMPLATE+user) == False:
-                        os.makedirs(TEMPLATE+user)
-                    fldir = os.listdir(TEMPLATE+user)
+                    if os.path.isdir(TEMP+user) == False:
+                        os.makedirs(TEMP+user)
+                    fldir = os.listdir(TEMP+user)
                     for file in fldir:
-                        os.remove(TEMPLATE+user+"/"+file)
+                        os.remove(TEMP+user+"/"+file)
                     return "All file in template is cleared"
                 
                 elif re.match("cp", msg):
                     print("start to cp " + " ".join(msg.split()[1:]))
                     rtn = []
                     rtn.append("<laspview user=echo><CpRtn>".encode())
-                    fldir = os.listdir(TEMPLATE+user)
+                    fldir = os.listdir(TEMP+user)
                     files = []
                     for f in fldir:
                         for pattern in msg.split()[1:]:
@@ -422,7 +422,7 @@ class InternalServer(Server):
                                 files.append(f)
                     for f in files:
                         rtn.append(("<file name=%s>"%file).encode())
-                        f = open(TEMPLATE+user+"/"+file,'rb')
+                        f = open(TEMP+user+"/"+file,'rb')
                         while True:
                             buf = f.read(BUFIZ)
                             if not buf:
@@ -437,11 +437,11 @@ class InternalServer(Server):
                     print("start to cp latest file")
                     rtn = []
                     rtn.append("<laspview user=echo><CpRtn>".encode())
-                    fldir = os.listdir(TEMPLATE+user)
+                    fldir = os.listdir(TEMP+user)
                     fldir = sorted(fldir, 
-                                   key=lambda x: os.path.getmtime(os.path.join(TEMPLATE+user, x)))
+                                   key=lambda x: os.path.getmtime(os.path.join(TEMP+user, x)))
                     rtn.append(("<file name=%s>"%fldir[-1]).encode())
-                    f = open(TEMPLATE+user+"/"+fldir[-1],'rb')
+                    f = open(TEMP+user+"/"+fldir[-1],'rb')
                     while True:
                         buf = f.read(BUFIZ)
                         if not buf:
@@ -519,12 +519,12 @@ class ExternalServer(Server):
                     return "IP received"
                     
             if tag == "file":
-                if os.path.isdir(TEMPLATE+user) == False:
-                    os.makedirs(TEMPLATE+user)
+                if os.path.isdir(TEMP+user) == False:
+                    os.makedirs(TEMP+user)
                 filename = attr.get("name", None)
                 if filename == None:
                     filename = datetime.datetime.now().strftime('%m%d%H%M%S.xx')
-                with open(TEMPLATE+user+"/"+filename, 'w') as wfile:
+                with open(TEMP+user+"/"+filename, 'w') as wfile:
                     wfile.write(msg)
                 print("Receive %s from %"%(filename, user))
                 return "File received"
