@@ -384,8 +384,10 @@ class InternalServer(Server):
                 otherwise return"""
             if user == None:
                 print("unknown user: %s"%msg)
-                return ("unknown user: %s"%msg)
-            
+                raise TransitError("unknown user: %s"%msg)
+            if os.path.isdir(TEMP+user) == False:
+                os.makedirs(TEMP+user)
+ 
             msg, tag, attr = rmTag(msg)
             
             
@@ -397,9 +399,11 @@ class InternalServer(Server):
                 
                 elif msg == "ls":
                     print("ls for "+user)
-                    if os.path.isdir(TEMP+user) == False:
-                        os.makedirs(TEMP+user)
-                    return "   ".join(os.listdir(TEMP+user))
+                    files = os.listdir(TEMP+user)
+                    if len(files) == 0:
+                        raise TransitError("Empty!")
+                    else:
+                        return "   ".join(os.listdir(TEMP+user))
                 
                 elif msg == "clear":
                     print("clear for "+user)
@@ -420,6 +424,8 @@ class InternalServer(Server):
                         for pattern in msg.split()[1:]:
                             if re.match(pattern,f) and f not in files:
                                 files.append(f)
+                    if len(files) == 0:
+                        raise TransitError("No File Match!")
                     for f in files:
                         rtn.append(("<file name=%s>"%file).encode())
                         f = open(TEMP+user+"/"+file,'rb')
@@ -438,6 +444,8 @@ class InternalServer(Server):
                     rtn = []
                     rtn.append("<laspview user=echo><CpRtn>".encode())
                     fldir = os.listdir(TEMP+user)
+                    if len(fldir) == 0: 
+                        raise TransitError("Empty!")
                     fldir = sorted(fldir, 
                                    key=lambda x: os.path.getmtime(os.path.join(TEMP+user, x)))
                     rtn.append(("<file name=%s>"%fldir[-1]).encode())
