@@ -26,6 +26,7 @@ public class GuiMain : MonoBehaviour
     public GameObject R_ServerPanelPrefab;
 
     public GameObject nodePrefab;
+    public GameObject atomPrefab;
     public GameObject mouseBoxLinePrefab;
 
     GameObject menuPanel;
@@ -57,7 +58,7 @@ public class GuiMain : MonoBehaviour
     private float mouse0PressedTime;        //for Pick
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
-
+    static Vector3 copyBias = new Vector3(2500f, 0, 0);
     //************************** END  *****************************
 
 
@@ -305,26 +306,46 @@ public class GuiMain : MonoBehaviour
                 //Ctrl_C 复制原子
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
                 {
-                    //pickGO.CopyTo(copyGO);
+                    // clear copyGO
+                    if(copyGO != null && copyGO.Count != 0)
+                    {
+                        foreach(GameObject go in copyGO)
+                        {
+                            Object.Destroy(go.transform.parent.gameObject);
+                        }
+                    }
                     copyGO = new List<GameObject>();
+
+                    // pickGO.CopyTo(copyGO):Copy them to cdnt +copyBias
                     foreach (GameObject go in pickGO)
                     {
-                        copyGO.Add(go);
+                        Atom a = go.GetComponent<Atom>();
+
+                        GameObject copyNode = Instantiate(nodePrefab);
+                        copyNode.transform.position = copyBias; //node坐标位于(copyBias, 实体坐标)
+                        copyNode.transform.SetParent(this.transform);
+
+                        Atom copyAtom = Instantiate(atomPrefab).GetComponent<Atom>();
+                        copyAtom.Init(a.cdnt, a.ele, copyNode.transform, a.charge); //Atom坐标为cdnt
+                        copyAtom.transform.SetParent(copyNode.transform, true);
+                        copyAtom.transform.localPosition = Vector3.zero;
+
+                        copyGO.Add(copyAtom.gameObject);
                     }
                 }
                 //Ctrl+V 粘贴原子
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
                 {
                     List<GameObject> pasteGO = new List<GameObject>();
+                    Vector3 pasteBias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized;
                     foreach (GameObject go in copyGO)
                     {
                         Atom a = go.GetComponent<Atom>();
-                        Vector3 bias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized;
-                        Atom p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * bias, a.charge);
+                        Atom p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * pasteBias, a.charge);
                         pasteGO.Add(p.gameObject);
                     }
 
-                    //Cancel pickGO
+                    //Cancel Select pickGO
                     foreach (GameObject go in pickGO)
                     {
                         foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
@@ -335,6 +356,7 @@ public class GuiMain : MonoBehaviour
                     pickGO.Clear();
                     MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
 
+                    //Select pastGO
                     pickGO = pasteGO;
                     foreach (GameObject go in pasteGO)
                     {
@@ -344,7 +366,32 @@ public class GuiMain : MonoBehaviour
                         }
                     }
 
+                    // clear copyGO
+                    if (copyGO != null && copyGO.Count != 0)
+                    {
+                        foreach (GameObject go in copyGO)
+                        {
+                            Object.Destroy(go.transform.parent.gameObject);
+                        }
+                    }
+                    copyGO = new List<GameObject>();
 
+                    // pickGO.CopyTo(copyGO):Copy them to cdnt +copyBias
+                    foreach (GameObject go in pickGO)
+                    {
+                        Atom a = go.GetComponent<Atom>();
+
+                        GameObject copyNode = Instantiate(nodePrefab);
+                        copyNode.transform.position = copyBias; //node坐标位于(copyBias, 实体坐标)
+                        copyNode.transform.SetParent(this.transform);
+
+                        Atom copyAtom = Instantiate(atomPrefab).GetComponent<Atom>();
+                        copyAtom.Init(a.cdnt, a.ele, copyNode.transform, a.charge); //Atom坐标为cdnt
+                        copyAtom.transform.SetParent(copyNode.transform, true);
+                        copyAtom.transform.localPosition = Vector3.zero;
+
+                        copyGO.Add(copyAtom.gameObject);
+                    }
                 }
                 //Ctrl+Z 撤回Undo
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
