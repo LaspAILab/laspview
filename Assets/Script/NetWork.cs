@@ -302,6 +302,10 @@ namespace ViewerNetwork
 
         public void Quit2()
         {
+            if (R_ServerPanelSrc.S.lclSrvrListening == false)
+            {
+                return;
+            }
             LocalClient client = gameObject.AddComponent<LocalClient>();
             Loom.RunAsync(() =>
             {

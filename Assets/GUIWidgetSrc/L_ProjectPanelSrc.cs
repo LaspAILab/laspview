@@ -11,7 +11,19 @@ public class L_ProjectPanelSrc : MonoBehaviour
     void Awake()
     {
         S = this;
+
+        //Set ProjectPanel
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetAsFirstSibling();
+        this.transform.localScale = Vector3.one;
+        Button pjButton = GameObject.Find("ProjectBtn").GetComponent<Button>();
+        pjButton.onClick.AddListener(() =>
+        {
+           GuiMain.S.BtnHideObject(pjButton, this.gameObject);
+        });
+
         fileList = this.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
+        this.gameObject.SetActive(false);
     }
     // Start is called before the first frame update
     void Start()

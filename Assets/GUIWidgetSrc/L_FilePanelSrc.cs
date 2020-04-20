@@ -12,6 +12,17 @@ public class L_FilePanelSrc : MonoBehaviour
     void Awake()
     {
         S = this;
+
+        //Set FilePanel
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetAsFirstSibling();
+        this.transform.localScale = Vector3.one;
+        Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
+        flButton.onClick.AddListener(() =>
+        {
+            GuiMain.S.BtnHideObject(flButton, this.gameObject);
+        });
+        this.gameObject.SetActive(false);
     }
 
     public void FileOpen()

@@ -36,6 +36,18 @@ public class R_LASPPanelSrc : MonoBehaviour
         laspPanelPara.SetParaDict();
         laspParaSetActive = false;
         laspParaSet = this.transform.GetChild(this.transform.childCount - 1).gameObject;
+
+        //Set LASP Panel
+        this.transform.SetParent(GuiMain.S.rightCanvas.transform);
+        this.transform.SetAsFirstSibling();
+        this.transform.localScale = Vector3.one;
+        Button lpButton = GameObject.Find("LaspBtn").GetComponent<Button>();
+        lpButton.onClick.AddListener(() =>
+        {
+            GuiMain.S.BtnHideObject(lpButton, this.gameObject);
+            if (this.gameObject.activeSelf) LaspSetPanel();
+        });
+        this.gameObject.SetActive(false);
     }
 
     void Update()

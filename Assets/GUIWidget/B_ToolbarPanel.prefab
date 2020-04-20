@@ -857,7 +857,7 @@ PrefabInstance:
     - target: {fileID: 8642266310221581032, guid: e02c284f9dd5999448b6fedc64633807,
         type: 3}
       propertyPath: m_Name
-      value: syfIconButton (2)
+      value: FocusCenterBtn
       objectReference: {fileID: 0}
     - target: {fileID: 8642266310221581039, guid: e02c284f9dd5999448b6fedc64633807,
         type: 3}

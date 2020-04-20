@@ -30,9 +30,9 @@ public class GuiMain : MonoBehaviour
     public GameObject mouseBoxLinePrefab;
 
     GameObject menuPanel;
-    GameObject statusPanel;
-    GameObject leftCanvas;
-    GameObject rightCanvas;
+    public GameObject statusPanel;
+    public GameObject leftCanvas;
+    public GameObject rightCanvas;
 
     public bool menuBtnStatus = false;
 
@@ -78,7 +78,7 @@ public class GuiMain : MonoBehaviour
     }
 
     //relate Button with GameObjects, mainly panels, that can be hidden.
-    void BtnHideObject(Button btn, GameObject go = null)
+    public void BtnHideObject(Button btn, GameObject go = null)
     {
         if (go == null) return;
         if (go.activeSelf)
@@ -95,105 +95,15 @@ public class GuiMain : MonoBehaviour
 
     public void SetMenuBtn()
     {
-        GameObject toolBar = Instantiate(B_ToolbarPanelPrefab);
-        GameObject pjPanel = Instantiate(L_ProjectPanelPrefab);
-        GameObject flPanel = Instantiate(L_FilePanelPrefab);
-        GameObject edPanel = Instantiate(L_EditPanelPrefab);
-        GameObject adAtWidget = Instantiate(M_AddAtomWidgetPrefab);
-        GameObject edLtWidget = Instantiate(M_EditLatticeWidgetPrefab);
-        GameObject svrPanel = Instantiate(R_ServerPanelPrefab);
-        GameObject lpPanel = Instantiate(R_LASPPanelPrefab);
-        GameObject iePanel = Instantiate(M_LaspInWidgetPrefab);
-
-        //Set toolbar 
-        toolBar.transform.SetParent(statusPanel.transform);
-        toolBar.transform.SetSiblingIndex(1);
-
-        //Set ProjectPanel
-        pjPanel.transform.SetParent(leftCanvas.transform);
-        pjPanel.transform.SetAsFirstSibling();
-        pjPanel.transform.localScale = Vector3.one;
-        Button pjButton = GameObject.Find("ProjectBtn").GetComponent<Button>();
-        pjButton.onClick.AddListener(()=> 
-        {
-            BtnHideObject(pjButton, pjPanel);
-        });
-        pjPanel.SetActive(false);
-
-        //Set ProjectPanel
-        flPanel.transform.SetParent(leftCanvas.transform);
-        flPanel.transform.SetAsFirstSibling();
-        flPanel.transform.localScale = Vector3.one;
-        Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
-        flButton.onClick.AddListener(() => 
-        {
-            BtnHideObject(flButton, flPanel);
-        });
-        flPanel.SetActive(false);
-
-        //Set Edit panel
-        edPanel.transform.SetParent(leftCanvas.transform);
-        edPanel.transform.SetAsFirstSibling();
-        edPanel.transform.localScale = Vector3.one;
-        Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
-        edButton.onClick.AddListener(() =>
-        {
-            BtnHideObject(edButton, edPanel);
-            editEnable = !editEnable;
-            foreach(GameObject pan in new List<GameObject> {toolBar,pjPanel, flPanel, svrPanel, lpPanel})
-            {
-                SetAllUIInteract(pan, !editEnable);
-            }
-        });
-        editEnable = false;
-        edPanel.SetActive(false);
-
-        //Set Add Atom Widget
-        adAtWidget.transform.SetParent(GameObject.Find("Canvas").transform);
-        adAtWidget.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
-        adAtWidget.SetActive(false);
-
-        //Set Edit Lattice Widget
-        edLtWidget.transform.SetParent(GameObject.Find("Canvas").transform);
-        edLtWidget.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
-        edLtWidget.SetActive(false);
-
-
-#if !UNITY_WEBGL
-        //Set Server panel
-        svrPanel.transform.SetParent(rightCanvas.transform);
-        svrPanel.transform.SetAsFirstSibling();
-        svrPanel.transform.localScale = Vector3.one;
-        Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
-        svrButton.onClick.AddListener(() =>
-        {
-            BtnHideObject(svrButton, svrPanel);
-        });
-        svrPanel.SetActive(false);
-#endif
-
-
-#if !UNITY_WEBGL
-        //Set LASP Panel
-        lpPanel.transform.SetParent(rightCanvas.transform);
-        lpPanel.transform.SetAsFirstSibling();
-        lpPanel.transform.localScale = Vector3.one;
-        Button lpButton = GameObject.Find("LaspBtn").GetComponent<Button>();
-        lpButton.onClick.AddListener(() =>
-        {
-            BtnHideObject(lpButton, lpPanel);
-            if (lpPanel.activeSelf) R_LASPPanelSrc.S.LaspSetPanel();
-        });
-        lpPanel.SetActive(false);
-#endif
-
-#if !UNITY_WEBGL
-        //Set lasp.in Editor Widget
-        iePanel.transform.SetParent(GameObject.Find("Canvas").transform);
-        iePanel.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
-        iePanel.SetActive(false);
-#endif
-
+        GameObject b_ToolbarPanel = Instantiate(B_ToolbarPanelPrefab);
+        GameObject l_ProjectPanel = Instantiate(L_ProjectPanelPrefab);
+        GameObject l_FilePanel = Instantiate(L_FilePanelPrefab);
+        GameObject m_AddAtomWidget = Instantiate(M_AddAtomWidgetPrefab);
+        GameObject m_EditLatticeWidget = Instantiate(M_EditLatticeWidgetPrefab);
+        GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
+        GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
+        GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
+        GameObject l_EditPanel = Instantiate(L_EditPanelPrefab);
     }
 
     public void SetAllUIInteract(GameObject go, bool interactable)

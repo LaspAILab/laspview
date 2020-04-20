@@ -14,6 +14,17 @@ public class R_ServerPanelSrc : MonoBehaviour
     void Awake()
     {
         S = this;
+
+        //Set Server panel
+        this.transform.SetParent(GuiMain.S.rightCanvas.transform);
+        this.transform.SetAsFirstSibling();
+        this.transform.localScale = Vector3.one;
+        Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
+        svrButton.onClick.AddListener(() =>
+        {
+            GuiMain.S.BtnHideObject(svrButton, this.gameObject);
+        });
+        this.gameObject.SetActive(false);
     }
 
 #if !UNITY_WEBGL
@@ -52,8 +63,10 @@ public class R_ServerPanelSrc : MonoBehaviour
         else
         {
             //when Btn text = "Stop Listening"
-            lclSrvrListening = false;
+
             MainScr.S.localServer.Quit2();
+            lclSrvrListening = false;
+            NetLocalBtnChange();
             //NetLocalBtnChange is called in LocalServer.Quit(), like a callback function
         }
 

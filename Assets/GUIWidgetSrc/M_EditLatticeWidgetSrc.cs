@@ -19,6 +19,11 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         paraDict = p.paraDict;
 
         closeBtn = this.transform.GetChild(0).GetComponentInChildren<Button>();
+
+        //Set Edit Lattice Widget
+        this.transform.SetParent(GameObject.Find("Canvas").transform);
+        this.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
+        this.gameObject.SetActive(false);
     }
     public void EditWidgetEditLattice()
     {

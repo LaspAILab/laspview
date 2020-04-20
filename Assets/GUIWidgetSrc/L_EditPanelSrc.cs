@@ -15,6 +15,48 @@ public class L_EditPanelSrc : MonoBehaviour
         syfPanelPara p = this.GetComponent<syfPanelPara>();
         p.SetParaDict();
         paraDict = p.paraDict;
+
+        //Set Edit panel
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetAsFirstSibling();
+        this.transform.localScale = Vector3.one;
+        Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
+        edButton.onClick.AddListener(() =>
+        {
+            GuiMain.S.BtnHideObject(edButton, this.gameObject);
+            GuiMain.S.editEnable = !GuiMain.S.editEnable;
+            GuiMain.S.SetAllUIInteract(L_ProjectPanelSrc.S.gameObject, !GuiMain.S.editEnable);
+            GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !GuiMain.S.editEnable);
+            GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !GuiMain.S.editEnable);
+            if (GuiMain.S.editEnable == true)
+            {
+                foreach (Selectable c in B_ToolbarPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
+                {
+                    if (c.gameObject.name != "FocusCenterBtn")
+                        GuiMain.S.SetUIInteract(c, false);
+                }
+                foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
+                {
+                    if (c.gameObject.name == "StartListeningBtn")
+                    {
+
+                        MainScr.S.localServer.Quit2();
+                        R_ServerPanelSrc.S.lclSrvrListening = false;
+                    }
+                }
+                R_ServerPanelSrc.S.NetLocalBtnChange();
+                GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
+            }
+            else
+            {
+                GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
+                GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
+                B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
+            }
+
+    });
+        GuiMain.S.editEnable = false;
+        this.gameObject.SetActive(false);
     }
     // Start is called before the first frame update
 

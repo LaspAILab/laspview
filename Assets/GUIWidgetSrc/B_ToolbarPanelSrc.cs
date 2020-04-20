@@ -10,18 +10,11 @@ public class B_ToolbarPanelSrc : MonoBehaviour
     void Awake()
     {
         S = this;
-    }
-    void Start()
-    {
-        
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        //Set toolbar 
+        this.transform.SetParent(GuiMain.S.statusPanel.transform);
+        this.transform.SetSiblingIndex(1);
     }
-
 
     public void OnPlayerFocusBtnClicked()
     {
