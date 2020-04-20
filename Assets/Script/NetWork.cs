@@ -320,7 +320,6 @@ namespace ViewerNetwork
                 }
             });
             UnityEngine.Object.Destroy(client);
-            R_ServerPanelSrc.S.NetLocalBtnChange();
 
         }
 

@@ -46,14 +46,16 @@ public class ArcStructures : MonoBehaviour
 
     public (bool, bool) DrawStructure(int i)
     {
-        //print(currentStr);
-        foreach (Bond b in structureList[currentStr].bondList)
+        if (i != currentStr)
         {
-            //Destroy all bond before setActive False to save memory
-            UnityEngine.Object.Destroy(b.gameObject);
+            foreach (Bond b in structureList[currentStr].bondList)
+            {
+                //Destroy all bond before setActive False to save memory
+                UnityEngine.Object.Destroy(b.gameObject);
+            }
+            structureList[currentStr].bondList.Clear();
+            structureList[currentStr].gameObject.SetActiveRecursively(false);
         }
-        structureList[currentStr].bondList.Clear();
-        structureList[currentStr].gameObject.SetActiveRecursively(false);
 
         structureList[i].DrawModel(modelPara);
         currentStr = i;

@@ -46,10 +46,11 @@ Thumbs.db
 1.arc
 2.arc
 UserAddress.log
-LASP4WIN_release*
+LASP4WIN*
 newPj/SSW*
 newPj/best.arc
 newPj/all*
 newPj/Ba*
 newPj/lasp.out
 LaspRun/*
+lasp*.txt

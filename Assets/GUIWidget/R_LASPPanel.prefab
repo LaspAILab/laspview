@@ -1005,6 +1005,21 @@ PrefabInstance:
       propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
+        type: 3}
+      propertyPath: m_KeyboardType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
+        type: 3}
+      propertyPath: m_CharacterValidation
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4671531706385832456, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_Text

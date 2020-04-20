@@ -346,9 +346,6 @@ public class R_LASPPanelSrc : MonoBehaviour
         string arc = MainScr.S.CurrentArc().ArcWrite();
         File.WriteAllText(Path.Combine(wholeWorkDir, "input.arc"), arc);
 
-        //write lasp.in
-        File.WriteAllText(Path.Combine(wholeWorkDir ,"lasp.in"), laspInTextSaved);
-
         //Copy prefab except lasp.in
         string[] fileList = Directory.GetFiles(Path.Combine(lasp_prefab_dir, prefabDirName), "*");
         foreach (string f in fileList)
@@ -359,6 +356,11 @@ public class R_LASPPanelSrc : MonoBehaviour
                 File.Copy(Path.Combine(prefabDirName, fName), Path.Combine(wholeWorkDir, fName), true);
         }
 
+        //write lasp.in
+        laspInTextSaved = WriteLaspin();
+        File.WriteAllText(Path.Combine(wholeWorkDir, "lasp.in"), laspInTextSaved);
+
+
         //cp NN Pot
         string pot = laspPanelPara.paraDict["nn pot"].GetComponent<Dropdown>().captionText.text;
         File.Copy(Path.Combine(nnpot_dir, pot), Path.Combine(wholeWorkDir, pot), true);
@@ -368,7 +370,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         //run lasp
         LaspWinProgress pro = new LaspWinProgress();
         //pro.ExecuteProgram(args: wholeWorkDir + "> output.txt 2>&1");
-        pro.ExecuteProgram(args: "/B "+wholeWorkDir+ " 1>nul 2>nul");
+        pro.ExecuteProgram(args: lasp_dir + " " + wholeWorkDir + " 1>lasp_1.txt 2>lasp_2.txt");
         laspRunning = true;
     }
 #endif

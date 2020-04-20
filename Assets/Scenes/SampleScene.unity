@@ -332,7 +332,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 5.820766e-11, y: 1.5046328e-36, z: 1.540744e-33, w: 2.3509887e-38}
+  m_BoundingSphereOverride: {x: 6.33e-43, y: 4.8135e-41, z: 6.33e-43, w: -5.671481e-19}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -893,8 +893,13 @@ MonoBehaviour:
     type: 3}
   nodePrefab: {fileID: 1582054456059128272, guid: db51956a9e00175468cfc6b591f9a299,
     type: 3}
+  atomPrefab: {fileID: 4997048308515125665, guid: 9ff28f77f9b680440800ab9355d3f927,
+    type: 3}
   mouseBoxLinePrefab: {fileID: 7132163913887175618, guid: a7faa5ec85b7a604b843d2e517336162,
     type: 3}
+  statusPanel: {fileID: 0}
+  leftCanvas: {fileID: 0}
+  rightCanvas: {fileID: 0}
   menuBtnStatus: 0
   rayStartOnUI: 0
   cameraTransform: {fileID: 0}

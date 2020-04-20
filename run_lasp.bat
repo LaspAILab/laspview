@@ -1,4 +1,3 @@
-set path=%cd%\LASP4win_release_x86_20191209;%path%
+set path=%cd%/%1;%path%
 CD %2
-echo %path%
-Start /B Src.exe >output.txt 2>&1 
+Start /B lasp.exe >output.txt 2>&1 
