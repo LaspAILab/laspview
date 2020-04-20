@@ -195,7 +195,7 @@ if __name__ == "__main__":
                         help = "Defalut to send file when no option is given") 
     args = parser.parse_args()
 
-    print(args)
+    #print(args)
     if args.no_option_argument_send != None:
         args.send = args.no_option_argument_send
 
@@ -238,7 +238,7 @@ if __name__ == "__main__":
         msgList = " ".join( [os.getcwd()+"/"+f for f in alist ])
         msgList = addTag([msgList],"path")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
-        print(msgList)
+        #print(msgList)
         clientSend("".join(msgList), HOST,PORT)
 
     else:
