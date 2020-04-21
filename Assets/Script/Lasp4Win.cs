@@ -5,6 +5,7 @@ using System;
 
 namespace Lasp4Win
 {
+#if !UNITY_WEBGL
     class LaspWinProgress
     {
         public bool ExecuteProgram(string exeFilename = "run_lasp.bat", string workDir= ".\\", string args ="")
@@ -48,5 +49,5 @@ namespace Lasp4Win
             return rt;
         }
     }
-   
+#endif
 }

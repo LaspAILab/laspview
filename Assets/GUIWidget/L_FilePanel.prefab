@@ -114,6 +114,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a302106588cacc84f9900a24f3574b78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  M_LaspInWidgetPrefab: {fileID: 2236528130817420199, guid: 04c324c53a01e9c45847e686a7ca5908,
+    type: 3}
 --- !u!1001 &1769060777682429235
 PrefabInstance:
   m_ObjectHideFlags: 0

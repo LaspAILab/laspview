@@ -36,6 +36,7 @@ using System.Runtime.InteropServices;
 
 namespace B83.Win32
 {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
     public enum HookType : int
     {
         WH_JOURNALRECORD = 0,
@@ -351,7 +352,6 @@ namespace B83.Win32
     public delegate IntPtr HookProc(int code, IntPtr wParam, ref MSG lParam);
     public delegate bool EnumThreadDelegate(IntPtr Hwnd, IntPtr lParam);
 
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 
     public static class Window
     {
@@ -415,10 +415,11 @@ namespace B83.Win32
 
     public static class UnityDragAndDropHook
     {
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
+
         public delegate void DroppedFilesEvent(List<string> aPathNames, POINT aDropPoint);
         public static event DroppedFilesEvent OnDroppedFiles;
 
-#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
 
         private static uint threadId;
         private static IntPtr mainWindow = IntPtr.Zero;

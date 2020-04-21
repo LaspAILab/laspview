@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 public class M_LaspInWidgetSrc : MonoBehaviour
 {
+//#if !UNITY_WEBGL
     static public M_LaspInWidgetSrc S;
     public InputField mainText;
     public Button closeBtn;
@@ -36,16 +37,5 @@ public class M_LaspInWidgetSrc : MonoBehaviour
     {
 
     }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+//#endif
 }

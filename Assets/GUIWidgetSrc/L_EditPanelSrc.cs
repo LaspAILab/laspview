@@ -27,7 +27,9 @@ public class L_EditPanelSrc : MonoBehaviour
             GuiMain.S.editEnable = !GuiMain.S.editEnable;
             GuiMain.S.SetAllUIInteract(L_ProjectPanelSrc.S.gameObject, !GuiMain.S.editEnable);
             GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !GuiMain.S.editEnable);
+#if !UNITY_WEBGL
             GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !GuiMain.S.editEnable);
+#endif
             if (GuiMain.S.editEnable == true)
             {
                 foreach (Selectable c in B_ToolbarPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
@@ -35,6 +37,7 @@ public class L_EditPanelSrc : MonoBehaviour
                     if (c.gameObject.name != "FocusCenterBtn")
                         GuiMain.S.SetUIInteract(c, false);
                 }
+#if !UNITY_WEBGL
                 foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
                 {
                     if (c.gameObject.name == "StartListeningBtn")
@@ -46,10 +49,13 @@ public class L_EditPanelSrc : MonoBehaviour
                 }
                 R_ServerPanelSrc.S.NetLocalBtnChange();
                 GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
+#endif
             }
             else
             {
+#if !UNITY_WEBGL
                 GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
+#endif
                 GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
                 B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
             }

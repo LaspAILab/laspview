@@ -29,14 +29,19 @@ public class ConFun : MonoBehaviour
     void Awake()
     {   
         S = this;
+        structureText = GameObject.Find("StructureText").GetComponent<Text>();
+        statusText = GameObject.Find("StatusText").GetComponent<Text>();
+#if !UNITY_WEBGL
         necessaryGlobalPara = new List<string>{ "user", "remote_ip", "remote_port","local_port" };
+#else
+        necessaryGlobalPara = new List<string>();
+#endif
         this.SetPeriodicTable();
         this.readGlobalPara();
         globalPara.Add("model_type", "scale");
         bondBoundry = 0.63f;
 
-        structureText = GameObject.Find("StructureText").GetComponent<Text>(); 
-        statusText = GameObject.Find("StatusText").GetComponent<Text>();
+
     }
 
     public string[] PySplit(string line)
@@ -140,7 +145,8 @@ public class ConFun : MonoBehaviour
 #if !UNITY_WEBGL
         string[] lines = File.ReadAllLines("LaspViewConsole.log");
 #else
-
+        string[] lines = { };
+        //string[] lines = { " arc_default = lowestpath - 1.arc "};
 #endif
         foreach (string lin in lines)
         {

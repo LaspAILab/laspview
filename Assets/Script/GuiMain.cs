@@ -21,9 +21,11 @@ public class GuiMain : MonoBehaviour
     public GameObject L_ProjectPanelPrefab;
     public GameObject M_AddAtomWidgetPrefab;
     public GameObject M_EditLatticeWidgetPrefab;
+#if !UNITY_WEBGL
     public GameObject M_LaspInWidgetPrefab;
     public GameObject R_LASPPanelPrefab;
     public GameObject R_ServerPanelPrefab;
+#endif
 
     public GameObject nodePrefab;
     public GameObject atomPrefab;
@@ -100,9 +102,11 @@ public class GuiMain : MonoBehaviour
         GameObject l_FilePanel = Instantiate(L_FilePanelPrefab);
         GameObject m_AddAtomWidget = Instantiate(M_AddAtomWidgetPrefab);
         GameObject m_EditLatticeWidget = Instantiate(M_EditLatticeWidgetPrefab);
+#if !UNITY_WEBGL
         GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
         GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
         GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
+#endif
         GameObject l_EditPanel = Instantiate(L_EditPanelPrefab);
     }
 
@@ -147,7 +151,7 @@ public class GuiMain : MonoBehaviour
         GameObject castGO = null;
         Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hitInfo;
-        if  (mouseLastPos != Vector3.zero)
+        if (mouseLastPos != Vector3.zero)
         {
             if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
             {
@@ -217,9 +221,9 @@ public class GuiMain : MonoBehaviour
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
                 {
                     // clear copyGO
-                    if(copyGO != null && copyGO.Count != 0)
+                    if (copyGO != null && copyGO.Count != 0)
                     {
-                        foreach(GameObject go in copyGO)
+                        foreach (GameObject go in copyGO)
                         {
                             Object.Destroy(go.transform.parent.gameObject);
                         }
@@ -314,8 +318,8 @@ public class GuiMain : MonoBehaviour
         else
         {
             // 鼠标开始操作时 先判断是否在UI上
-            if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1) || 
-                Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.Mouse2) || 
+            if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1) ||
+                Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.Mouse2) ||
                 Input.GetAxis("Mouse ScrollWheel") != 0)
             {
                 if (EventSystem.current.IsPointerOverGameObject())
@@ -542,7 +546,7 @@ public class GuiMain : MonoBehaviour
                     if (editEnable && pickGO.Count != 0)
                     {
                         //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子
-                        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Mouse1) 
+                        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Mouse1)
                          || Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
                         {
 
@@ -696,8 +700,7 @@ public class GuiMain : MonoBehaviour
         }
     }
 
-
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
     void OnEnable()
     {
         // must be installed on the main thread to get the right thread id.

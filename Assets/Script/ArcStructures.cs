@@ -114,14 +114,15 @@ public class ArcStructures : MonoBehaviour
 
 
         }
-        print(lines[startingPoint]);
         try
         {
             for (int i = startingPoint; i <= lines.Length - 1; i++)
             {
+                if (lines[i].Trim() == "") continue;
                 // add Structure
                 if (!noE)
                 {
+                    //print(lines[i]);
                     if (lines[i].Contains("Energy") || lines[i].Contains("IS") || lines[i].Contains("TS") || (lines[i].Contains("SSW") && !lines[i].Contains("Str")))
                     {
                         currentStr += 1;

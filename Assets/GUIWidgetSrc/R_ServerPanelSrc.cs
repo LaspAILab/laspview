@@ -7,6 +7,7 @@ using ViewerNetwork;
 using System.Threading.Tasks;
 public class R_ServerPanelSrc : MonoBehaviour
 {
+#if !UNITY_WEBGL
     static public R_ServerPanelSrc S;
 
     // Start is called before the first frame update
@@ -27,7 +28,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         this.gameObject.SetActive(false);
     }
 
-#if !UNITY_WEBGL
+
 
     private void Start()
     {
