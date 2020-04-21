@@ -35,7 +35,7 @@ import argparse
 
 """CHANGEABLE PARAMETERS for USER"""
 USER = "shiyf"
-TEMP = './template'
+TEMP = './Temp'
 
 
 
