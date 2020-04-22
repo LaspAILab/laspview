@@ -233,7 +233,6 @@ public class ArcStructures : MonoBehaviour
 
             lines.Append("end\nend\n");
         }
-        lines.Append("end\n");
         return lines.ToString();
     }
     public string ArcWrite()
