@@ -21,8 +21,6 @@ public class R_LASPPanelSrc : MonoBehaviour
     bool laspParaSetActive;
 
     string laspInTextSaved;
-    bool laspRunning = false;
-    float timer = 0;
 
     string lasp_dir;
     string lasp_prefab_dir;
@@ -50,24 +48,6 @@ public class R_LASPPanelSrc : MonoBehaviour
         this.gameObject.SetActive(false);
     }
 
-    void Update()
-    {
-#if abc
-        if (laspRunning)
-        {
-            if (timer >= 5.0f)
-            {
-
-                string[] lines = File.ReadAllLines(Path.Combine(wholeWorkDir, "best.arc"));
-                print(lines.Length);
-
-
-                timer = 0;
-            }
-            timer += Time.deltaTime;
-        }
-#endif
-    }
 
     public void LaspSetPanel()
     {
@@ -204,7 +184,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
         outputlines.Append(otherPara);
 
-        return outputlines.ToString(); 
+        return outputlines.ToString();
         //if (filename == null)
         //{
         //    filename = "./LaspPrefab/" + laspPanelPara.paraDict["prefab directory"].GetComponentInChildren<InputField>().text + "/lasp.in";
@@ -212,7 +192,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         //File.WriteAllText(filename, outputlines.ToString());
     }
 
-    public  StringBuilder  LoadLaspIn(string[] lines)
+    public StringBuilder LoadLaspIn(string[] lines)
     {
         Dictionary<string, int> uiPara = new Dictionary<string, int>
                 { { "potential", 0 } ,{ "explore_type",0 },{ "%block netinfo",0 },{ "run_type",0 }, {"ssw.sswsteps",0 } };
@@ -310,7 +290,7 @@ public class R_LASPPanelSrc : MonoBehaviour
 
         M_LaspInWidgetSrc.S.gameObject.SetActive(true);
         M_LaspInWidgetSrc.S.mainText.text = string.Copy(laspInTextSaved);
-        M_LaspInWidgetSrc.S.saveBtn.onClick.AddListener(() => 
+        M_LaspInWidgetSrc.S.saveBtn.onClick.AddListener(() =>
         {
             string[] lines = M_LaspInWidgetSrc.S.mainText.text.Split(new string[] { "\n" }, StringSplitOptions.None);
             print(lines);
@@ -319,7 +299,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         });
         M_LaspInWidgetSrc.S.closeBtn.onClick.AddListener(() =>
         {
-            GuiMain.S.SetUIInteract(btn,true);
+            GuiMain.S.SetUIInteract(btn, true);
 
             M_LaspInWidgetSrc.S.saveBtn.onClick.RemoveAllListeners();
             M_LaspInWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
@@ -352,7 +332,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         {
             // Remove path from the file name.
             string fName = f.Substring(Path.Combine(lasp_prefab_dir, prefabDirName).Length + 1);
-            if (fName != ("lasp.in")) 
+            if (fName != ("lasp.in"))
                 File.Copy(Path.Combine(prefabDirName, fName), Path.Combine(wholeWorkDir, fName), true);
         }
 
@@ -371,7 +351,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         LaspWinProgress pro = new LaspWinProgress();
         //pro.ExecuteProgram(args: wholeWorkDir + "> output.txt 2>&1");
         pro.ExecuteProgram(args: lasp_dir + " " + wholeWorkDir + " 1>lasp_1.txt 2>lasp_2.txt");
-        laspRunning = true;
+        pro.ExecuteProgram(args: lasp_dir + " " + wholeWorkDir + " 1>lasp_1.txt 2>lasp_2.txt");
     }
 #endif
-    }
+}

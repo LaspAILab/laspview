@@ -42,7 +42,7 @@ public class MainScr : MonoBehaviour
     {
 #if !UNITY_WEBGL
         string filename = ConFun.S.globalPara["arc_default"];
-        AddArc("test.arc", filename);
+        AddArc(filename);
 #else
         string lines = 
 @"!BIOSYM archive 2 
@@ -105,6 +105,7 @@ end
         currentArc = arcIndex;
         //print(arcList[currentArc].filename);
         (bool, bool) playerStatus = targetArc.DrawStructure(targetArc.currentStr);
+        GuiMain.S.FocusCameraCenter();
         B_ToolbarPanelSrc.S.PlayerBtnChecked(playerStatus);
     }
 

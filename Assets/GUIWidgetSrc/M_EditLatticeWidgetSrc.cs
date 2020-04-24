@@ -46,6 +46,7 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         }
 
         MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
+        GuiMain.S.FocusCameraCenter();
         GuiMain.S.EditSaveSturc();
     }
 

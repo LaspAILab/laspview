@@ -18,9 +18,4 @@ public class Bond : MonoBehaviour
         point2OtherCell = pointToOtherCell;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

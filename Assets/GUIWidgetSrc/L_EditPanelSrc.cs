@@ -58,9 +58,10 @@ public class L_EditPanelSrc : MonoBehaviour
 #endif
                 GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
                 B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
+                GuiMain.S.FocusCameraCenter();
             }
 
-    });
+        });
         GuiMain.S.editEnable = false;
         this.gameObject.SetActive(false);
     }
