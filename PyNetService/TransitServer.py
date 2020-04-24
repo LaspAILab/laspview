@@ -399,12 +399,13 @@ class InternalServer(Server):
                 
                 elif msg == "ls":
                     print("ls for "+user)
-                    files = os.listdir(TEMP+user)
-                    if len(files) == 0:
+                    fldir = os.listdir(TEMP+user)
+                    if len(fldir) == 0:
                         raise TransitError("Empty!")
-                    else:
-                        return "   ".join(os.listdir(TEMP+user))
-                
+                    fldir = sorted(fldir,
+                                   key=lambda x: os.path.getmtime(os.path.join(TEMP+user, x)))
+                    return "     ".join(fldir)
+                        
                 elif msg == "clear":
                     print("clear for "+user)
                     if os.path.isdir(TEMP+user) == False:
@@ -448,15 +449,16 @@ class InternalServer(Server):
                         raise TransitError("Empty!")
                     fldir = sorted(fldir, 
                                    key=lambda x: os.path.getmtime(os.path.join(TEMP+user, x)))
-                    rtn.append(("<file name=%s>"%fldir[-1]).encode())
-                    f = open(TEMP+user+"/"+fldir[-1],'rb')
-                    while True:
-                        buf = f.read(BUFIZ)
-                        if not buf:
-                            break
-                        rtn.append(buf)
-                    f.close()
-                    rtn.append("</file>".encode())
+                    for i in range(0, int(msg.split(" ")[1])):
+                        rtn.append(("<file name=%s>"%fldir[-i-1]).encode())
+                        f = open(TEMP+user+"/"+fldir[-1],'rb')
+                        while True:
+                            buf = f.read(BUFIZ)
+                            if not buf:
+                                break
+                            rtn.append(buf)
+                        f.close()
+                        rtn.append("</file>".encode())
                     rtn.append("</CpRtb></laspview>".encode())
                     return rtn
                 

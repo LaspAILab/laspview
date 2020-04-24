@@ -183,7 +183,7 @@ if __name__ == "__main__":
                         help = "List the file in /$TEMP/$USER")
     parser.add_argument('-cp', "--copy",  type = str, nargs = '+',
                         help = "Copy file in /$TEMP/$USER to current dir. Allowed Py-style Regular expression ")
-    parser.add_argument('-cl', "--copylatest",  action = "store_true",
+    parser.add_argument('-cl', "--copylatest",  type = int, nargs = '?', const = 1, default = None,
                         help = "Copy latest received file to current dir.")
     parser.add_argument('-m',  "--make",  action = "store_true",
                         help = "Make LASP computation project")
@@ -195,7 +195,7 @@ if __name__ == "__main__":
                         help = "Defalut to send file when no option is given") 
     args = parser.parse_args()
 
-    #print(args)
+    print(args)
     if args.no_option_argument_send != []:
         args.send = args.no_option_argument_send
 
@@ -205,8 +205,8 @@ if __name__ == "__main__":
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
     
-    elif args.copylatest == True:
-        msg = "cl" 
+    elif args.copylatest != None:
+        msg = "cl "+ str(args.copylatest)
         msgList = addTag(msg,"sig")
         msgList = addTagWithAttr(msgList,"laspview","user="+args.user[0])
         clientSend("".join(msgList),HOST,PORT)
