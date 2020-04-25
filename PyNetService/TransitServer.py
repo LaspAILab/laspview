@@ -427,7 +427,7 @@ class InternalServer(Server):
                                 files.append(f)
                     if len(files) == 0:
                         raise TransitError("No File Match!")
-                    for f in files:
+                    for file in files:
                         rtn.append(("<file name=%s>"%file).encode())
                         f = open(TEMP+user+"/"+file,'rb')
                         while True:
@@ -536,7 +536,7 @@ class ExternalServer(Server):
                     filename = datetime.datetime.now().strftime('%m%d%H%M%S.xx')
                 with open(TEMP+user+"/"+filename, 'w') as wfile:
                     wfile.write(msg)
-                print("Receive %s from %"%(filename, user))
+                print("Receive %s from %s"%(filename, user))
                 return "File received"
     
     

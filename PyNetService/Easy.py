@@ -185,8 +185,8 @@ if __name__ == "__main__":
                         help = "Copy file in /$TEMP/$USER to current dir. Allowed Py-style Regular expression ")
     parser.add_argument('-cl', "--copylatest",  type = int, nargs = '?', const = 1, default = None,
                         help = "Copy latest received file to current dir.")
-    parser.add_argument('-m',  "--make",  action = "store_true",
-                        help = "Make LASP computation project")
+    #parser.add_argument('-m',  "--make",  action = "store_true",
+    #                    help = "Make LASP computation project")
     parser.add_argument('-kill',  "--kill",  action = "store_true",
                         help = "Ask TransitServer to kill himself")
     parser.add_argument('-clear', "--clear",  action = "store_true",
