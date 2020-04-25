@@ -263,7 +263,7 @@ public class GuiMain : MonoBehaviour
                     foreach (GameObject go in pickGO)
                     {
                         foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                        {
+                        { 
                             ren.material.color = go.GetComponent<Atom>().color;
                         }
                     }
