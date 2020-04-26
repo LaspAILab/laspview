@@ -478,6 +478,8 @@ public class GuiMain : MonoBehaviour
                             Object.Destroy(r.gameObject);
                         }
                     }
+
+                    this.MeasurePickAtoms();
                 }
 
                 //如果没有LCtrl，则为常规镜头旋转、平移、缩放操作
@@ -575,10 +577,10 @@ public class GuiMain : MonoBehaviour
                             {
                                 rotationMode3d = false;
                             }
-                            print((Input.mousePosition - pickAtomAvgPosScreen).magnitude);
-                            print(pickAtomFurthestDis);
-                            print(pickAtomAvgPosScreen);
-                            print(rotationMode3d);
+                            //print((Input.mousePosition - pickAtomAvgPosScreen).magnitude);
+                            //print(pickAtomFurthestDis);
+                            //print(pickAtomAvgPosScreen);
+                            //print(rotationMode3d);
                             MainScr.S.CurrentStructure().PickControlStart(pickGO);
 
                         }
@@ -678,6 +680,34 @@ public class GuiMain : MonoBehaviour
         line.SetPosition(0, Camera.main.ScreenToWorldPoint(v1) + Camera.main.transform.forward);
         line.SetPosition(1, Camera.main.ScreenToWorldPoint(v2) + Camera.main.transform.forward);
         return line;
+    }
+
+    private void MeasurePickAtoms()
+    {
+        if (pickGO.Count == 1)
+        {
+            string st = string.Format("{0} position: {1:f4} {2:f4} {3:f4}",  pickGO[0].GetComponent<Atom>().ele, pickGO[0].transform.position.x, pickGO[0].transform.position.y, pickGO[0].transform.position.z);
+            ConFun.S.printStatusInfo(st);
+            //{ pickGO[0].transform.position.y}
+            //);
+        }
+        else if (pickGO .Count == 2)
+        {
+            string st = string.Format("{0}-{1} distance:   {2:f4} ", pickGO[0].GetComponent<Atom>().ele, pickGO[1].GetComponent<Atom>().ele, (pickGO[0].transform.position - pickGO[1].transform.position).magnitude);
+            ConFun.S.printStatusInfo(st);
+        }
+        else if (pickGO.Count == 3)
+        {
+            string st = string.Format("{0}-{1}-{2}  angle: {3:f4} ", pickGO[0].GetComponent<Atom>().ele, pickGO[1].GetComponent<Atom>().ele, pickGO[2].GetComponent<Atom>().ele,
+                  Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[2].transform.position - pickGO[1].transform.position));
+            ConFun.S.printStatusInfo(st);       
+        }
+        else if (pickGO.Count == 4)
+        {
+            string st = string.Format("{0}-{1}-{2}-{3} torison: {4:f4} ", pickGO[0].GetComponent<Atom>().ele, pickGO[1].GetComponent<Atom>().ele, pickGO[2].GetComponent<Atom>().ele, pickGO[3].GetComponent<Atom>().ele,
+                  Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[3].transform.position - pickGO[2].transform.position));
+            ConFun.S.printStatusInfo(st);
+        }
     }
 
     public void FocusCameraCenter()
