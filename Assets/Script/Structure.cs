@@ -23,7 +23,7 @@ public class Structure : MonoBehaviour
     public List<LineRenderer> latList;  //List of model of periodic condittion
     public List<Bond> bondList;         //List of class & modelBond
     public Transform latCenter;     //center of lattice, generally used as camera center
-    Vector3[] cellTranslate;
+    public Vector3[] cellTranslate;
 
     public int pathid = 0;       //？？？
     public float conv = 0.0F;
@@ -39,12 +39,6 @@ public class Structure : MonoBehaviour
     void Awake()
     {
         this.transform.position = Vector3.zero;
-    }
-
-    private void Start()
-    {
-        this.parent = gameObject.GetComponentInParent<ArcStructures>();
-        cellTranslate = new Vector3[]{ GetCellTransfer(1, 0, 0), GetCellTransfer(0, 1, 0), GetCellTransfer(0, 0, 1) };
     }
 
     public void AddAtom(string line, int type = 1)
@@ -132,7 +126,6 @@ public class Structure : MonoBehaviour
         }
         if (atomList.Count >= 1)
         {
-            Vector3[] cellTranslate = {GetCellTransfer(1,0,0), GetCellTransfer(0,1,0), GetCellTransfer(0,0,1) }; 
             foreach (Vector3 vec in cellTranslate)
             {
                 for (int i = 0; i < atomList.Count; i++)
@@ -154,7 +147,7 @@ public class Structure : MonoBehaviour
     
     public void AddAllBond()
     {
-        this.AddAllBond(this.parent.GetComponent<ArcStructures>().modelPara["bound_boundry"]);
+        this.AddAllBond(parent.modelPara["bound_boundry"]);
     }
 
     public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
@@ -234,9 +227,8 @@ public class Structure : MonoBehaviour
     {
         Vector3 dieta;
         float rate;
-        float bondBoundry = this.transform.parent.GetComponent<ArcStructures>().modelPara["bound_boundry"];
+        float bondBoundry = parent.modelPara["bound_boundry"];
         Matrix4x4 inverse = this.lat.inverse;
-        Vector3[] cellTranslate = { GetCellTransfer(1, 0, 0), GetCellTransfer(0, 1, 0), GetCellTransfer(0, 0, 1) };
 
         if (changeBond.Count != 0)
         {
@@ -301,7 +293,7 @@ public class Structure : MonoBehaviour
 
     public void PickControlEnd()
     {
-        this.AddAllBond(this.parent.GetComponent<ArcStructures>().modelPara["bound_boundry"]);
+        this.AddAllBond();
 
         MoveIntoLatticAtoms(pickAtom);
 
@@ -407,7 +399,7 @@ public class Structure : MonoBehaviour
             Object.Destroy(b.gameObject);
         }
         bondList.Clear();
-        this.AddAllBond(modelPara["bound_boundry"]);
+        this.AddAllBond();
         this.gameObject.SetActiveRecursively(true);
     } 
 

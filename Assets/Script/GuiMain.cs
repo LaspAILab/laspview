@@ -100,6 +100,7 @@ public class GuiMain : MonoBehaviour
         GameObject b_ToolbarPanel = Instantiate(B_ToolbarPanelPrefab);
         GameObject l_ProjectPanel = Instantiate(L_ProjectPanelPrefab);
         GameObject l_FilePanel = Instantiate(L_FilePanelPrefab);
+        GameObject l_DisplayPanel = Instantiate(L_DisplayPanelPrefab);
         GameObject m_AddAtomWidget = Instantiate(M_AddAtomWidgetPrefab);
         GameObject m_EditLatticeWidget = Instantiate(M_EditLatticeWidgetPrefab);
 #if !UNITY_WEBGL

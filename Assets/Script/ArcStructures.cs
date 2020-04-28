@@ -90,6 +90,8 @@ public class ArcStructures : MonoBehaviour
         Structure newStru = Instantiate(StructurPrefabVar).GetComponent<Structure>();
         structureList.Add(newStru);
         newStru.transform.SetParent(this.transform, false);
+        newStru.parent = this;
+        newStru.cellTranslate = new Vector3[] { newStru.GetCellTransfer(1, 0, 0), newStru.GetCellTransfer(0, 1, 0), newStru.GetCellTransfer(0, 0, 1) };
         lenStructures += 1;
         return newStru;
 
