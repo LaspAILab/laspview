@@ -28,5 +28,11 @@ public class syfPanelPara : MonoBehaviour
                 paraDict.Add(key.ToLower().Trim(), c.gameObject);
             }
         }        
+        foreach(Slider c in this.GetComponentsInChildren<Slider>())
+        {
+
+            string key = c.transform.parent.GetComponentInChildren<Text>().text;
+            paraDict.Add(key.ToLower().Trim(), c.gameObject);
+        }
     }
 }

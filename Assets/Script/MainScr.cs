@@ -103,6 +103,7 @@ end
         arcList[currentArc].gameObject.SetActive(false);
         targetArc.gameObject.SetActive(true);
         currentArc = arcIndex;
+        L_DisplayPanelSrc.S.DisplayLoadModelPara();
         //print(arcList[currentArc].filename);
         (bool, bool) playerStatus = targetArc.DrawStructure(targetArc.currentStr);
         GuiMain.S.FocusCameraCenter();

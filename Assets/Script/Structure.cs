@@ -126,9 +126,10 @@ public class Structure : MonoBehaviour
         }
         if (atomList.Count >= 1)
         {
+            //Vector3[] cellTranslate = { GetCellTransfer(1, 0, 0), GetCellTransfer(0, 1, 0), GetCellTransfer(0, 0, 1) };
             foreach (Vector3 vec in cellTranslate)
             {
-                print(vec);
+                //print(vec);
                 for (int i = 0; i < atomList.Count; i++)
                 {
                     for (int j = 0; j < atomList.Count; j++)
@@ -166,12 +167,11 @@ public class Structure : MonoBehaviour
     public bool CheckBond(Atom atom, Atom btom, Vector3 cellTranslate, float bondBoundry)
     {
 
-        //float len0 = (atom.radius + btom.radius);
-        //float len = (cellTranslate + btom.nodeTrans.position - atom.nodeTrans.position).magnitude;
-        //print(len < len0 * bondBoundry);
-        //if (len < len0 * bondBoundry)
-        //    return true;
-        //else
+        float len0 = (atom.radius + btom.radius);
+        float len = (cellTranslate + btom.nodeTrans.position - atom.nodeTrans.position).magnitude;
+        if (len < len0 * bondBoundry)
+            return true;
+        else
             return false;
     }
 
@@ -397,12 +397,10 @@ public class Structure : MonoBehaviour
             foreach (Atom a in atomList) a.transform.localScale = modelPara["ball radius"] * Vector3.one;
         }
 
-        
         this.MoveIntoLatticAtoms(this.atomList);
         
         foreach (Bond b in bondList)
         {
-            
             Object.Destroy(b.gameObject);
         }
         bondList.Clear();

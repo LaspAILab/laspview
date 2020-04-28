@@ -34,7 +34,7 @@ public class ArcStructures : MonoBehaviour
         cameraCenter.SetParent(this.transform);//use a void GameObject as cameraCenter
 
         //this.modelPara = new Dictionary<string, float> { { "ball_radius", 0.5f }, { "bound_radius", 1.0f }, { "bound_boundry", 0.63f } };
-        this.modelPara = L_DisplayPanelSrc.S.DisplayModelPara();
+        this.modelPara = L_DisplayPanelSrc.defaultModelPara;
     }
 
 

@@ -6,13 +6,19 @@ using UnityEngine.UI;
 public class L_DisplayPanelSrc : MonoBehaviour
 {
     static public L_DisplayPanelSrc S;
-    static public syfPanelPara laspPanelPara;
+    static public syfPanelPara displayPanelPara;
+    static public Dictionary<string, float> defaultModelPara;
+
     void Awake()
     {
         S = this;
-        laspPanelPara = this.GetComponent<syfPanelPara>();
-        laspPanelPara.SetParaDict();
+        displayPanelPara = this.GetComponent<syfPanelPara>();
+        displayPanelPara.SetParaDict();
         //this.DisplayModelPara();
+
+        defaultModelPara = new Dictionary<string, float> { { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
+                                                            { "display style", 0.0f }, { "stick radius", 0.3f }, { "bond boundry", 0.63f },
+                                                             { "ball radius type", 0.0f },{ "ball scaling ratio", 0.5f },{ "ball radius", 1.0f }};
 
         //Set DisplayPanel
         this.transform.SetParent(GuiMain.S.leftCanvas.transform);
@@ -43,10 +49,34 @@ public class L_DisplayPanelSrc : MonoBehaviour
         MainScr.S.CurrentStructure().DrawModel();
     }
 
+    public void DisplayLoadModelPara()
+    {
+        Dictionary<string, float> arcPara = MainScr.S.CurrentArc().modelPara;
+        foreach (KeyValuePair<string, GameObject> kvp in displayPanelPara.paraDict)
+        {
+            if (kvp.Value.GetComponent<Dropdown>())
+            {
+                int index = int.Parse(arcPara[kvp.Key].ToString());
+                kvp.Value.GetComponent<Dropdown>().SetValueWithoutNotify(index);
+            }
+            else if (kvp.Value.GetComponent<InputField>())
+            {
+                string str = string.Format("{0:f3}", arcPara[kvp.Key].ToString());
+                kvp.Value.GetComponent<InputField>().SetTextWithoutNotify( str);
+            }
+            else if (kvp.Value.GetComponent<Slider>())
+            {
+                float f = arcPara[kvp.Key];
+                kvp.Value.GetComponent<Slider>().SetValueWithoutNotify(f);
+            }
+        }
+    }
+
+
     public Dictionary<string, float> DisplayModelPara()
     {
         Dictionary<string, float> modelPara = new Dictionary<string, float>();
-        foreach (KeyValuePair<string, GameObject> kvp in laspPanelPara.paraDict)
+        foreach (KeyValuePair<string, GameObject> kvp in displayPanelPara.paraDict)
         {
             float v = 0;
             if (kvp.Value.GetComponent<Dropdown>())
@@ -57,7 +87,12 @@ public class L_DisplayPanelSrc : MonoBehaviour
             {
                 v = float.Parse(kvp.Value.GetComponent<InputField>().text);
             }
+            else if (kvp.Value.GetComponent<Slider>())
+            {
+                v = kvp.Value.GetComponent<Slider>().value;
+            }
             modelPara.Add(kvp.Key, v);
+            //print((kvp.Key, v));
         }
         return modelPara;
     }
