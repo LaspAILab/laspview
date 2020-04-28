@@ -33,9 +33,8 @@ public class ArcStructures : MonoBehaviour
         cameraCenter = Instantiate(StructurPrefabVar).GetComponent<Transform>();
         cameraCenter.SetParent(this.transform);//use a void GameObject as cameraCenter
 
-
-
-        this.modelPara = new Dictionary<string, float> { { "ball_radius", 0.5f }, { "bound_radius", 1.0f }, { "bound_boundry", 0.63f } };
+        //this.modelPara = new Dictionary<string, float> { { "ball_radius", 0.5f }, { "bound_radius", 1.0f }, { "bound_boundry", 0.63f } };
+        this.modelPara = L_DisplayPanelSrc.S.DisplayModelPara();
     }
 
 
@@ -57,7 +56,7 @@ public class ArcStructures : MonoBehaviour
             structureList[currentStr].gameObject.SetActive(false);
         }
 
-        structureList[i].DrawModel(modelPara);
+        structureList[i].DrawModel();
         currentStr = i;
         ConFun.S.printStructureInfo("Structure: " + (currentStr + 1) + " of " + structureList.Count + "\t\t Energy  =  " + structureList[currentStr].energy);
         if (true)
@@ -91,7 +90,6 @@ public class ArcStructures : MonoBehaviour
         structureList.Add(newStru);
         newStru.transform.SetParent(this.transform, false);
         newStru.parent = this;
-        newStru.cellTranslate = new Vector3[] { newStru.GetCellTransfer(1, 0, 0), newStru.GetCellTransfer(0, 1, 0), newStru.GetCellTransfer(0, 0, 1) };
         lenStructures += 1;
         return newStru;
 

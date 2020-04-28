@@ -128,6 +128,7 @@ public class Structure : MonoBehaviour
         {
             foreach (Vector3 vec in cellTranslate)
             {
+                print(vec);
                 for (int i = 0; i < atomList.Count; i++)
                 {
                     for (int j = 0; j < atomList.Count; j++)
@@ -147,7 +148,7 @@ public class Structure : MonoBehaviour
     
     public void AddAllBond()
     {
-        this.AddAllBond(parent.modelPara["bound_boundry"]);
+        this.AddAllBond(parent.modelPara["bond boundry"]);
     }
 
     public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
@@ -164,14 +165,13 @@ public class Structure : MonoBehaviour
 
     public bool CheckBond(Atom atom, Atom btom, Vector3 cellTranslate, float bondBoundry)
     {
-        
-        float len0 = (atom.radius + btom.radius);
-        float len = (cellTranslate + btom.nodeTrans.position - atom.nodeTrans.position).magnitude;
-        if (len < len0 * bondBoundry)
-        {
-            return true;
-        }
-        else
+
+        //float len0 = (atom.radius + btom.radius);
+        //float len = (cellTranslate + btom.nodeTrans.position - atom.nodeTrans.position).magnitude;
+        //print(len < len0 * bondBoundry);
+        //if (len < len0 * bondBoundry)
+        //    return true;
+        //else
             return false;
     }
 
@@ -227,7 +227,7 @@ public class Structure : MonoBehaviour
     {
         Vector3 dieta;
         float rate;
-        float bondBoundry = parent.modelPara["bound_boundry"];
+        float bondBoundry = parent.modelPara["bond boundry"];
         Matrix4x4 inverse = this.lat.inverse;
 
         if (changeBond.Count != 0)
@@ -278,17 +278,17 @@ public class Structure : MonoBehaviour
 
         
         
-        foreach (Vector3 vec in cellTranslate)
-        {
-            foreach (Atom a1 in pickAtom)
-            {
-                foreach (Atom a2 in atomList)
-                {
+        //foreach (Vector3 vec in cellTranslate)
+        //{
+        //    foreach (Atom a1 in pickAtom)
+        //    {
+        //        foreach (Atom a2 in atomList)
+        //        {
                     
 
-                }
-            }
-        }
+        //        }
+        //    }
+        //}
     }
 
     public void PickControlEnd()
@@ -351,7 +351,7 @@ public class Structure : MonoBehaviour
         Vector3 latticeMid = GetCellTransfer(1, 1, 1) / 2;
         this.GetComponent<SphereCollider>().center = latticeMid;
         this.GetComponent<SphereCollider>().radius = Vector3.Magnitude(latticeMid)+1.0f;
-
+        cellTranslate = new Vector3[] { GetCellTransfer(1, 0, 0), GetCellTransfer(0, 1, 0), GetCellTransfer(0, 0, 1) };
     }
 
     void AddLatticeLine()
@@ -385,12 +385,19 @@ public class Structure : MonoBehaviour
     }
 
 
-    public void DrawModel(Dictionary<string,float> modelPara)
+    public void DrawModel()
     {
-        foreach (Atom a in atomList)
+        Dictionary<string, float> modelPara = parent.modelPara;
+        if (modelPara["ball radius type"] == 0)
         {
-            a.ChangeRadius(modelPara["ball_radius"]);
+            foreach (Atom a in atomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
         }
+        else if (modelPara["ball radius type"] == 1)
+        {
+            foreach (Atom a in atomList) a.transform.localScale = modelPara["ball radius"] * Vector3.one;
+        }
+
+        
         this.MoveIntoLatticAtoms(this.atomList);
         
         foreach (Bond b in bondList)

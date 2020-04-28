@@ -177,7 +177,7 @@ PrefabInstance:
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
@@ -477,7 +477,7 @@ PrefabInstance:
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_OnEndEdit.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -912,7 +912,7 @@ PrefabInstance:
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
@@ -1352,7 +1352,7 @@ PrefabInstance:
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
@@ -1402,7 +1402,7 @@ PrefabInstance:
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_Text
-      value: 0.8
+      value: 1.0
       objectReference: {fileID: 0}
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -1422,7 +1422,7 @@ PrefabInstance:
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_OnEndEdit.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -1467,7 +1467,7 @@ PrefabInstance:
     - target: {fileID: 6971033192684586709, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_Text
-      value: 0.8
+      value: 1.0
       objectReference: {fileID: 0}
     - target: {fileID: 7139682432242279240, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -1662,7 +1662,7 @@ PrefabInstance:
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_OnEndEdit.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -1672,7 +1672,7 @@ PrefabInstance:
     - target: {fileID: 4671531706385832456, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_Text
-      value: Ball Scaling Rate
+      value: Ball Scaling Ratio
       objectReference: {fileID: 0}
     - target: {fileID: 4811158118716822220, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -1967,7 +1967,7 @@ PrefabInstance:
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_OnEndEdit.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
@@ -2387,7 +2387,7 @@ PrefabInstance:
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 5504875691742477931, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
@@ -2467,7 +2467,7 @@ PrefabInstance:
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
@@ -2967,7 +2967,7 @@ PrefabInstance:
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}
       propertyPath: m_OnEndEdit.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: SaveModelPara
+      value: DisplayOnParaChange
       objectReference: {fileID: 0}
     - target: {fileID: 161931215673175180, guid: 03b8aa103de8fa74a8d032ce735c68f2,
         type: 3}

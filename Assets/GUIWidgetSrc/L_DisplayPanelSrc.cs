@@ -12,6 +12,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         S = this;
         laspPanelPara = this.GetComponent<syfPanelPara>();
         laspPanelPara.SetParaDict();
+        //this.DisplayModelPara();
 
         //Set DisplayPanel
         this.transform.SetParent(GuiMain.S.leftCanvas.transform);
@@ -36,7 +37,13 @@ public class L_DisplayPanelSrc : MonoBehaviour
         
     }
 
-    public void SaveModelPara()
+    public void DisplayOnParaChange()
+    {
+        MainScr.S.CurrentArc().modelPara = DisplayModelPara();
+        MainScr.S.CurrentStructure().DrawModel();
+    }
+
+    public Dictionary<string, float> DisplayModelPara()
     {
         Dictionary<string, float> modelPara = new Dictionary<string, float>();
         foreach (KeyValuePair<string, GameObject> kvp in laspPanelPara.paraDict)
@@ -51,8 +58,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
                 v = float.Parse(kvp.Value.GetComponent<InputField>().text);
             }
             modelPara.Add(kvp.Key, v);
-            //print((kvp.Key, v));
         }
-
+        return modelPara;
     }
 }
