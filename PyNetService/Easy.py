@@ -34,9 +34,9 @@ import argparse
 
 
 """CHANGEABLE PARAMETERS for USER"""
-USER = "shiyf"
+USER = os.environ["USER"]
 TEMP = './Temp'
-
+#print(os.environ["USER"])
 
 
 
