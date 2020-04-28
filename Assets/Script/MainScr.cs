@@ -81,7 +81,7 @@ end
             //print(lines.Length);
             newArc.ArcRead(filename, lines);
         }
-        catch(Exception ex)
+        catch(Exception)
         {
             GameObject.Destroy(newArc.gameObject);
             ConFun.S.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
@@ -100,7 +100,7 @@ end
     public void DrawArc(int arcIndex)
     {
         ArcStructures targetArc = arcList[arcIndex];
-        arcList[currentArc].gameObject.SetActiveRecursively(false);
+        arcList[currentArc].gameObject.SetActive(false);
         targetArc.gameObject.SetActive(true);
         currentArc = arcIndex;
         //print(arcList[currentArc].filename);

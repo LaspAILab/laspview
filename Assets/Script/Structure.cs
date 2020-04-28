@@ -408,7 +408,7 @@ public class Structure : MonoBehaviour
         }
         bondList.Clear();
         this.AddAllBond(modelPara["bound_boundry"]);
-        this.gameObject.SetActiveRecursively(true);
+        this.gameObject.SetActive(true);
     } 
 
 

@@ -337,7 +337,7 @@ namespace ViewerNetwork
 
         private TcpClient tcpClient;
         NetworkStream streamToServer;
-        private int bufferSize = 4096;
+        //private int bufferSize = 4096;
 
         /// 远程服务IP地址
         public string remoteIP;

@@ -54,7 +54,7 @@ public class ArcStructures : MonoBehaviour
                 UnityEngine.Object.Destroy(b.gameObject);
             }
             structureList[currentStr].bondList.Clear();
-            structureList[currentStr].gameObject.SetActiveRecursively(false);
+            structureList[currentStr].gameObject.SetActive(false);
         }
 
         structureList[i].DrawModel(modelPara);

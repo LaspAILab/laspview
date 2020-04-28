@@ -11,5 +11,4 @@ public class syfDragUI : MonoBehaviour
     public float lowerBound;
     public float leftBound;
     public float rightBound;
-
 }
