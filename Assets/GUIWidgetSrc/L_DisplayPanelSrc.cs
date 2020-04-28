@@ -6,9 +6,12 @@ using UnityEngine.UI;
 public class L_DisplayPanelSrc : MonoBehaviour
 {
     static public L_DisplayPanelSrc S;
+    static public syfPanelPara laspPanelPara;
     void Awake()
     {
         S = this;
+        laspPanelPara = this.GetComponent<syfPanelPara>();
+        laspPanelPara.SetParaDict();
 
         //Set DisplayPanel
         this.transform.SetParent(GuiMain.S.leftCanvas.transform);
@@ -31,5 +34,25 @@ public class L_DisplayPanelSrc : MonoBehaviour
     void Update()
     {
         
+    }
+
+    public void SaveModelPara()
+    {
+        Dictionary<string, float> modelPara = new Dictionary<string, float>();
+        foreach (KeyValuePair<string, GameObject> kvp in laspPanelPara.paraDict)
+        {
+            float v = 0;
+            if (kvp.Value.GetComponent<Dropdown>())
+            {
+                v = kvp.Value.GetComponent<Dropdown>().value;
+            }
+            else if (kvp.Value.GetComponent<InputField>())
+            {
+                v = float.Parse(kvp.Value.GetComponent<InputField>().text);
+            }
+            modelPara.Add(kvp.Key, v);
+            //print((kvp.Key, v));
+        }
+
     }
 }

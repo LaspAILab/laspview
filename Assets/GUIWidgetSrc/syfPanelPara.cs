@@ -27,6 +27,6 @@ public class syfPanelPara : MonoBehaviour
                 string key = c.GetComponentInChildren<Text>().text;
                 paraDict.Add(key.ToLower().Trim(), c.gameObject);
             }
-        }
+        }        
     }
 }
