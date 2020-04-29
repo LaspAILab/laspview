@@ -20,6 +20,7 @@ public class Structure : MonoBehaviour
     public float[] abc;             //a, b, c, alpha, betta, gamma of periodic condition
     public Matrix4x4 lat;          //matrix form of periodic contition
     public List<Atom> atomList;         //List of class & model Atom
+    public List<Atom> expandAtom;
     public List<LineRenderer> latList;  //List of model of periodic condittion
     public List<Bond> bondList;         //List of class & modelBond
     public Transform latCenter;     //center of lattice, generally used as camera center
@@ -177,13 +178,16 @@ public class Structure : MonoBehaviour
 
     public Bond AddBond(Atom a, Atom b, Vector3 direction, float rate, bool otherCell = false)
     {
+        float stickRadius = parent.modelPara["stick radius"];
+
         //a is the point to atom, b is the parent;
         Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
         newBond.Init(b, otherCell);
         newBond.transform.position = a.nodeTrans.position;
         newBond.transform.Translate(direction * 0.5f * rate);
         newBond.transform.Rotate(new Vector3(-direction.z, 0, direction.x), -Vector3.Angle(Vector3.up, direction));
-        newBond.transform.localScale = Vector3.Scale(newBond.transform.localScale, new Vector3(1, direction.magnitude * rate / 2, 1));
+        //newBond.transform.localScale = Vector3.Scale(newBond.transform.localScale, new Vector3(1, direction.magnitude * rate / 2, 1));
+        newBond.transform.localScale = new Vector3(stickRadius, direction.magnitude * rate / 2, stickRadius);
         newBond.GetComponent<Renderer>().material.color = a.GetComponent<Renderer>().material.color;
         newBond.transform.SetParent(a.transform.parent);
         return newBond;
@@ -276,7 +280,7 @@ public class Structure : MonoBehaviour
             }
         }
 
-        
+        //Update Extend Atom & Bond
         
         //foreach (Vector3 vec in cellTranslate)
         //{
@@ -388,13 +392,21 @@ public class Structure : MonoBehaviour
     public void DrawModel()
     {
         Dictionary<string, float> modelPara = parent.modelPara;
-        if (modelPara["ball radius type"] == 0)
+
+        if (modelPara["display style"] == 0 || modelPara["display style"] == 1)
         {
-            foreach (Atom a in atomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
+            if (modelPara["ball radius type"] == 0)
+            {
+                foreach (Atom a in atomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
+            }
+            else if (modelPara["ball radius type"] == 1)
+            {
+                foreach (Atom a in atomList) a.transform.localScale = modelPara["stick radius"] * Vector3.one;
+            }
         }
-        else if (modelPara["ball radius type"] == 1)
+        else if (modelPara["display style"] == 2)
         {
-            foreach (Atom a in atomList) a.transform.localScale = modelPara["ball radius"] * Vector3.one;
+            foreach (Atom a in atomList) a.transform.localScale = 0.4f * Vector3.one;
         }
 
         this.MoveIntoLatticAtoms(this.atomList);
@@ -404,7 +416,11 @@ public class Structure : MonoBehaviour
             Object.Destroy(b.gameObject);
         }
         bondList.Clear();
-        this.AddAllBond();
+
+        if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
+        {
+            this.AddAllBond();
+        }
         this.gameObject.SetActiveRecursively(true);
     } 
 
