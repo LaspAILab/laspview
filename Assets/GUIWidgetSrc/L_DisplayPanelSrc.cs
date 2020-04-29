@@ -68,6 +68,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
             {
                 float f = arcPara[kvp.Key];
                 kvp.Value.GetComponent<Slider>().SetValueWithoutNotify(f);
+                //print(kvp.Value.transform.parent.GetComponent<syfSliderValueText>());
+                kvp.Value.transform.parent.GetComponent<syfSliderValueText>().ChangeText("N0");
             }
         }
     }

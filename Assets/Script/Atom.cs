@@ -8,10 +8,13 @@ using UnityEngine;
 public class Atom : MonoBehaviour
 {
     public GameObject atomPrefabVar;
-    public Color color;
+
     public Transform nodeTrans;
+    public Atom originAtom;
+    //public List<Atom> derivedAtom;
 
     public string ele;
+    public Color color;
     public Vector3 cdnt;
     public int charge;
     public float radius;
@@ -25,28 +28,18 @@ public class Atom : MonoBehaviour
         this.charge = charge;
         this.radius = 2 * ConFun.S.eleRadius[ele];
         this.color = ConFun.S.eleColor[ele];
-
-
         Renderer render = this.GetComponent<Renderer>();
         render.material.color = this.color;
+
+        this.originAtom = this;
+        //this.derivedAtom = new List<Atom> { this };
+
         nodeTrans = node;
-    }
-
-    public void ChangeModel()
-    {   //change atomPrefabVar when the model is changed;
-        //reserve
-
     }
 
     public void ChangeScalingRatio(float ratio)
     {
         float scale = Mathf.Max( this.radius * ratio, 0.4f);
         this.transform.localScale = scale * Vector3.one;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

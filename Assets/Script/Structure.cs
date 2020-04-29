@@ -20,9 +20,10 @@ public class Structure : MonoBehaviour
     public float[] abc;             //a, b, c, alpha, betta, gamma of periodic condition
     public Matrix4x4 lat;          //matrix form of periodic contition
     public List<Atom> atomList;         //List of class & model Atom
-    public List<Atom> expandAtom;
+    public List<Atom> extandAtomList;
     public List<LineRenderer> latList;  //List of model of periodic condittion
     public List<Bond> bondList;         //List of class & modelBond
+    public List<Bond> extendBondList;         //List of class & modelBond
     public Transform latCenter;     //center of lattice, generally used as camera center
     public Vector3[] cellTranslate;
 
@@ -66,6 +67,23 @@ public class Structure : MonoBehaviour
         newAtom.transform.localPosition = Vector3.zero;
 
         node.SetActive(false);
+        return newAtom;
+    }
+
+    private Atom AddExtendAtom(Atom originAtom, Vector3 bias)
+    {
+        Atom newAtom = Instantiate(atomPrefabVar).GetComponent<Atom>();
+        this.extandAtomList.Add(newAtom);
+
+        newAtom.transform.position = originAtom.transform.position + bias;
+        newAtom.transform.rotation = originAtom.transform.rotation;
+        newAtom.transform.localScale = originAtom.transform.localScale;
+        newAtom.GetComponent<Renderer>().material.color = originAtom.color;
+
+        newAtom.transform.SetParent(originAtom.transform.parent);
+        newAtom.nodeTrans = originAtom.transform.parent;
+        newAtom.originAtom = originAtom;
+
         return newAtom;
     }
 
@@ -190,6 +208,23 @@ public class Structure : MonoBehaviour
         newBond.transform.localScale = new Vector3(stickRadius, direction.magnitude * rate / 2, stickRadius);
         newBond.GetComponent<Renderer>().material.color = a.GetComponent<Renderer>().material.color;
         newBond.transform.SetParent(a.transform.parent);
+        return newBond;
+    }
+
+    private Bond AddExtendBond(Bond originBond, Vector3 bias)
+    {
+        float stickRadius = parent.modelPara["stick radius"];
+
+        //a is the point to atom, b is the parent;
+        Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
+        extendBondList.Add(newBond);
+
+        newBond.transform.position = originBond.transform.position + bias;
+        newBond.transform.rotation = originBond.transform.rotation;
+        newBond.transform.localScale = originBond.transform.localScale;
+        newBond.transform.parent = originBond.transform.parent;
+        newBond.GetComponent<Renderer>().material.color = originBond.GetComponent<Renderer>().material.color;
+
         return newBond;
     }
 
@@ -398,28 +433,80 @@ public class Structure : MonoBehaviour
             if (modelPara["ball radius type"] == 0)
             {
                 foreach (Atom a in atomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
+                foreach (Atom a in extandAtomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
             }
             else if (modelPara["ball radius type"] == 1)
             {
                 foreach (Atom a in atomList) a.transform.localScale = modelPara["stick radius"] * Vector3.one;
+                foreach (Atom a in extandAtomList) a.transform.localScale = modelPara["stick radius"] * Vector3.one;
             }
         }
         else if (modelPara["display style"] == 2)
         {
             foreach (Atom a in atomList) a.transform.localScale = 0.4f * Vector3.one;
+            foreach (Atom a in extandAtomList) a.transform.localScale = 0.4f * Vector3.one;
+
+        }
+
+        foreach(Atom  at in extandAtomList)
+        {
+            Object.Destroy(at.gameObject);
+        }
+        extandAtomList.Clear();
+
+        if (modelPara["lat range a"] != 1 || modelPara["lat range b"] != 1 || modelPara["lat range c"] != 1)
+        {
+            for (int a = 0; a <= modelPara["lat range a"] - 1; a++)
+            {
+                for (int b = 0; b <= modelPara["lat range b"] - 1; b++)
+                {
+                    for (int c = 0; c <= modelPara["lat range c"] - 1; c++)
+                    {
+                        if (a == 0 && b == 0 && c == 0) continue;
+                        foreach (Atom at in atomList)
+                        {
+                            this.AddExtendAtom(at, GetCellTransfer(a, b, c));
+                        }
+                    }
+                }
+            }
         }
 
         this.MoveIntoLatticAtoms(this.atomList);
-        
+        //warning:这里怎么改再说了
+
         foreach (Bond b in bondList)
         {
             Object.Destroy(b.gameObject);
         }
         bondList.Clear();
+        foreach (Bond b in extendBondList)
+        {
+            Object.Destroy(b.gameObject);
+        }
+        extendBondList.Clear();
 
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
             this.AddAllBond();
+        }
+
+        if (modelPara["lat range a"] != 1 || modelPara["lat range b"] != 1 || modelPara["lat range c"] != 1)
+        {
+            for (int a = 0; a <= modelPara["lat range a"] - 1; a++)
+            {
+                for (int b = 0; b <= modelPara["lat range b"] - 1; b++)
+                {
+                    for (int c = 0; c <= modelPara["lat range c"] - 1; c++)
+                    {
+                        if (a == 0 && b == 0 && c == 0) continue;
+                        foreach (Bond bd in bondList)
+                        {
+                            this.AddExtendBond(bd, GetCellTransfer(a, b, c));
+                        }
+                    }
+                }
+            }
         }
         this.gameObject.SetActiveRecursively(true);
     } 
@@ -433,8 +520,8 @@ public class Structure : MonoBehaviour
         line.positionCount = 2;//设置两点
         line.startColor = Color.white; //设置直线颜色
         line.endColor = Color.white;
-        line.startWidth = 0.1f;//设置直线宽度
-        line.endWidth = 0.1f;
+        line.startWidth = 0.05f;//设置直线宽度
+        line.endWidth = 0.05f;
 
         //设置指示线的起点和终点
         line.SetPosition(0, initPos);
