@@ -113,8 +113,6 @@ public class ArcStructures : MonoBehaviour
                 print(3);
                 if (lines[startingPoint].Contains("Energy")) break;
             }
-
-
         }
         try
         {
@@ -204,7 +202,7 @@ public class ArcStructures : MonoBehaviour
         {
             ConFun.S.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.Message);
             print(currentStr);
-            GameObject.Destroy(structureList[currentStr].gameObject);
+            //GameObject.Destroy(structureList[currentStr].gameObject);
         }
 
 

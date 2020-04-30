@@ -70,6 +70,24 @@ public class Structure : MonoBehaviour
         return newAtom;
     }
 
+    private Bond AddExtendBond(Bond originBond, Vector3 bias)
+    {
+        float stickRadius = parent.modelPara["stick radius"];
+
+        //a is the point to atom, b is the parent;
+        Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
+        extendBondList.Add(newBond);
+
+        newBond.transform.position = originBond.transform.position + bias;
+        newBond.transform.rotation = originBond.transform.rotation;
+        newBond.transform.localScale = originBond.transform.localScale;
+        newBond.transform.parent = originBond.transform.parent;
+        newBond.GetComponent<Renderer>().material.color = originBond.GetComponent<Renderer>().material.color;
+
+        return newBond;
+    }
+
+
     private Atom AddExtendAtom(Atom originAtom, Vector3 bias)
     {
         Atom newAtom = Instantiate(atomPrefabVar).GetComponent<Atom>();
@@ -211,22 +229,6 @@ public class Structure : MonoBehaviour
         return newBond;
     }
 
-    private Bond AddExtendBond(Bond originBond, Vector3 bias)
-    {
-        float stickRadius = parent.modelPara["stick radius"];
-
-        //a is the point to atom, b is the parent;
-        Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
-        extendBondList.Add(newBond);
-
-        newBond.transform.position = originBond.transform.position + bias;
-        newBond.transform.rotation = originBond.transform.rotation;
-        newBond.transform.localScale = originBond.transform.localScale;
-        newBond.transform.parent = originBond.transform.parent;
-        newBond.GetComponent<Renderer>().material.color = originBond.GetComponent<Renderer>().material.color;
-
-        return newBond;
-    }
 
     public void PickControlStart(List<GameObject> pickGO)
     {
@@ -433,18 +435,18 @@ public class Structure : MonoBehaviour
             if (modelPara["ball radius type"] == 0)
             {
                 foreach (Atom a in atomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
-                foreach (Atom a in extandAtomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
+                //foreach (Atom a in extandAtomList) a.ChangeScalingRatio(modelPara["ball scaling ratio"]);
             }
             else if (modelPara["ball radius type"] == 1)
             {
                 foreach (Atom a in atomList) a.transform.localScale = modelPara["stick radius"] * Vector3.one;
-                foreach (Atom a in extandAtomList) a.transform.localScale = modelPara["stick radius"] * Vector3.one;
+                //foreach (Atom a in extandAtomList) a.transform.localScale = modelPara["stick radius"] * Vector3.one;
             }
         }
         else if (modelPara["display style"] == 2)
         {
             foreach (Atom a in atomList) a.transform.localScale = 0.4f * Vector3.one;
-            foreach (Atom a in extandAtomList) a.transform.localScale = 0.4f * Vector3.one;
+            //foreach (Atom a in extandAtomList) a.transform.localScale = 0.4f * Vector3.one;
 
         }
 
@@ -538,5 +540,24 @@ public class Structure : MonoBehaviour
         Vector4 vec4 = this.lat * new Vector4(i, j, k, 0);
         return new Vector3(vec4[0], vec4[1], vec4[2]);
     }
+
+}
+
+
+class ExtendStructrue
+{
+    public int a;
+    public int b;
+    public int c;
+    public List<Atom> extendAtomList;
+    public List<Bond> extendBondList;
+
+    public ExtendStructrue ExtendStructureFrom(Structure origin, Vector3 latRange)
+    {
+
+
+        return this;
+    }
+
 
 }

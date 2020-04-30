@@ -113,13 +113,15 @@ public class R_ServerPanelSrc : MonoBehaviour
         Button serverBtn = this.transform.GetChild(3).GetChild(0).gameObject.GetComponent<Button>();
         serverBtn.interactable = false;
         LocalClient client = gameObject.AddComponent<LocalClient>();
-        string ip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
+        string remoteip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
+        string localip = this.transform.GetChild(0).GetComponentInChildren<Dropdown>().captionText.text;
+
         await Task.Run(() =>
         {
-            if (client.StartClient(ip) == true)
+            if (client.StartClient(remoteip) == true)
             {
-                StringBuilder msgList = new StringBuilder("CheckIP=" + client.GetIPAddress()[0].ToString());
+                StringBuilder msgList = new StringBuilder("CheckIP=" + localip);
                 msgList = client.AddTag(msgList, "sig");
                 msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.S.globalPara["user"]);
                 str = client.SynSendMsg(msgList.ToString());
