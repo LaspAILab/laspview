@@ -61,10 +61,12 @@ public class GuiMain : MonoBehaviour
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
     static Vector3 copyBias = new Vector3(2500f, 0, 0);
-    //************************** END  *****************************
+
+    private Dictionary<Vector3, Atom> atomScreenPosTemp = null;
+//************************** END  *****************************
 
 
-    void Awake()
+void Awake()
     {
         S = this;
 
@@ -416,29 +418,34 @@ public class GuiMain : MonoBehaviour
                         }
                     }
                     //Long press, Project All the Atom and than Judge if should be Select
-                    else
+                    else if (Time.time - mouse0PressedTime >= 0.2f && atomScreenPosTemp == null)
                     {
-                        foreach (Atom a in MainScr.S.CurrentStructure().atomList)
+                        atomScreenPosTemp = new Dictionary<Vector3, Atom>();
+                        foreach (Atom at in MainScr.S.CurrentStructure().atomList)
                         {
-                            Vector3 screenPos = Camera.main.WorldToScreenPoint(a.transform.position);
-                            if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
-                                if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
-                                    if (!pickGO.Contains(a.gameObject))
-                                        pickGO.Add(a.gameObject);
+                            atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
+
                         }
                         foreach (ExtendStructrue ext in MainScr.S.CurrentStructure().extendStructs)
                         {
                             if (ext == null) continue;
-                            foreach (Atom a in ext.extendAtomList)
+                            foreach (Atom at in ext.extendAtomList)
                             {
-                                Vector3 screenPos = Camera.main.WorldToScreenPoint(a.transform.position);
-                                if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
-                                    if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
-                                        if (!pickGO.Contains(a.gameObject))
-                                            pickGO.Add(a.gameObject);
+                                atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
                             }
                         }
-
+                        print(2);
+                    }
+                    else 
+                    {
+                        foreach (KeyValuePair<Vector3, Atom> kvpair in atomScreenPosTemp)
+                        {
+                            Vector3 screenPos = kvpair.Key;
+                            if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
+                                if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
+                                    if (!pickGO.Contains(kvpair.Value.gameObject))
+                                        pickGO.Add(kvpair.Value.gameObject);
+                        }
                         if (pickGO.Count != 0)
                         {
                             foreach (GameObject go in pickGO)
@@ -471,7 +478,7 @@ public class GuiMain : MonoBehaviour
                 //鼠标左键抬起时：确保所有选中原子的颜色，移去框
                 else if (Input.GetKeyUp(KeyCode.Mouse0))
                 {
-
+                    atomScreenPosTemp = null; 
                     if (pickGO.Count != 0)
                     {
                         foreach (GameObject go in pickGO)
