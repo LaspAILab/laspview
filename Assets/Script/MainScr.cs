@@ -99,8 +99,9 @@ end
 
     public void DrawArc(int arcIndex)
     {
-        ArcStructures targetArc = arcList[arcIndex];
+        arcList[currentArc].DeDrawArc();
         arcList[currentArc].gameObject.SetActive(false);
+        ArcStructures targetArc = arcList[arcIndex];
         targetArc.gameObject.SetActive(true);
         currentArc = arcIndex;
         L_DisplayPanelSrc.S.DisplayLoadModelPara();

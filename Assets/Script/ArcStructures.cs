@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System;
-
+using System.Runtime.ExceptionServices;
 
 public class ArcStructures : MonoBehaviour
 {
@@ -23,7 +23,7 @@ public class ArcStructures : MonoBehaviour
     public int currentStr;
     public List<Structure> structureList;
     public int lenStructures = 0;
-    public Dictionary<string, float> modelPara;
+    public Dictionary<string, float> arcModelPara;
 
     void Awake()
     {
@@ -34,7 +34,7 @@ public class ArcStructures : MonoBehaviour
         cameraCenter.SetParent(this.transform);//use a void GameObject as cameraCenter
 
         //this.modelPara = new Dictionary<string, float> { { "ball_radius", 0.5f }, { "bound_radius", 1.0f }, { "bound_boundry", 0.63f } };
-        this.modelPara = L_DisplayPanelSrc.defaultModelPara;
+        this.arcModelPara = L_DisplayPanelSrc.defaultModelPara;
     }
 
 
@@ -47,13 +47,8 @@ public class ArcStructures : MonoBehaviour
     {
         if (i != currentStr)
         {
-            foreach (Bond b in structureList[currentStr].bondList)
-            {
-                //Destroy all bond before setActive False to save memory
-                UnityEngine.Object.Destroy(b.gameObject);
-            }
-            structureList[currentStr].bondList.Clear();
-            structureList[currentStr].gameObject.SetActive(false);
+            structureList[currentStr].DeDrawModel();
+            structureList[currentStr].gameObject.SetActiveRecursively(false);
         }
 
         structureList[i].DrawModel();
@@ -240,6 +235,33 @@ public class ArcStructures : MonoBehaviour
     public string ArcWriteAll()
     {
         return ArcWrite(0, structureList.Count - 1);
+    }
+
+    public void DeDrawArc()
+    {
+        foreach (Structure struc in structureList)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        if (struc.extendStructs[i, j, k] != null)
+                        {
+                            struc.extendStructs[i, j, k].DestroyExtendStructrue();
+                            struc.extendStructs[i, j, k] = null;
+                        }
+                    }
+                }
+            }
+            foreach(Bond bd in struc.bondList)
+            {
+                GameObject.Destroy(bd.gameObject);
+            }
+            struc.bondList.Clear();
+            struc.strucModelPara = null;
+        }
     }
 
 }

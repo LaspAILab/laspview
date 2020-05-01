@@ -26,11 +26,11 @@ public class Structure : MonoBehaviour
     //public List<Bond> extendBondList;         //List of class & modelBond
     public Transform latCenter;     //center of lattice, generally used as camera center
     public Vector3[] cellTranslate;
-    ExtendStructrue[,,] extendStructs;
+    public ExtendStructrue[,,] extendStructs;
     public int currentExtendA = 1;
     public int currentExtendB = 1;
     public int currentExtendC = 1;
-
+    public Dictionary<string, float> strucModelPara;
 
 
     public int pathid = 0;       //？？？
@@ -159,7 +159,7 @@ public class Structure : MonoBehaviour
     
     public void AddAllBond()
     {
-        this.AddAllBond(parent.modelPara["bond boundry"]);
+        this.AddAllBond(parent.arcModelPara["bond boundry"]);
     }
 
     public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
@@ -187,7 +187,7 @@ public class Structure : MonoBehaviour
 
     public Bond AddBond(Atom a, Atom b, Vector3 direction, float rate, bool otherCell = false)
     {
-        float stickRadius = parent.modelPara["stick radius"];
+        float stickRadius = parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
         Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
@@ -241,7 +241,7 @@ public class Structure : MonoBehaviour
     {
         Vector3 dieta;
         float rate;
-        float bondBoundry = parent.modelPara["bond boundry"];
+        float bondBoundry = parent.arcModelPara["bond boundry"];
         Matrix4x4 inverse = this.lat.inverse;
 
         if (changeBond.Count != 0)
@@ -417,53 +417,113 @@ public class Structure : MonoBehaviour
 
     public void DrawModel()
     {
-        Dictionary<string, float> modelPara = parent.modelPara;
-
-        ChangeAtomModel(atomList);
         this.MoveIntoLatticAtoms(this.atomList);
-        //warning:这里怎么改再说了
-        ChangeMainBondModel(bondList);
 
-        int a = (int)modelPara["lat range a"];
-        int b = (int)modelPara["lat range b"];
-        int c = (int)modelPara["lat range c"];
-
-        for (int i = 0; i < 3; i++)
+        Dictionary<string, float> modelPara = parent.arcModelPara;
+        if (strucModelPara == null)
         {
-            for (int j = 0; j < 3; j++)
+
+            ChangeAtomModel(atomList);
+            ChangeMainBondModel();
+            ChangeLatRange(modelPara);
+            for (int i = 0; i < 3; i++)
             {
-                for (int k = 0; k < 3; k++)
+                for (int j = 0; j < 3; j++)
                 {
-                    if (i == 0 && j == 0 && k == 0) continue;
-                    else if (extendStructs[i, j, k] == null && (i < a && j < b && k < c))
+                    for (int k = 0; k < 3; k++)
                     {
-                        //print(((i, j, k), extendStructs[i, j, k], (i < a && j < b && k < c)));
-                        extendStructs[i, j, k] = new ExtendStructrue(this, i, j, k);
+                        if (extendStructs[i, j, k] != null)
+                        {
+                            ChangeAtomModel(extendStructs[i, j, k].extendAtomList);
+                            extendStructs[i, j, k].ChangeExtendBondModel();
+                        }
                     }
-                    else if (extendStructs[i, j, k] != null && (i >= a || j >= b || k >= c))
+                }
+            }
+            strucModelPara = new Dictionary<string, float>(modelPara);
+            this.gameObject.SetActiveRecursively(true);
+            return;
+        }
+
+        if (strucModelPara["lat range a"] != modelPara["lat range a"] ||
+            strucModelPara["lat range b"] != modelPara["lat range b"] ||
+            strucModelPara["lat range c"] != modelPara["lat range c"])
+        {
+            ChangeLatRange(modelPara);
+        }
+
+        if (strucModelPara["display style"] != modelPara["display style"] ||
+            strucModelPara["ball radius type"] != modelPara["ball radius type"] ||
+            strucModelPara["ball scaling ratio"] != modelPara["ball scaling ratio"] ||
+            strucModelPara["ball radius"] != modelPara["ball radius"])
+        {
+            ChangeAtomModel(atomList);
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int k = 0; k < 3; k++)
                     {
-                        extendStructs[i, j, k].DestroyExtendStructrue();
-                        extendStructs[i, j, k] = null;
-                    }
-                    if (extendStructs[i, j, k] != null)
-                    {
-                        ChangeAtomModel(extendStructs[i, j, k].extendAtomList);
-                        extendStructs[i, j, k].ChangeExtendBondModel();
+                        if (extendStructs[i, j, k] != null)
+                        {
+                            ChangeAtomModel(extendStructs[i, j, k].extendAtomList);
+                        }
                     }
                 }
             }
         }
-        currentExtendA = a;
-        currentExtendB = b;
-        currentExtendC = c;
-        SetStrucCollider();
+
+        //bool needRePaintBond = ;
+        if (strucModelPara["display style"] != modelPara["display style"] || strucModelPara["bond boundry"] != modelPara["bond boundry"])
+        {
+            ChangeMainBondModel();
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        if (extendStructs[i, j, k] != null)
+                        {
+                            extendStructs[i, j, k].ChangeExtendBondModel();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (strucModelPara["stick radius"] != modelPara["stick radius"])
+        {
+            float radius = modelPara["stick radius"];
+            foreach (Bond bd in bondList)
+            {
+                bd.gameObject.transform.localScale = new Vector3(radius, bd.gameObject.transform.localScale.y, radius);
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        if (extendStructs[i, j, k] != null)
+                        {
+
+                            foreach (Bond bd in extendStructs[i, j, k].extendBondList)
+                            {
+                                bd.gameObject.transform.localScale = new Vector3(radius, bd.gameObject.transform.localScale.y, radius);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         this.gameObject.SetActiveRecursively(true);
+        strucModelPara = new Dictionary<string, float>(modelPara);
     } 
 
     public void ChangeAtomModel(List<Atom> listOfAtom)
     {
-        print(2);
-        Dictionary<string, float> modelPara = parent.modelPara;
+        Dictionary<string, float> modelPara = parent.arcModelPara;
         if (modelPara["display style"] == 0 || modelPara["display style"] == 1)
         {
             if (modelPara["ball radius type"] == 0)
@@ -481,14 +541,14 @@ public class Structure : MonoBehaviour
         }
     }
 
-    public void ChangeMainBondModel(List<Bond> listOfBond)
+    public void ChangeMainBondModel()
     {
-        Dictionary<string, float> modelPara = parent.modelPara;
-        foreach (Bond bd in listOfBond)
+        Dictionary<string, float> modelPara = parent.arcModelPara;
+        foreach (Bond bd in bondList)
         {
             GameObject.Destroy(bd.gameObject);
         }
-        listOfBond.Clear();
+        bondList.Clear();
 
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
@@ -496,7 +556,36 @@ public class Structure : MonoBehaviour
         }
     }
 
-    //public void ChangeLatModek(List)
+    public void ChangeLatRange(Dictionary<string, float> modelPara)
+    {
+        int a = (int)modelPara["lat range a"];
+        int b = (int)modelPara["lat range b"];
+        int c = (int)modelPara["lat range c"];
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0) continue;
+                    else if (extendStructs[i, j, k] == null && (i < a && j < b && k < c))
+                    {
+                        //print(((i, j, k), extendStructs[i, j, k], (i < a && j < b && k < c)));
+                        extendStructs[i, j, k] = new ExtendStructrue(this, i, j, k);
+                    }
+                    else if (extendStructs[i, j, k] != null && (i >= a || j >= b || k >= c))
+                    {
+                        extendStructs[i, j, k].DestroyExtendStructrue();
+                        extendStructs[i, j, k] = null;
+                    }
+                }
+            }
+        }
+        currentExtendA = a;
+        currentExtendB = b;
+        currentExtendC = c;
+        SetStrucCollider();
+    }
 
     public Vector3 GetCellTransfer(int i, int j, int k)
     {
@@ -505,10 +594,21 @@ public class Structure : MonoBehaviour
         return new Vector3(vec4[0], vec4[1], vec4[2]);
     }
 
+
+    public void DeDrawModel()
+    {
+        //foreach (Bond b in bondList)
+        //{
+        //    //Destroy all bond before setActive False to save memory
+        //    UnityEngine.Object.Destroy(b.gameObject);
+        //}
+        //bondList.Clear();
+    }
+
 }
 
 
-class ExtendStructrue
+public class ExtendStructrue
 {
     public Structure originStructure;
     //public bool alive;
@@ -545,7 +645,7 @@ class ExtendStructrue
 
     private Bond AddExtendBond(Bond originBond, Vector3 bias)
     {
-        float stickRadius = originStructure.parent.modelPara["stick radius"];
+        float stickRadius = originStructure.parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
         Bond newBond = Object.Instantiate(originStructure.bondPrefabVar).GetComponent<Bond>();
@@ -559,8 +659,6 @@ class ExtendStructrue
 
         return newBond;
     }
-
-
 
     private Atom AddExtendAtom(Atom originAtom, Vector3 bias)
     {
@@ -614,7 +712,7 @@ class ExtendStructrue
 
     public void ChangeExtendBondModel()
     {
-        Dictionary<string, float> modelPara = originStructure.parent.modelPara;
+        Dictionary<string, float> modelPara = originStructure.parent.arcModelPara;
         foreach (Bond bd in extendBondList)
         {
             GameObject.Destroy(bd.gameObject);

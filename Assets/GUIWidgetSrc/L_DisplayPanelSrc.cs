@@ -45,14 +45,14 @@ public class L_DisplayPanelSrc : MonoBehaviour
 
     public void DisplayOnParaChange()
     {
-        MainScr.S.CurrentArc().modelPara = DisplayModelPara();
+        MainScr.S.CurrentArc().arcModelPara = DisplayModelPara();
         MainScr.S.CurrentStructure().DrawModel();
         GuiMain.S.FocusCameraCenter();
     }
 
     public void DisplayLoadModelPara()
     {
-        Dictionary<string, float> arcPara = MainScr.S.CurrentArc().modelPara;
+        Dictionary<string, float> arcPara = MainScr.S.CurrentArc().arcModelPara;
         foreach (KeyValuePair<string, GameObject> kvp in displayPanelPara.paraDict)
         {
             if (kvp.Value.GetComponent<Dropdown>())

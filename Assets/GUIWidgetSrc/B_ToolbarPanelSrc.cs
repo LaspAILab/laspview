@@ -127,7 +127,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             yield return null;
             if (timer >= 0.2f)
             {
-                print("HelloWorld");
+                //print("HelloWorld")/*;*/
                 if(MainScr.S.CurrentArc().currentStr == MainScr.S.CurrentArc().structureList.Count - 1)
                 {
                     MainScr.S.CurrentArc().DrawStructure(0);
