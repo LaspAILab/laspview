@@ -201,7 +201,7 @@ namespace ViewerNetwork
                 }
                 catch (Exception ex)
                 {
-                    printOnMainTrhead("Error:" + ex.Message);
+                    printOnMainTrhead("Error:" + ex.GetType() + ex.StackTrace + ex.Message);
                     //StreamWriter file = new StreamWriter(@"error.txt", true);
                     //file.WriteLine(ex.Message);
                     //break;

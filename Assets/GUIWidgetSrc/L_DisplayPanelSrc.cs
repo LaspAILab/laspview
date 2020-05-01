@@ -47,6 +47,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
     {
         MainScr.S.CurrentArc().modelPara = DisplayModelPara();
         MainScr.S.CurrentStructure().DrawModel();
+        GuiMain.S.FocusCameraCenter();
     }
 
     public void DisplayLoadModelPara()

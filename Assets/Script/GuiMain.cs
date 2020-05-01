@@ -713,7 +713,10 @@ public class GuiMain : MonoBehaviour
 
     public void FocusCameraCenter()
     {
-        Vector3 vec = MainScr.S.CurrentStructure().GetCellTransfer(1, 1, 1) / 2;
+        int a = MainScr.S.CurrentStructure().currentExtendA;
+        int b = MainScr.S.CurrentStructure().currentExtendB;
+        int c = MainScr.S.CurrentStructure().currentExtendC;
+        Vector3 vec = MainScr.S.CurrentStructure().GetCellTransfer(a, b, c) / 2;
         cameraCenter.position = vec;
         cameraTransform.position = vec;
         cameraTransform.Translate(Vector3.back.normalized * vec.magnitude * 4);

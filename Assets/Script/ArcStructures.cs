@@ -94,9 +94,6 @@ public class ArcStructures : MonoBehaviour
         return newStru;
 
     }
-
-
-
     public void ArcRead(string filename, string[] lines, bool noE = false, string fname = null)
     {   //Initilization function outside Unity3d frame. Need to be call soon after Instantiation.
         this.filename = filename;
@@ -200,7 +197,7 @@ public class ArcStructures : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ConFun.S.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.Message);
+            ConFun.S.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.GetType() + ex.StackTrace + ex.Message);
             print(currentStr);
             //GameObject.Destroy(structureList[currentStr].gameObject);
         }
