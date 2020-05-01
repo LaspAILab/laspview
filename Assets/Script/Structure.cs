@@ -191,7 +191,7 @@ public class Structure : MonoBehaviour
 
         //a is the point to atom, b is the parent;
         Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
-        newBond.Init(b, otherCell);
+        newBond.Init(a, b, otherCell);
         newBond.transform.position = a.nodeTrans.position;
         newBond.transform.Translate(direction * 0.5f * rate);
         newBond.transform.Rotate(new Vector3(-direction.z, 0, direction.x), -Vector3.Angle(Vector3.up, direction));
@@ -611,7 +611,7 @@ public class Structure : MonoBehaviour
 public class ExtendStructrue
 {
     public Structure originStructure;
-    //public bool alive;
+    public Transform extendTranform;
 
     public int a;
     public int b;
@@ -620,10 +620,14 @@ public class ExtendStructrue
     public List<Bond> extendBondList;
     public List<LineRenderer> extendLatLineList;
 
+
     public ExtendStructrue(Structure origin, int a0, int b0, int c0)
     {
         //alive = true;
         originStructure = origin;
+        extendTranform = Object.Instantiate(origin.nodePrefabVar).transform;
+        extendTranform.SetParent(origin.transform);
+
         extendAtomList = new List<Atom> { };
         extendBondList = new List<Bond> { };
         extendLatLineList = new List<LineRenderer> { };
@@ -654,25 +658,38 @@ public class ExtendStructrue
         newBond.transform.position = originBond.transform.position + bias;
         newBond.transform.rotation = originBond.transform.rotation;
         newBond.transform.localScale = originBond.transform.localScale;
-        newBond.transform.parent = originBond.transform.parent;
         newBond.GetComponent<Renderer>().material.color = originBond.GetComponent<Renderer>().material.color;
+
+        int index = originStructure.atomList.IndexOf(originBond.originAtom);
+        newBond.transform.SetParent(extendAtomList[index].transform.parent);
+
 
         return newBond;
     }
 
     private Atom AddExtendAtom(Atom originAtom, Vector3 bias)
     {
+
+        Transform nodeTrans = Object.Instantiate(originStructure.nodePrefabVar).transform;
+        nodeTrans.SetParent(extendTranform);
+        nodeTrans.position = originAtom.transform.position + bias;
+
         Atom newAtom = Object.Instantiate(originStructure.atomPrefabVar).GetComponent<Atom>();
         extendAtomList.Add(newAtom);
-
-        newAtom.transform.position = originAtom.transform.position + bias;
-        newAtom.transform.rotation = originAtom.transform.rotation;
-        newAtom.transform.localScale = originAtom.transform.localScale;
-        newAtom.GetComponent<Renderer>().material.color = originAtom.color;
-
-        newAtom.transform.SetParent(originAtom.transform.parent);
-        newAtom.nodeTrans = originAtom.transform.parent;
+        newAtom.nodeTrans = nodeTrans;
         newAtom.originAtom = originAtom;
+        newAtom.transform.position = originAtom.transform.position + bias;
+        newAtom.GetComponent<Renderer>().material.color = originAtom.color;
+        newAtom.color = originAtom.color;
+        newAtom.transform.localScale = originAtom.transform.localScale;
+
+        newAtom.transform.SetParent(nodeTrans, true);
+        //newAtom.transform.localPosition = Vector3.zero;
+
+
+
+
+
 
         newAtom.radius = originAtom.radius;
         return newAtom;

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Bond : MonoBehaviour
 {
+    public Atom originAtom;
     public Atom pointToAtom;
     public bool point2OtherCell;
     // Start is called before the first frame update
@@ -12,9 +13,10 @@ public class Bond : MonoBehaviour
         
     }
 
-    public void Init(Atom a, bool pointToOtherCell = false)
+    public void Init(Atom origin, Atom pointTo, bool pointToOtherCell = false)
     {
-        pointToAtom = a;
+        originAtom = origin;
+        pointToAtom = pointTo;
         point2OtherCell = pointToOtherCell;
     }
 

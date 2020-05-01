@@ -420,12 +420,25 @@ public class GuiMain : MonoBehaviour
                     {
                         foreach (Atom a in MainScr.S.CurrentStructure().atomList)
                         {
-                            Vector3 screenPos = Camera.main.WorldToScreenPoint(a.nodeTrans.position);
+                            Vector3 screenPos = Camera.main.WorldToScreenPoint(a.transform.position);
                             if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
                                 if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
                                     if (!pickGO.Contains(a.gameObject))
                                         pickGO.Add(a.gameObject);
                         }
+                        foreach (ExtendStructrue ext in MainScr.S.CurrentStructure().extendStructs)
+                        {
+                            if (ext == null) continue;
+                            foreach (Atom a in ext.extendAtomList)
+                            {
+                                Vector3 screenPos = Camera.main.WorldToScreenPoint(a.transform.position);
+                                if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
+                                    if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
+                                        if (!pickGO.Contains(a.gameObject))
+                                            pickGO.Add(a.gameObject);
+                            }
+                        }
+
                         if (pickGO.Count != 0)
                         {
                             foreach (GameObject go in pickGO)
@@ -468,7 +481,6 @@ public class GuiMain : MonoBehaviour
                                 ren.material.color = Color.yellow;
                             }
                         }
-
                     }
 
 
