@@ -6,7 +6,10 @@ public class Bond : MonoBehaviour
 {
     public Atom originAtom;
     public Atom pointToAtom;
-    public bool point2OtherCell;
+    public Bond originBond;
+
+    //public Bond 
+    //public bool point2OtherCell;
     // Start is called before the first frame update
     void Start()
     {
@@ -17,7 +20,7 @@ public class Bond : MonoBehaviour
     {
         originAtom = origin;
         pointToAtom = pointTo;
-        point2OtherCell = pointToOtherCell;
+        originBond = this;
     }
 
 }

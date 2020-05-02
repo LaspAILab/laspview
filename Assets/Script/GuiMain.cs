@@ -8,8 +8,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using B83.Win32;
-
-
+using System.Linq;
 
 public class GuiMain : MonoBehaviour
 {
@@ -61,6 +60,12 @@ public class GuiMain : MonoBehaviour
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
     static Vector3 copyBias = new Vector3(2500f, 0, 0);
+    private List<Atom> pickAtomOrigin; //for pick Atom
+    private List<Atom> pickAtomDerived;
+    //private List<>
+    private List<Bond> changeBond = new List<Bond>();
+    private List<Bond> changeBondDerived;
+
 
     private Dictionary<Vector3, Atom> atomScreenPosTemp = null;
 //************************** END  *****************************
@@ -372,18 +377,7 @@ void Awake()
                 {
                     mouse0PressedTime = Time.time;
                     mouseStart = Input.mousePosition;
-                    if (pickGO.Count != 0)
-                    {
-                        //Cancel pickGO
-                        foreach (GameObject go in pickGO)
-                        {
-                            foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                            {
-                                ren.material.color = go.GetComponent<Atom>().color;
-                            }
-                        }
-                        pickGO.Clear();
-                    }
+                    DisSelectPickGO();
 
                     //mouseBox reset
                     if (mouseBox.Length == 0)
@@ -434,7 +428,6 @@ void Awake()
                                 atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
                             }
                         }
-                        print(2);
                     }
                     else 
                     {
@@ -444,19 +437,11 @@ void Awake()
                             if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
                                 if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
                                     if (!pickGO.Contains(kvpair.Value.gameObject))
+                                    {
                                         pickGO.Add(kvpair.Value.gameObject);
+                                        SelectPickGO(kvpair.Value.gameObject);
+                                    }
                         }
-                        if (pickGO.Count != 0)
-                        {
-                            foreach (GameObject go in pickGO)
-                            {
-                                foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                                {
-                                    ren.material.color = Color.yellow;
-                                }
-                            }
-                        }
-
 
                         foreach (LineRenderer r in mouseBox)
                         {
@@ -471,25 +456,13 @@ void Awake()
                         mouseBox[1] = this.mouseBoxLine(v1, new Vector3(v2.x, v1.y, 0f));
                         mouseBox[2] = this.mouseBoxLine(v2, new Vector3(v1.x, v2.y, 0f));
                         mouseBox[3] = this.mouseBoxLine(v2, new Vector3(v2.x, v1.y, 0f));
-
-
                     }
                 }
                 //鼠标左键抬起时：确保所有选中原子的颜色，移去框
                 else if (Input.GetKeyUp(KeyCode.Mouse0))
                 {
-                    atomScreenPosTemp = null; 
-                    if (pickGO.Count != 0)
-                    {
-                        foreach (GameObject go in pickGO)
-                        {
-                            foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                            {
-                                ren.material.color = Color.yellow;
-                            }
-                        }
-                    }
-
+                    atomScreenPosTemp = null;
+                    SelectPickGO();
 
                     foreach (LineRenderer r in mouseBox)
                     {
@@ -601,7 +574,7 @@ void Awake()
                             //print(pickAtomFurthestDis);
                             //print(pickAtomAvgPosScreen);
                             //print(rotationMode3d);
-                            MainScr.S.CurrentStructure().PickControlStart(pickGO);
+                            PickControlStart();
 
                         }
                         //LC+鼠标右键按住时：旋转选中原子
@@ -630,7 +603,7 @@ void Awake()
                                     ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.forward, -degree);
                                 }
                             }
-                            MainScr.S.CurrentStructure().PickControlUpdate();
+                           PickControlUpdate();
 
 
                         }
@@ -638,8 +611,7 @@ void Awake()
                         else if ((Input.GetKeyUp(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
                               || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse1)))
                         {
-
-                            MainScr.S.CurrentStructure().PickControlEnd();
+                            PickControlEnd();
                             EditSaveSturc();
                         }
 
@@ -648,26 +620,28 @@ void Awake()
                               || Input.GetKeyDown(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                         {
                             offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                            MainScr.S.CurrentStructure().PickControlStart(pickGO);
+
+
+                            PickControlStart();
                         }
                         //LC(LeftControl)+鼠标中键按下： 平移选中原子(鼠标右键可用LShift替换)
                         else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                         {
                             Vector3 vec = Camera.main.ScreenToWorldPoint(Input.mousePosition) - offsetTemp;
-                            foreach (GameObject ga in pickGO)
+                            foreach (GameObject go in pickGO)
                             {
-                                ga.transform.parent.position += vec;
+                                go.transform.parent.position += vec;
                             }
 
                             offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-                            MainScr.S.CurrentStructure().PickControlUpdate();
+                            PickControlUpdate();
                         }
                         //松开LC或鼠标中键：收尾(鼠标右键可用LShift替换)
                         else if ((Input.GetKeyUp(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                               || (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyUp(KeyCode.Mouse2) || Input.GetKeyUp(KeyCode.LeftShift))))
                         {
-                            MainScr.S.CurrentStructure().PickControlEnd();
+                            PickControlEnd();
                             EditSaveSturc();
                         }
                     }
@@ -675,6 +649,8 @@ void Awake()
             }
         }
     }
+
+
 
     public List<RaycastResult> ClickObject()
     {
@@ -701,6 +677,44 @@ void Awake()
         line.SetPosition(1, Camera.main.ScreenToWorldPoint(v2) + Camera.main.transform.forward);
         return line;
     }
+
+    public void SelectPickGO()
+    {
+        if (pickGO.Count != 0)
+        {
+            foreach (GameObject go in pickGO)
+            {
+                foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+                {
+                    ren.material.color = Color.yellow;
+                }
+            }
+        }
+    }
+    private void SelectPickGO(GameObject go)
+    {
+        foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+        {
+            ren.material.color = Color.yellow;
+        }
+    }
+
+    public void DisSelectPickGO()
+    {
+        if (pickGO.Count != 0)
+        {
+            //Cancel pickGO
+            foreach (GameObject go in pickGO)
+            {
+                foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
+                {
+                    ren.material.color = go.GetComponent<Atom>().color;
+                }
+            }
+            pickGO.Clear();
+        }
+    }
+
 
     private void MeasurePickAtoms()
     {
@@ -751,6 +765,239 @@ void Awake()
         {
             a.cdnt = a.transform.parent.position;
         }
+    }
+
+
+    public void PickControlStart()
+    {
+        Structure struc = MainScr.S.CurrentStructure();
+        pickAtomOrigin = new List<Atom>();
+        foreach (GameObject go in pickGO)
+        {
+            pickAtomOrigin.Add(go.GetComponent<Atom>().originAtom);
+        }
+
+        pickAtomDerived = new List<Atom>(pickAtomOrigin);
+        foreach (GameObject go in pickGO)
+        {
+            pickAtomDerived = pickAtomDerived.Union(go.GetComponent<Atom>().originAtom.derivedAtom).ToList<Atom>();
+        }
+        foreach(GameObject go in pickGO)
+        {
+            pickAtomDerived.Remove(go.GetComponent<Atom>());
+        }
+
+        foreach (Atom a in pickAtomOrigin)
+        {
+            foreach (Bond b1 in a.transform.parent.GetComponentsInChildren<Bond>())
+            {
+                //remove Bond who is from Pick Atom a to Unpick Atom 
+                //if (b1.point2OtherCell == true || !pickAtomOrigin.Contains(b1.pointToAtom))
+                if (!pickAtomOrigin.Contains(b1.pointToAtom))
+                {
+                    struc.bondList.Remove(b1);
+                    changeBond.Add(b1);
+
+                    //remove Bond who is from Unpick Atom to Pick Atom a
+                    foreach (Bond b2 in b1.pointToAtom.gameObject.transform.parent.GetComponentsInChildren<Bond>())
+                    {
+                        if (b2.pointToAtom == a)
+                        {
+                            struc.bondList.Remove(b2);
+                            changeBond.Add(b2);
+                        }
+                    }
+                }
+            }
+        }
+
+        changeBondDerived = new List<Bond>();
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0) continue;
+                    else if (struc.extendStructs[i, j, k] != null)
+                    {
+                        List<Bond> temp = new List<Bond>();
+                        foreach (Bond bdExtend in struc.extendStructs[i, j, k].extendBondList)
+                        {
+                            if (changeBond.Contains(bdExtend.originBond))
+                            {
+                                temp.Add(bdExtend);
+                                changeBondDerived.Add(bdExtend);
+                            }
+                        }
+                        foreach (Bond bd in temp)
+                        {
+                            struc.extendStructs[i, j, k].extendBondList.Remove(bd);
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    public void PickControlUpdate()
+    {
+        Structure struc = MainScr.S.CurrentStructure();
+
+        foreach (GameObject go in pickGO)
+        {
+            Atom at = go.GetComponent<Atom>();
+            at.originAtom.transform.position = go.transform.position - at.bias;
+        }
+        foreach(Atom at in pickAtomDerived)
+        {
+            if (at.originAtom != at)
+            {
+                at.transform.position = at.originAtom.transform.position + at.bias;
+            }
+        }
+
+
+
+
+        Vector3 dieta;
+        float rate;
+        float bondBoundry = struc.strucModelPara["bond boundry"];
+        Matrix4x4 inverse = struc.lat.inverse;
+
+        if (changeBond.Count != 0)
+        {
+            foreach (Bond b in changeBond)
+            {
+                Object.Destroy(b.gameObject);
+            }
+        }
+        changeBond.Clear();
+
+        //print(changeBondDerived.Count);
+        if (changeBondDerived.Count != 0)
+        {
+            foreach (Bond b in changeBondDerived)
+            {
+                Object.Destroy(b.gameObject);
+            }
+        }
+        changeBondDerived.Clear();
+
+        foreach (Atom a1 in pickAtomOrigin)
+        {
+            Vector3 p1 = a1.transform.parent.position;
+            Vector3 fractionalPos = inverse * p1;
+            int[] vecs = new int[3];
+            for (int i = 0; i < 3; i++)
+            {
+                vecs[i] = Mathf.FloorToInt(fractionalPos[i] + 1.5e-7f);
+                //print(vecs[i]);
+            }
+
+            foreach (Atom a2 in struc.atomList)
+            {
+                Vector3 p2 = a2.transform.parent.position;
+
+                Vector3 backBias = struc.GetCellTransfer(vecs[0], vecs[1], vecs[2]);
+                if (struc.CheckBond(a1, a2, backBias, bondBoundry))
+                {
+                    dieta = a2.nodeTrans.position - a1.nodeTrans.position;
+                    rate = a1.radius / (a1.radius + a2.radius);
+                    changeBond.Add(struc.AddBond(a1, a2, dieta + backBias, rate));
+                    changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias, 1 - rate));
+                }
+                for (int i = 0; i < 3; i++)
+                {
+                    Vector3 vec = struc.cellTranslate[i];
+                    if (struc.CheckBond(a1, a2, backBias + vec, bondBoundry))
+                    {
+                        dieta = a2.nodeTrans.position - a1.nodeTrans.position;
+                        rate = a1.radius / (a1.radius + a2.radius);
+                        changeBond.Add(struc.AddBond(a1, a2, dieta + backBias + vec, rate));
+                        changeBond.Add(struc.AddBond(a2, a1, -dieta -backBias- vec, 1 - rate));
+                    }
+                    if (struc.CheckBond(a1, a2, backBias - vec, bondBoundry))
+                    {
+                        dieta = a2.nodeTrans.position - a1.nodeTrans.position;
+                        rate = a1.radius / (a1.radius + a2.radius);
+                        changeBond.Add(struc.AddBond(a1, a2, dieta + backBias - vec, rate));
+                        changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias + vec, 1 - rate));
+                    }
+                }
+
+            }
+        }
+
+        ////Update Extend Atom & Bond
+
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0) continue;
+                    else if (struc.extendStructs[i, j, k] != null)
+                    {
+                        Vector3 bias = struc.GetCellTransfer(i, j, k);
+                        foreach (Bond bd in changeBond)
+                        {
+                            Bond newBond = Object.Instantiate(struc.bondPrefabVar).GetComponent<Bond>();
+                            changeBondDerived.Add(newBond);
+
+                            newBond.transform.position = bd.transform.position + bias;
+                            newBond.transform.rotation = bd.transform.rotation;
+                            newBond.transform.localScale = bd.transform.localScale;
+
+                            newBond.originBond = bd;
+
+                            int index = struc.atomList.IndexOf(bd.originAtom);
+                            newBond.GetComponent<Renderer>().material.color = struc.extendStructs[i, j, k].extendAtomList[index].GetComponent<Renderer>().material.color;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void PickControlEnd()
+    {
+        Structure struc = MainScr.S.CurrentStructure();
+
+
+        if (changeBond.Count != 0)
+        {
+            foreach (Bond b in changeBond)
+            {
+                Object.Destroy(b.gameObject);
+            }
+        }
+        changeBond.Clear();
+
+        //print(changeBondDerived.Count);
+        if (changeBondDerived.Count != 0)
+        {
+            foreach (Bond b in changeBondDerived)
+            {
+                Object.Destroy(b.gameObject);
+            }
+        }
+        changeBondDerived.Clear();
+
+
+
+        Dictionary<string, float> tempDic = new Dictionary<string, float> { { "lat range a", 1f }, { "lat range b", 1f }, { "lat range c", 1f } };
+        struc.ChangeLatRange(tempDic);
+        struc.strucModelPara = null;
+        struc.DrawModel();
+
+
+        changeBond.Clear();
+        changeBondDerived.Clear();
+        pickAtomOrigin.Clear();
+        pickAtomDerived.Clear();
     }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN

@@ -47,7 +47,7 @@ public class ArcStructures : MonoBehaviour
     {
         if (i != currentStr)
         {
-            structureList[currentStr].DeDrawModel();
+            //structureList[currentStr].DeDrawModel();
             structureList[currentStr].gameObject.SetActiveRecursively(false);
         }
 

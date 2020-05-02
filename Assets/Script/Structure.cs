@@ -40,8 +40,7 @@ public class Structure : MonoBehaviour
     public float nopathway = 0.0F;
     public bool ts = false;
 
-    private List<Atom> pickAtom; //for pick Atom
-    private List<Bond> changeBond = new List<Bond>(); 
+
 
 
     void Awake()
@@ -203,117 +202,6 @@ public class Structure : MonoBehaviour
     }
 
 
-    public void PickControlStart(List<GameObject> pickGO)
-    {
-        pickAtom = new List<Atom>();
-        foreach (GameObject go in pickGO)
-        {
-            pickAtom.Add(go.GetComponent<Atom>());
-        }
-
-        foreach( Atom a in pickAtom)
-        {
-            foreach(Bond b1 in a.transform.parent.GetComponentsInChildren<Bond>())
-            {
-                //remove Bond who is from Pick Atom a to Unpick Atom 
-                if (b1.point2OtherCell == true || !pickAtom.Contains(b1.pointToAtom)) 
-                {
-                    
-                    bondList.Remove(b1);
-                    Object.Destroy(b1.gameObject);
-                    //remove Bond who is from Unpick Atom to Pick Atom a
-                    foreach (Bond b2 in b1.pointToAtom.gameObject.transform.parent.GetComponentsInChildren<Bond>())
-                    {
-                        if(b2.pointToAtom == a)
-                        {
-                            bondList.Remove(b2);
-                            Object.Destroy(b2.gameObject);
-                        }
-                    }
-                }
-            }
-
-        }
-
-    }
-
-    public void PickControlUpdate()
-    {
-        Vector3 dieta;
-        float rate;
-        float bondBoundry = parent.arcModelPara["bond boundry"];
-        Matrix4x4 inverse = this.lat.inverse;
-
-        if (changeBond.Count != 0)
-        {
-            foreach (Bond b in changeBond)
-            {
-                Object.Destroy(b.gameObject);
-            }
-        }
-        changeBond.Clear();
-
-        foreach (Atom a1 in pickAtom)
-        {
-            //Vector3 p1 = a1.transform.parent.position;
-            //Vector3 fractionalPos = inverse * p1;
-            //int[] vecs = new int[3];
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    vecs[i] = Mathf.FloorToInt(fractionalPos[i] + 1.5e-5f);
-            //    print(vecs[i]);
-            //}
-
-            foreach (Atom a2 in atomList)
-            {
-                Vector3 p2 = a2.transform.parent.position;
-
-                if (CheckBond(a1, a2, bondBoundry)) 
-                {
-                    dieta = a2.nodeTrans.position - a1.nodeTrans.position;
-                    rate = a1.radius / (a1.radius + a2.radius);
-                    changeBond.Add(AddBond(a1, a2, dieta, rate));
-                    changeBond.Add(AddBond(a2, a1, -dieta, 1 - rate));
-                }
-                //for (int i = 0; i < 3; i++)
-                //{
-                //    Vector3 vec = cellTranslate[i] * vecs[i];
-                //    if (CheckBond(a1, a2, vec, bondBoundry))
-                //    {
-                //        dieta = a2.nodeTrans.position - a1.nodeTrans.position;
-                //        rate = a1.radius / (a1.radius + a2.radius);
-                //        changeBond.Add(AddBond(a1, a2, dieta + vec, rate));
-                //        changeBond.Add(AddBond(a2, a1, -dieta - vec, 1 - rate));
-                //    }
-                //}
-
-            }
-        }
-
-        //Update Extend Atom & Bond
-        
-        //foreach (Vector3 vec in cellTranslate)
-        //{
-        //    foreach (Atom a1 in pickAtom)
-        //    {
-        //        foreach (Atom a2 in atomList)
-        //        {
-                    
-
-        //        }
-        //    }
-        //}
-    }
-
-    public void PickControlEnd()
-    {
-        this.AddAllBond();
-
-        MoveIntoLatticAtoms(pickAtom);
-
-        changeBond.Clear();
-        pickAtom.Clear();  
-    }
 
 
     public void AddLat(string line)
@@ -572,6 +460,7 @@ public class Structure : MonoBehaviour
                     {
                         //print(((i, j, k), extendStructs[i, j, k], (i < a && j < b && k < c)));
                         extendStructs[i, j, k] = new ExtendStructrue(this, i, j, k);
+                        //print(extendStructs[i, j, k].extendAtomList[0].originAtom.derivedAtom.Count);
                     }
                     else if (extendStructs[i, j, k] != null && (i >= a || j >= b || k >= c))
                     {
@@ -613,9 +502,8 @@ public class ExtendStructrue
     public Structure originStructure;
     public Transform extendTranform;
 
-    public int a;
-    public int b;
-    public int c;
+    public Vector3 bias;
+
     public List<Atom> extendAtomList;
     public List<Bond> extendBondList;
     public List<LineRenderer> extendLatLineList;
@@ -631,10 +519,8 @@ public class ExtendStructrue
         extendAtomList = new List<Atom> { };
         extendBondList = new List<Bond> { };
         extendLatLineList = new List<LineRenderer> { };
-        a = a0;
-        b = b0;
-        c = c0;
-        Vector3 bias = originStructure.GetCellTransfer(a, b, c);
+
+        bias = originStructure.GetCellTransfer(a0, b0, c0);
 
         foreach(Atom at in origin.atomList)
         {
@@ -658,11 +544,13 @@ public class ExtendStructrue
         newBond.transform.position = originBond.transform.position + bias;
         newBond.transform.rotation = originBond.transform.rotation;
         newBond.transform.localScale = originBond.transform.localScale;
-        newBond.GetComponent<Renderer>().material.color = originBond.GetComponent<Renderer>().material.color;
+
+
+        newBond.originBond = originBond;
 
         int index = originStructure.atomList.IndexOf(originBond.originAtom);
+        newBond.GetComponent<Renderer>().material.color = extendAtomList[index].GetComponent<Renderer>().material.color;
         newBond.transform.SetParent(extendAtomList[index].transform.parent);
-
 
         return newBond;
     }
@@ -676,22 +564,21 @@ public class ExtendStructrue
 
         Atom newAtom = Object.Instantiate(originStructure.atomPrefabVar).GetComponent<Atom>();
         extendAtomList.Add(newAtom);
+
         newAtom.nodeTrans = nodeTrans;
         newAtom.originAtom = originAtom;
         newAtom.transform.position = originAtom.transform.position + bias;
         newAtom.GetComponent<Renderer>().material.color = originAtom.color;
         newAtom.color = originAtom.color;
+        newAtom.radius = originAtom.radius;
         newAtom.transform.localScale = originAtom.transform.localScale;
+        newAtom.bias = bias;
 
         newAtom.transform.SetParent(nodeTrans, true);
         //newAtom.transform.localPosition = Vector3.zero;
 
+        originAtom.derivedAtom.Add(newAtom);
 
-
-
-
-
-        newAtom.radius = originAtom.radius;
         return newAtom;
     }
 
@@ -737,7 +624,6 @@ public class ExtendStructrue
         extendBondList.Clear();
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
-            Vector3 bias = originStructure.GetCellTransfer(a, b, c);
             foreach (Bond bd in originStructure.bondList)
             {
                 AddExtendBond(bd, bias);
@@ -745,18 +631,28 @@ public class ExtendStructrue
         }
     }
 
+    public void RemoveExtendBond(Bond bd)
+    {
+        this.extendBondList.Remove(bd);
+        Object.Destroy(bd.gameObject);
+    }
+
+    //public void 
+
     public void DestroyExtendStructrue()
     {
-        foreach (Atom at in extendAtomList)
-        {
-            GameObject.Destroy(at.gameObject);
-        }
-        extendAtomList.Clear();
+
         foreach (Bond bd in extendBondList)
         {
             GameObject.Destroy(bd.gameObject);
         }
         extendBondList.Clear();
+        foreach (Atom at in extendAtomList)
+        {
+            at.originAtom.derivedAtom.Remove(at);
+            GameObject.Destroy(at.transform.parent.gameObject);
+        }
+        extendAtomList.Clear();
         foreach (LineRenderer lt in extendLatLineList)
         {
             GameObject.Destroy(lt.gameObject);

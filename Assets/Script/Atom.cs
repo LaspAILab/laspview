@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class Atom : MonoBehaviour
@@ -11,7 +12,8 @@ public class Atom : MonoBehaviour
 
     public Transform nodeTrans;
     public Atom originAtom;
-    //public List<Atom> derivedAtom;
+    public Vector3 bias;
+    public List<Atom> derivedAtom;
 
     public string ele;
     public Color color;
@@ -31,11 +33,12 @@ public class Atom : MonoBehaviour
         Renderer render = this.GetComponent<Renderer>();
         render.material.color = this.color;
 
-        this.originAtom = this;
-        //this.derivedAtom = new List<Atom> { this };
-
         nodeTrans = node;
+        this.originAtom = this;
+        derivedAtom = new List<Atom>();
+        bias = Vector3.zero;
     }
+
 
     public void ChangeScalingRatio(float ratio)
     {
