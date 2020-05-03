@@ -125,7 +125,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         {
             timer += Time.deltaTime;
             yield return null;
-            if (timer >= 0.2f)
+            if (timer >= float.Parse(L_DisplayPanelSrc.displayPanelPara.paraDict["play interval"].GetComponent<Text>().text))
             {
                 //print("HelloWorld")/*;*/
                 if(MainScr.S.CurrentArc().currentStr == MainScr.S.CurrentArc().structureList.Count - 1)

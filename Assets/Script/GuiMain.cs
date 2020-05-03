@@ -793,8 +793,8 @@ void Awake()
             {
                 //remove Bond who is from Pick Atom a to Unpick Atom 
                 //if (b1.point2OtherCell == true || !pickAtomOrigin.Contains(b1.pointToAtom))
-                if (!pickAtomOrigin.Contains(b1.pointToAtom))
-                {
+                //if (!pickAtomOrigin.Contains(b1.pointToAtom))
+                //{
                     struc.bondList.Remove(b1);
                     changeBond.Add(b1);
 
@@ -807,7 +807,7 @@ void Awake()
                             changeBond.Add(b2);
                         }
                     }
-                }
+                //}
             }
         }
 
@@ -838,6 +838,7 @@ void Awake()
                 }
             }
         }
+        
 
     }
 
@@ -845,16 +846,24 @@ void Awake()
     {
         Structure struc = MainScr.S.CurrentStructure();
 
+        //make sure all origin Atom is moved
         foreach (GameObject go in pickGO)
         {
             Atom at = go.GetComponent<Atom>();
-            at.originAtom.transform.position = go.transform.position - at.bias;
+            if (at.extendParent != null)
+            {
+                at.originAtom.transform.parent.position = go.transform.position - at.extendParent.bias;
+                at.originAtom.transform.parent.rotation = go.transform.rotation;
+            }
+
         }
-        foreach(Atom at in pickAtomDerived)
+        // move pickAtomDerived if it is not an Origin Atom
+        foreach (Atom at in pickAtomDerived)
         {
             if (at.originAtom != at)
             {
-                at.transform.position = at.originAtom.transform.position + at.bias;
+                at.transform.parent.position = at.originAtom.transform.position + at.extendParent.bias;
+                at.transform.parent.rotation = at.originAtom.transform.rotation;
             }
         }
 
@@ -885,93 +894,111 @@ void Awake()
         }
         changeBondDerived.Clear();
 
-        foreach (Atom a1 in pickAtomOrigin)
+        if (struc.strucModelPara["display style"] != 1)
         {
-            Vector3 p1 = a1.transform.parent.position;
-            Vector3 fractionalPos = inverse * p1;
-            int[] vecs = new int[3];
-            for (int i = 0; i < 3; i++)
+            foreach (Atom a1 in pickAtomOrigin)
             {
-                vecs[i] = Mathf.FloorToInt(fractionalPos[i] + 1.5e-7f);
-                //print(vecs[i]);
-            }
-
-            foreach (Atom a2 in struc.atomList)
-            {
-                Vector3 p2 = a2.transform.parent.position;
-
-                Vector3 backBias = struc.GetCellTransfer(vecs[0], vecs[1], vecs[2]);
-                if (struc.CheckBond(a1, a2, backBias, bondBoundry))
-                {
-                    dieta = a2.nodeTrans.position - a1.nodeTrans.position;
-                    rate = a1.radius / (a1.radius + a2.radius);
-                    changeBond.Add(struc.AddBond(a1, a2, dieta + backBias, rate));
-                    changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias, 1 - rate));
-                }
+                //print(a1.extendParent);
+                Vector3 p1 = a1.transform.position;
+                //print(p1);
+                Vector3 fractionalPos = inverse * p1;
+                int[] vecs = new int[3];
                 for (int i = 0; i < 3; i++)
                 {
-                    Vector3 vec = struc.cellTranslate[i];
-                    if (struc.CheckBond(a1, a2, backBias + vec, bondBoundry))
-                    {
-                        dieta = a2.nodeTrans.position - a1.nodeTrans.position;
-                        rate = a1.radius / (a1.radius + a2.radius);
-                        changeBond.Add(struc.AddBond(a1, a2, dieta + backBias + vec, rate));
-                        changeBond.Add(struc.AddBond(a2, a1, -dieta -backBias- vec, 1 - rate));
-                    }
-                    if (struc.CheckBond(a1, a2, backBias - vec, bondBoundry))
-                    {
-                        dieta = a2.nodeTrans.position - a1.nodeTrans.position;
-                        rate = a1.radius / (a1.radius + a2.radius);
-                        changeBond.Add(struc.AddBond(a1, a2, dieta + backBias - vec, rate));
-                        changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias + vec, 1 - rate));
-                    }
+                    vecs[i] = Mathf.FloorToInt(fractionalPos[i] + 1.5e-7f);
+                    //print(vecs[i]);
                 }
 
-            }
-        }
-
-        ////Update Extend Atom & Bond
-
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                for (int k = 0; k < 3; k++)
+                foreach (Atom a2 in struc.atomList)
                 {
-                    if (i == 0 && j == 0 && k == 0) continue;
-                    else if (struc.extendStructs[i, j, k] != null)
+                    Vector3 p2 = a2.transform.parent.position;
+
+                    Vector3 backBias = struc.GetCellTransfer(vecs[0], vecs[1], vecs[2]);
+                    if (struc.CheckBond(a1, a2, backBias, bondBoundry))
                     {
-                        Vector3 bias = struc.GetCellTransfer(i, j, k);
-                        foreach (Bond bd in changeBond)
+                        //dieta = a2.nodeTrans.position - a1.nodeTrans.position;
+                        dieta = a2.transform.position - a1.transform.position;
+                        rate = a1.radius / (a1.radius + a2.radius);
+                        changeBond.Add(struc.AddBond(a1, a2, dieta + backBias, rate));
+                        changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias, 1 - rate));
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Vector3 vec = struc.cellTranslate[i];
+                        if (struc.CheckBond(a1, a2, backBias + vec, bondBoundry))
                         {
-                            Bond newBond = Object.Instantiate(struc.bondPrefabVar).GetComponent<Bond>();
-                            changeBondDerived.Add(newBond);
+                            dieta = a2.transform.position - a1.transform.position;
+                            rate = a1.radius / (a1.radius + a2.radius);
+                            changeBond.Add(struc.AddBond(a1, a2, dieta + backBias + vec, rate));
+                            changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias - vec, 1 - rate));
+                        }
+                        if (struc.CheckBond(a1, a2, backBias - vec, bondBoundry))
+                        {
+                            dieta = a2.transform.position - a1.transform.position;
+                            rate = a1.radius / (a1.radius + a2.radius);
+                            changeBond.Add(struc.AddBond(a1, a2, dieta + backBias - vec, rate));
+                            changeBond.Add(struc.AddBond(a2, a1, -dieta - backBias + vec, 1 - rate));
+                        }
+                    }
 
-                            newBond.transform.position = bd.transform.position + bias;
-                            newBond.transform.rotation = bd.transform.rotation;
-                            newBond.transform.localScale = bd.transform.localScale;
+                }
+            }
 
-                            newBond.originBond = bd;
+            ////Update Extend Atom & Bond
 
-                            int index = struc.atomList.IndexOf(bd.originAtom);
-                            newBond.GetComponent<Renderer>().material.color = struc.extendStructs[i, j, k].extendAtomList[index].GetComponent<Renderer>().material.color;
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        if (i == 0 && j == 0 && k == 0) continue;
+                        else if (struc.extendStructs[i, j, k] != null)
+                        {
+                            Vector3 bias = struc.GetCellTransfer(i, j, k);
+                            foreach (Bond bd in changeBond)
+                            {
+                                Bond newBond = Object.Instantiate(struc.bondPrefabVar).GetComponent<Bond>();
+                                changeBondDerived.Add(newBond);
+
+                                newBond.transform.position = bd.transform.position + bias;
+                                newBond.transform.rotation = bd.transform.rotation;
+                                newBond.transform.localScale = bd.transform.localScale;
+
+                                newBond.originBond = bd;
+                                newBond.extendParent = struc.extendStructs[i, j, k];
+
+                                int index = struc.atomList.IndexOf(bd.originAtom);
+                                newBond.GetComponent<Renderer>().material.color = struc.extendStructs[i, j, k].extendAtomList[index].GetComponent<Renderer>().material.color;
+                            }
                         }
                     }
                 }
             }
         }
+       
     }
 
     public void PickControlEnd()
     {
         Structure struc = MainScr.S.CurrentStructure();
-
+        struc.MoveIntoLatticAtoms(struc.atomList);
+        foreach(Atom at1 in struc.atomList)
+        {
+            foreach(Atom at2 in at1.derivedAtom)
+            {
+                at2.transform.parent.position = at1.transform.position + at2.extendParent.bias;
+            }
+        }
+        this.PickControlUpdate();
 
         if (changeBond.Count != 0)
         {
-            foreach (Bond b in changeBond)
+            foreach (Bond bd in changeBond)
             {
-                Object.Destroy(b.gameObject);
+                //Object.Destroy(b.gameObject);
+                struc.bondList.Add(bd);
+                bd.transform.SetParent(bd.originAtom.transform.parent);
             }
         }
         changeBond.Clear();
@@ -979,23 +1006,23 @@ void Awake()
         //print(changeBondDerived.Count);
         if (changeBondDerived.Count != 0)
         {
-            foreach (Bond b in changeBondDerived)
+            foreach (Bond bd in changeBondDerived)
             {
-                Object.Destroy(b.gameObject);
+                //Object.Destroy(b.gameObject);
+                bd.extendParent.extendBondList.Add(bd);
+                int index = struc.atomList.IndexOf(bd.originBond.originAtom);
+                bd.transform.SetParent(bd.extendParent.extendAtomList[index].transform.parent);
             }
         }
         changeBondDerived.Clear();
 
 
 
-        Dictionary<string, float> tempDic = new Dictionary<string, float> { { "lat range a", 1f }, { "lat range b", 1f }, { "lat range c", 1f } };
-        struc.ChangeLatRange(tempDic);
-        struc.strucModelPara = null;
-        struc.DrawModel();
+        //Dictionary<string, float> tempDic = new Dictionary<string, float> { { "lat range a", 1f }, { "lat range b", 1f }, { "lat range c", 1f } };
+        //struc.ChangeLatRange(tempDic);
+        //struc.strucModelPara = null;
+        //struc.DrawModel();
 
-
-        changeBond.Clear();
-        changeBondDerived.Clear();
         pickAtomOrigin.Clear();
         pickAtomDerived.Clear();
     }

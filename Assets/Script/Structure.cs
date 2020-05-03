@@ -124,7 +124,7 @@ public class Structure : MonoBehaviour
                 {
                     if (CheckBond(atomList[i], atomList[j], bondBoundry))
                     {
-                        dieta = atomList[j].nodeTrans.position - atomList[i].nodeTrans.position;
+                        dieta = atomList[j].transform.position - atomList[i].transform.position;
                         rate = atomList[i].radius / (atomList[i].radius + atomList[j].radius);                  
                         bondList.Add(AddBond(atomList[i], atomList[j], dieta, rate));
                         bondList.Add(AddBond(atomList[j], atomList[i], -dieta, 1-rate));
@@ -145,7 +145,7 @@ public class Structure : MonoBehaviour
                     {
                         if (CheckBond(atomList[i], atomList[j], vec, bondBoundry ))
                         {
-                            dieta = atomList[j].nodeTrans.position - atomList[i].nodeTrans.position;
+                            dieta = atomList[j].transform.position - atomList[i].transform.position;
                             rate = atomList[i].radius / (atomList[i].radius + atomList[j].radius);
                             bondList.Add(AddBond(atomList[i], atomList[j], dieta + vec, rate, true));
                             bondList.Add(AddBond(atomList[j], atomList[i], -dieta - vec, 1-rate, true));
@@ -164,7 +164,7 @@ public class Structure : MonoBehaviour
     public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
     {
         float len0 = (atom.radius + btom.radius);
-        float len = (btom.nodeTrans.position - atom.nodeTrans.position).magnitude;
+        float len = (btom.transform.position - atom.transform.position).magnitude;
         if (len < len0 * bondBoundry)
         {
             return true;
@@ -177,7 +177,7 @@ public class Structure : MonoBehaviour
     {
 
         float len0 = (atom.radius + btom.radius);
-        float len = (cellTranslate + btom.nodeTrans.position - atom.nodeTrans.position).magnitude;
+        float len = (cellTranslate + btom.transform.position - atom.transform.position).magnitude;
         if (len < len0 * bondBoundry)
             return true;
         else
@@ -191,7 +191,7 @@ public class Structure : MonoBehaviour
         //a is the point to atom, b is the parent;
         Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
         newBond.Init(a, b, otherCell);
-        newBond.transform.position = a.nodeTrans.position;
+        newBond.transform.position = a.transform.position;
         newBond.transform.Translate(direction * 0.5f * rate);
         newBond.transform.Rotate(new Vector3(-direction.z, 0, direction.x), -Vector3.Angle(Vector3.up, direction));
         //newBond.transform.localScale = Vector3.Scale(newBond.transform.localScale, new Vector3(1, direction.magnitude * rate / 2, 1));
@@ -306,7 +306,7 @@ public class Structure : MonoBehaviour
     public void DrawModel()
     {
         this.MoveIntoLatticAtoms(this.atomList);
-
+        GuiMain.S.DisSelectPickGO();
         Dictionary<string, float> modelPara = parent.arcModelPara;
         if (strucModelPara == null)
         {
@@ -535,7 +535,7 @@ public class ExtendStructrue
 
     private Bond AddExtendBond(Bond originBond, Vector3 bias)
     {
-        float stickRadius = originStructure.parent.arcModelPara["stick radius"];
+        //float stickRadius = originStructure.parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
         Bond newBond = Object.Instantiate(originStructure.bondPrefabVar).GetComponent<Bond>();
@@ -547,6 +547,7 @@ public class ExtendStructrue
 
 
         newBond.originBond = originBond;
+        newBond.extendParent = this;
 
         int index = originStructure.atomList.IndexOf(originBond.originAtom);
         newBond.GetComponent<Renderer>().material.color = extendAtomList[index].GetComponent<Renderer>().material.color;
@@ -565,14 +566,14 @@ public class ExtendStructrue
         Atom newAtom = Object.Instantiate(originStructure.atomPrefabVar).GetComponent<Atom>();
         extendAtomList.Add(newAtom);
 
-        newAtom.nodeTrans = nodeTrans;
+        //newAtom.nodeTrans = nodeTrans;
         newAtom.originAtom = originAtom;
         newAtom.transform.position = originAtom.transform.position + bias;
         newAtom.GetComponent<Renderer>().material.color = originAtom.color;
         newAtom.color = originAtom.color;
         newAtom.radius = originAtom.radius;
         newAtom.transform.localScale = originAtom.transform.localScale;
-        newAtom.bias = bias;
+        newAtom.extendParent = this;
 
         newAtom.transform.SetParent(nodeTrans, true);
         //newAtom.transform.localPosition = Vector3.zero;

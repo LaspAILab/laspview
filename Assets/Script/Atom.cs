@@ -10,9 +10,9 @@ public class Atom : MonoBehaviour
 {
     public GameObject atomPrefabVar;
 
-    public Transform nodeTrans;
+    //public Transform nodeTrans;
     public Atom originAtom;
-    public Vector3 bias;
+    public ExtendStructrue extendParent; 
     public List<Atom> derivedAtom;
 
     public string ele;
@@ -33,10 +33,10 @@ public class Atom : MonoBehaviour
         Renderer render = this.GetComponent<Renderer>();
         render.material.color = this.color;
 
-        nodeTrans = node;
+        //nodeTrans = node;
         this.originAtom = this;
         derivedAtom = new List<Atom>();
-        bias = Vector3.zero;
+        extendParent = null;
     }
 
 

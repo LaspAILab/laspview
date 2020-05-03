@@ -32,6 +32,7 @@ public class L_EditPanelSrc : MonoBehaviour
 #endif
             if (GuiMain.S.editEnable == true)
             {
+                //GuiMain.S.DisSelectPickGO();
                 foreach (Selectable c in B_ToolbarPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
                 {
                     if (c.gameObject.name != "FocusCenterBtn")
@@ -59,6 +60,7 @@ public class L_EditPanelSrc : MonoBehaviour
                 GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
                 B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
                 GuiMain.S.FocusCameraCenter();
+                GuiMain.S.DisSelectPickGO();
             }
 
         });

@@ -6,7 +6,9 @@ public class Bond : MonoBehaviour
 {
     public Atom originAtom;
     public Atom pointToAtom;
+
     public Bond originBond;
+    public ExtendStructrue extendParent;
 
     //public Bond 
     //public bool point2OtherCell;
@@ -21,6 +23,7 @@ public class Bond : MonoBehaviour
         originAtom = origin;
         pointToAtom = pointTo;
         originBond = this;
+        extendParent = null;
     }
 
 }
