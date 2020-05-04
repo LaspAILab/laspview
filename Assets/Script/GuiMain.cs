@@ -872,7 +872,7 @@ void Awake()
 
         Vector3 dieta;
         float rate;
-        float bondBoundry = struc.strucModelPara["bond boundry"];
+        float bondBoundry = struc.strucModelPara["tolerance"];
         Matrix4x4 inverse = struc.lat.inverse;
 
         if (changeBond.Count != 0)

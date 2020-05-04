@@ -158,7 +158,7 @@ public class Structure : MonoBehaviour
     
     public void AddAllBond()
     {
-        this.AddAllBond(parent.arcModelPara["bond boundry"]);
+        this.AddAllBond(parent.arcModelPara["tolerance"]);        this.AddAllBond(parent.arcModelPara["tolerance"]);
     }
 
     public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
@@ -342,7 +342,7 @@ public class Structure : MonoBehaviour
 
         if (strucModelPara["display style"] != modelPara["display style"] ||
             strucModelPara["ball radius type"] != modelPara["ball radius type"] ||
-            strucModelPara["ball scaling ratio"] != modelPara["ball scaling ratio"] ||
+            strucModelPara["ball scale"] != modelPara["ball scale"] ||
             strucModelPara["ball radius"] != modelPara["ball radius"])
         {
             ChangeAtomModel(atomList);
@@ -362,7 +362,7 @@ public class Structure : MonoBehaviour
         }
 
         //bool needRePaintBond = ;
-        if (strucModelPara["display style"] != modelPara["display style"] || strucModelPara["bond boundry"] != modelPara["bond boundry"])
+        if (strucModelPara["display style"] != modelPara["display style"] || strucModelPara["tolerance"] != modelPara["tolerance"])
         {
             ChangeMainBondModel();
             for (int i = 0; i < 3; i++)
@@ -416,7 +416,7 @@ public class Structure : MonoBehaviour
         {
             if (modelPara["ball radius type"] == 0)
             {
-                foreach (Atom at in listOfAtom) at.ChangeScalingRatio(modelPara["ball scaling ratio"]);
+                foreach (Atom at in listOfAtom) at.ChangeScalingRatio(modelPara["ball scale"]);
             }
             else if (modelPara["ball radius type"] == 1)
             {
