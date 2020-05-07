@@ -53,7 +53,7 @@ public class ArcStructures : MonoBehaviour
 
         structureList[i].DrawModel();
         currentStr = i;
-        ConFun.S.printStructureInfo("Structure: " + (currentStr + 1) + " of " + structureList.Count + "\t\t Energy  =  " + structureList[currentStr].energy);
+        ConFun.S.printStructureInfo(currentStr, structureList.Count, structureList[currentStr].energy);
         if (true)
         {
             //GuiMain.S.FocusCameraCenter();

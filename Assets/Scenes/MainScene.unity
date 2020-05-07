@@ -96,6 +96,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -127,10 +128,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2087302048}
     m_Modifications:
+    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_PreferredWidth
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_MinWidth
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 6440041990912032274, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_Name
       value: StatusText
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_Text
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FontData.m_Alignment
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -237,26 +258,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_PreferredWidth
-      value: 500
-      objectReference: {fileID: 0}
-    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_MinWidth
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_Text
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_FontData.m_Alignment
-      value: 3
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 784f3f00df60edb4998c8aa63634a4af, type: 3}
 --- !u!1 &170076733
@@ -284,8 +285,9 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 170076733}
   m_Enabled: 1
-  serializedVersion: 9
+  serializedVersion: 10
   m_Type: 1
+  m_Shape: 0
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
   m_Range: 10
@@ -613,11 +615,6 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 1.0526316
       objectReference: {fileID: 0}
-    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
-        type: 3}
-      propertyPath: m_Text
-      value: LASP
-      objectReference: {fileID: 0}
     - target: {fileID: 1712412935815199725, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -647,6 +644,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
+        type: 3}
+      propertyPath: m_Text
+      value: LASP
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5, type: 3}
@@ -1274,11 +1276,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
-        type: 3}
-      propertyPath: m_Text
-      value: Display
-      objectReference: {fileID: 0}
     - target: {fileID: 1712412935815199725, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
         type: 3}
       propertyPath: m_Colors.m_SelectedColor.r
@@ -1293,6 +1290,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Colors.m_SelectedColor.b
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
+        type: 3}
+      propertyPath: m_Text
+      value: Display
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5, type: 3}
@@ -1610,11 +1612,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
-        type: 3}
-      propertyPath: m_Text
-      value: Server
-      objectReference: {fileID: 0}
     - target: {fileID: 1712412935815199725, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
@@ -1644,6 +1641,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
+        type: 3}
+      propertyPath: m_Text
+      value: Server
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5, type: 3}
@@ -2014,11 +2016,6 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
-        type: 3}
-      propertyPath: m_Text
-      value: File
-      objectReference: {fileID: 0}
     - target: {fileID: 1712412935815199725, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
         type: 3}
       propertyPath: m_Colors.m_SelectedColor.r
@@ -2033,6 +2030,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Colors.m_SelectedColor.b
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1712412935930797273, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5,
+        type: 3}
+      propertyPath: m_Text
+      value: File
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 87d6c0c9f37adef4fb7a77d6e79d0bd5, type: 3}
@@ -2366,10 +2368,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1653970068}
     m_Modifications:
+    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_MinWidth
+      value: -1
+      objectReference: {fileID: 0}
     - target: {fileID: 6440041990912032274, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_Name
       value: StructureText
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_Text
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FontData.m_Alignment
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FontData.m_BestFit
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -2475,21 +2497,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_MinWidth
-      value: -1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_Text
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
-        type: 3}
-      propertyPath: m_FontData.m_Alignment
-      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 784f3f00df60edb4998c8aa63634a4af, type: 3}

@@ -19,7 +19,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
     public Button btnTail;
 
     Coroutine playCoru;
-    bool onPlay;
+    public bool onPlay;
     float timer = 0;
 
 
@@ -29,6 +29,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 
         //Set toolbar 
         this.transform.SetParent(GuiMain.S.statusPanel.transform);
+        this.transform.localScale = Vector3.one;
         this.transform.SetSiblingIndex(1);
 
         onPlay = false;
@@ -96,16 +97,16 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         {
             this.PlayerBtnChecked((false, false));
 #if !UNITY_WEBGL
-            foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
-            {
-                if (c.gameObject.name == "StartListeningBtn")
-                {
+            //foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
+            //{
+            //    if (c.gameObject.name == "StartListeningBtn")
+            //    {
 
-                    MainScr.S.localServer.Quit2();
-                    R_ServerPanelSrc.S.lclSrvrListening = false;
-                }
-            }
-            R_ServerPanelSrc.S.NetLocalBtnChange();
+            //        MainScr.S.localServer.Quit2();
+            //        R_ServerPanelSrc.S.lclSrvrListening = false;
+            //    }
+            //}
+            //R_ServerPanelSrc.S.NetLocalBtnChange();
             GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
 #endif
         }
@@ -113,6 +114,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         {
 #if !UNITY_WEBGL
             GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
+            R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>().interactable = false;
 #endif
             this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
         }
@@ -125,7 +127,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         {
             timer += Time.deltaTime;
             yield return null;
-            if (timer >= float.Parse(L_DisplayPanelSrc.displayPanelPara.paraDict["play interval"].GetComponent<Text>().text))
+            if (timer >= L_DisplayPanelSrc.displayPanelPara.paraDict["play interval"].GetComponent<Slider>().value)
             {
                 //print("HelloWorld")/*;*/
                 if(MainScr.S.CurrentArc().currentStr == MainScr.S.CurrentArc().structureList.Count - 1)

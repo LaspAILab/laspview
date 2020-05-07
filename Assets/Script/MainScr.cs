@@ -9,6 +9,7 @@ using System.Text;
 using System;
 using ViewerNetwork;
 using Lasp4Win;
+using JetBrains.Annotations;
 
 public class MainScr : MonoBehaviour
 {
@@ -95,6 +96,28 @@ end
     {
         string[] lines = msg.Split("\r\n".ToCharArray());
         AddArc(filename, lines);
+    }
+
+
+    public void AddArcByCoroutine(string fileName, string msg)
+    {
+        StartCoroutine(AddArcCorou( fileName, msg));
+    }
+
+    IEnumerator AddArcCorou(string fileName, string msg)
+    {
+        while (true)
+        {
+            if (GuiMain.S.editEnable || B_ToolbarPanelSrc.S.onPlay)
+            {
+                yield return 0;
+            }
+            else
+            {
+                AddArc(fileName, msg);
+                break;
+            }
+        }
     }
 
     public void DrawArc(int arcIndex)

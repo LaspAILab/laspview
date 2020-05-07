@@ -23,13 +23,13 @@ public class ConFun : MonoBehaviour
                                         new Vector3(1,1,1),new Vector3(0,0,1),new Vector3(0,1,0),new Vector3(1,0,0) };
     public float bondBoundry;
 
-    public Text structureText;
+    public GameObject structureText;
     public Text statusText;
 
     void Awake()
     {   
         S = this;
-        structureText = GameObject.Find("StructureText").GetComponent<Text>();
+        structureText = GameObject.Find("StructureText");
         statusText = GameObject.Find("StatusText").GetComponent<Text>();
 #if !UNITY_WEBGL
         necessaryGlobalPara = new List<string>{ "user", "remote_ip", "remote_port","local_port" };
@@ -163,10 +163,18 @@ public class ConFun : MonoBehaviour
         }
     }
 
-    public void printStructureInfo(string str)
+    public void OnStructureIndexChange()
     {
-        structureText.text = str;
-        Debug.Log(str);
+        int index = int.Parse(structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().text) - 1;
+        index = Mathf.Min(MainScr.S.CurrentArc().structureList.Count - 1, index);
+        B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(index));
+    }
+
+    public void printStructureInfo(int currentStruc, int totalStrucs, float energy)
+    {
+        //print(structureText);
+        structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().SetTextWithoutNotify((currentStruc + 1).ToString());
+        structureText.transform.GetChild(2).GetComponent<Text>().text = string.Format("   of   {0:d} \t\tEnergy = {1:f2}", totalStrucs, energy);
     }
 
     public void printStatusInfo(string str)

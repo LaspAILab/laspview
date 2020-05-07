@@ -276,7 +276,8 @@ namespace ViewerNetwork
         {
             Loom.QueueOnMainThread((param) =>
             {
-                MainScr.S.AddArc(fileName, msg);
+                //MainScr.S.AddArc(fileName, msg);
+                MainScr.S.AddArcByCoroutine(fileName, msg);
             }, null);
         }
 

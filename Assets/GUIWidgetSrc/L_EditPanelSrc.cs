@@ -39,16 +39,17 @@ public class L_EditPanelSrc : MonoBehaviour
                         GuiMain.S.SetUIInteract(c, false);
                 }
 #if !UNITY_WEBGL
-                foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
-                {
-                    if (c.gameObject.name == "StartListeningBtn")
-                    {
+                //foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
+                //{
+                //    if (c.gameObject.name == "StartListeningBtn")
+                //    {
 
-                        MainScr.S.localServer.Quit2();
-                        R_ServerPanelSrc.S.lclSrvrListening = false;
-                    }
-                }
-                R_ServerPanelSrc.S.NetLocalBtnChange();
+                //        MainScr.S.localServer.Quit2();
+                //        R_ServerPanelSrc.S.lclSrvrListening = false;
+                //    }
+                //}
+                //R_ServerPanelSrc.S.NetLocalBtnChange();
+                
                 GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
 #endif
             }
@@ -56,6 +57,7 @@ public class L_EditPanelSrc : MonoBehaviour
             {
 #if !UNITY_WEBGL
                 GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
+                R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>().interactable = false;
 #endif
                 GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
                 B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
