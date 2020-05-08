@@ -34,5 +34,11 @@ public class syfPanelPara : MonoBehaviour
             string key = c.transform.parent.GetComponentInChildren<Text>().text;
             paraDict.Add(key.ToLower().Trim(), c.gameObject);
         }
+        foreach (Toggle c in this.GetComponentsInChildren<Toggle>())
+        {
+
+            string key = c.transform.parent.GetComponentInChildren<Text>().text;
+            paraDict.Add(key.ToLower().Trim(), c.gameObject);
+        }
     }
 }

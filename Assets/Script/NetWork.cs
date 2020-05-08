@@ -137,7 +137,7 @@ namespace ViewerNetwork
             string msgRtn;
 
             tlistener.Start();
-            printOnMainTrhead("Socket: start listening" + tlistener.LocalEndpoint);
+            printOnMainTrhead("Socket: start listening " + tlistener.LocalEndpoint);
 
             
 

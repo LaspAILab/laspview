@@ -39,13 +39,20 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         Matrix4x4 oldInverse = s.lat.inverse;
         s.AddLat(new float[6] { a, b, c, alpha, betta, gamma });
         Matrix4x4 newLattice = s.lat;
-        foreach (Atom at in s.atomList)
+
+        if (paraDict["keep fractional position"].GetComponent<Toggle>().isOn)
         {
-            Transform nodeTransform = at.transform.parent;
-            nodeTransform.position = newLattice*(oldInverse * nodeTransform.position) ;
+            foreach (Atom at in s.atomList)
+            {
+                Transform nodeTransform = at.transform.parent;
+                nodeTransform.position = newLattice * (oldInverse * nodeTransform.position);
+            }
         }
 
-        MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
+
+        //MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
+        MainScr.S.CurrentStructure().DrawModel();
+        MainScr.S.CurrentStructure().AddAllBond();
         GuiMain.S.FocusCameraCenter();
         GuiMain.S.EditSaveSturc();
     }

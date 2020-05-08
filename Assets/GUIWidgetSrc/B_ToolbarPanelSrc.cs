@@ -26,7 +26,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
     void Awake()
     {
         S = this;
-
+        
         //Set toolbar 
         this.transform.SetParent(GuiMain.S.statusPanel.transform);
         this.transform.localScale = Vector3.one;
