@@ -10,14 +10,6 @@ public class Bond : MonoBehaviour
     public Bond originBond;
     public ExtendStructrue extendParent;
 
-    //public Bond 
-    //public bool point2OtherCell;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     public void Init(Atom origin, Atom pointTo, bool pointToOtherCell = false)
     {
         originAtom = origin;

@@ -21,7 +21,7 @@ namespace Lasp4Win
             bool rt = true;
             try
             {
-                Debug.Log("ExecuteProgram:" + args);
+                //Debug.Log("ExecuteProgram:" + args);
 
                 task = System.Diagnostics.Process.Start(info);
                 if (task != null)
@@ -35,7 +35,7 @@ namespace Lasp4Win
             }
             catch (Exception e)
             {
-                Debug.LogError("Error:" + e.ToString());
+                //Debug.LogError("Error:" + e.ToString());
                 return false;
             }
             finally

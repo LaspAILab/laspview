@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using B83.Win32;
 using System.Linq;
+using System;
 
 public class GuiMain : MonoBehaviour
 {
@@ -37,6 +38,9 @@ public class GuiMain : MonoBehaviour
 
     public bool menuBtnStatus = false;
 
+    private Color UiPressedColor = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
+    private Color UiUnPressedColor = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
+
     //********************* VAR for MOUSE CONTROL*********************
     syfDragUI dragCom = null;
     Vector3 selectGOOffset;
@@ -52,22 +56,23 @@ public class GuiMain : MonoBehaviour
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 offsetTemp;             //for tranlate    
-    public List<GameObject> pickGO;         //for Pick
-    public List<GameObject> copyGO;         //for Pick
+    public List<GameObject> pickGO = new List<GameObject>();         //for Pick
+    public List<GameObject> copyGO = new List<GameObject>();         //for Pick
+    private List<GameObject> pasteGO = new List<GameObject>();
     public GameObject expandAtom;           //for RayCastPick, expand Atom
     private Vector3 expandAtomScale = new Vector3(0.3f, 0.3f, 0.3f);//for RayCastPick, expand Atom
     private float mouse0PressedTime;        //for Pick
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
     static Vector3 copyBias = new Vector3(2500f, 0, 0);
-    private List<Atom> pickAtomOrigin; //for pick Atom
-    private List<Atom> pickAtomDerived;
+    private List<Atom> pickAtomOrigin = new List<Atom>(); //for pick Atom
+    private List<Atom> pickAtomDerived = new List<Atom>();
     //private List<>
     private List<Bond> changeBond = new List<Bond>();
-    private List<Bond> changeBondDerived;
+    private List<Bond> changeBondDerived = new List<Bond>();
 
 
-    private Dictionary<Vector3, Atom> atomScreenPosTemp = null;
+    private Dictionary<Vector3, Atom> atomScreenPosTemp = new Dictionary<Vector3, Atom>();
 //************************** END  *****************************
 
 
@@ -93,12 +98,12 @@ void Awake()
         if (go.activeSelf)
         {
             go.SetActive(false);
-            btn.image.color = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
+            btn.image.color = UiUnPressedColor;
         }
         else
         {
             go.SetActive(true);
-            btn.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
+            btn.image.color = UiPressedColor;
         }
     }
 
@@ -129,12 +134,12 @@ void Awake()
     {
         if (interactable == true)
         {
-            s.image.color = new Color((195 / 255f), (195 / 255f), (195 / 255f), (255 / 255f));
+            s.image.color = UiUnPressedColor;
             s.interactable = true;
         }
         else
         {
-            s.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
+            s.image.color = UiPressedColor;
             s.interactable = false;
         }
     }
@@ -220,7 +225,7 @@ void Awake()
                     foreach (GameObject go in pickGO)
                     {
                         MainScr.S.CurrentStructure().atomList.Remove(go.GetComponent<Atom>());
-                        Object.Destroy(go.transform.parent.gameObject);
+                        UnityEngine.Object.Destroy(go.transform.parent.gameObject);
                     }
                     MainScr.S.CurrentStructure().AddAllBond();
                     pickGO.Clear();
@@ -233,10 +238,10 @@ void Awake()
                     {
                         foreach (GameObject go in copyGO)
                         {
-                            Object.Destroy(go.transform.parent.gameObject);
+                            UnityEngine.Object.Destroy(go.transform.parent.gameObject);
                         }
                     }
-                    copyGO = new List<GameObject>();
+                    copyGO.Clear();
 
                     // pickGO.CopyTo(copyGO):Copy them to cdnt +copyBias
                     foreach (GameObject go in pickGO)
@@ -258,7 +263,7 @@ void Awake()
                 //Ctrl+V 粘贴原子
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
                 {
-                    List<GameObject> pasteGO = new List<GameObject>();
+                    pasteGO.Clear();
                     Vector3 pasteBias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized;
                     foreach (GameObject go in copyGO)
                     {
@@ -293,10 +298,10 @@ void Awake()
                     {
                         foreach (GameObject go in copyGO)
                         {
-                            Object.Destroy(go.transform.parent.gameObject);
+                            UnityEngine.Object.Destroy(go.transform.parent.gameObject);
                         }
                     }
-                    copyGO = new List<GameObject>();
+                    copyGO.Clear();
 
                     // pickGO.CopyTo(copyGO):Copy them to cdnt +copyBias
                     foreach (GameObject go in pickGO)
@@ -412,9 +417,9 @@ void Awake()
                         }
                     }
                     //Long press, Project All the Atom and than Judge if should be Select
-                    else if (Time.time - mouse0PressedTime >= 0.2f && atomScreenPosTemp == null)
+                    else if (Time.time - mouse0PressedTime >= 0.2f && atomScreenPosTemp.Count() == 0)
                     {
-                        atomScreenPosTemp = new Dictionary<Vector3, Atom>();
+                        atomScreenPosTemp.Clear();
                         foreach (Atom at in MainScr.S.CurrentStructure().atomList)
                         {
                             atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
@@ -447,7 +452,7 @@ void Awake()
                         {
                             if (r != null)
                             {
-                                Object.Destroy(r.gameObject);
+                                UnityEngine.Object.Destroy(r.gameObject);
                             }
                         }
                         Vector3 v1 = Input.mousePosition;
@@ -461,14 +466,14 @@ void Awake()
                 //鼠标左键抬起时：确保所有选中原子的颜色，移去框
                 else if (Input.GetKeyUp(KeyCode.Mouse0))
                 {
-                    atomScreenPosTemp = null;
+                    atomScreenPosTemp.Clear();
                     SelectPickGO();
 
                     foreach (LineRenderer r in mouseBox)
                     {
                         if (r != null)
                         {
-                            Object.Destroy(r.gameObject);
+                            UnityEngine.Object.Destroy(r.gameObject);
                         }
                     }
 
@@ -771,13 +776,13 @@ void Awake()
     public void PickControlStart()
     {
         Structure struc = MainScr.S.CurrentStructure();
-        pickAtomOrigin = new List<Atom>();
+        pickAtomOrigin.Clear();
         foreach (GameObject go in pickGO)
         {
             pickAtomOrigin.Add(go.GetComponent<Atom>().originAtom);
         }
 
-        pickAtomDerived = new List<Atom>(pickAtomOrigin);
+        pickAtomDerived.Clear();
         foreach (GameObject go in pickGO)
         {
             pickAtomDerived = pickAtomDerived.Union(go.GetComponent<Atom>().originAtom.derivedAtom).ToList<Atom>();
@@ -811,7 +816,7 @@ void Awake()
             }
         }
 
-        changeBondDerived = new List<Bond>();
+        changeBondDerived.Clear();
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -879,7 +884,7 @@ void Awake()
         {
             foreach (Bond b in changeBond)
             {
-                Object.Destroy(b.gameObject);
+                UnityEngine.Object.Destroy(b.gameObject);
             }
         }
         changeBond.Clear();
@@ -889,10 +894,11 @@ void Awake()
         {
             foreach (Bond b in changeBondDerived)
             {
-                Object.Destroy(b.gameObject);
+                UnityEngine.Object.Destroy(b.gameObject);
             }
         }
         changeBondDerived.Clear();
+        GC.Collect();
 
         if (struc.strucModelPara["display style"] != 1)
         {
@@ -958,7 +964,7 @@ void Awake()
                             Vector3 bias = struc.GetCellTransfer(i, j, k);
                             foreach (Bond bd in changeBond)
                             {
-                                Bond newBond = Object.Instantiate(struc.bondPrefabVar).GetComponent<Bond>();
+                                Bond newBond = UnityEngine.Object.Instantiate(struc.bondPrefabVar).GetComponent<Bond>();
                                 changeBondDerived.Add(newBond);
 
                                 newBond.transform.position = bd.transform.position + bias;

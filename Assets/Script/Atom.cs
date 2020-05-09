@@ -13,7 +13,7 @@ public class Atom : MonoBehaviour
     //public Transform nodeTrans;
     public Atom originAtom;
     public ExtendStructrue extendParent; 
-    public List<Atom> derivedAtom;
+    public List<Atom> derivedAtom = new List<Atom>();
 
     public string ele;
     public Color color;
@@ -35,7 +35,6 @@ public class Atom : MonoBehaviour
 
         //nodeTrans = node;
         this.originAtom = this;
-        derivedAtom = new List<Atom>();
         extendParent = null;
     }
 

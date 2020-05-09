@@ -110,7 +110,7 @@ end
         {
             if (GuiMain.S.editEnable || B_ToolbarPanelSrc.S.onPlay)
             {
-                yield return 0;
+                yield return null;
             }
             else
             {
@@ -143,10 +143,7 @@ end
     {
         return arcList[currentArc].CurrentStructure();
     }
-    void Update()
-    {
 
-    }
 #if !UNITY_WEBGL
     void OnApplicationQuit()
     {

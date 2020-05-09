@@ -25,11 +25,6 @@ public class L_ProjectPanelSrc : MonoBehaviour
         fileList = this.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
         this.gameObject.SetActive(false);
     }
-    // Start is called before the first frame update
-    void Start()
-    {
-       
-    }
 
     public void ProjectListAddCell(string filename)
     {

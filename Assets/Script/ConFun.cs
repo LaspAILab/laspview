@@ -180,7 +180,9 @@ public class ConFun : MonoBehaviour
     public void printStatusInfo(string str)
     {
         statusText.text = str;
+#if UNITY_EDITOR
         Debug.Log(str);
+#endif
     }
 
     public void printErrorInfo()
