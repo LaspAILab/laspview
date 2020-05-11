@@ -1,5 +1,6 @@
 ﻿//Class for a SINGLE structure of a arc file
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -55,7 +56,7 @@ public class Structure : MonoBehaviour
         if (type == 1)
         {
             Vector3 cdnt = new Vector3(float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]));
-            AddAtom(lineSp[0],cdnt,  (int)float.Parse(lineSp[8]));
+            AddAtom(lineSp[0], cdnt, (int)float.Parse(lineSp[8]));
         }
     }
 
@@ -113,6 +114,7 @@ public class Structure : MonoBehaviour
             }
         }
         bondList.Clear();
+        GC.Collect();
 
         Vector3 dieta;
         float rate;
@@ -158,7 +160,7 @@ public class Structure : MonoBehaviour
     
     public void AddAllBond()
     {
-        this.AddAllBond(parent.arcModelPara["tolerance"]);        this.AddAllBond(parent.arcModelPara["tolerance"]);
+        this.AddAllBond(parent.arcModelPara["tolerance"]);
     }
 
     public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
@@ -288,7 +290,7 @@ public class Structure : MonoBehaviour
     {   
         foreach(LineRenderer l in latList)
         {
-            Object.Destroy(l);
+            UnityEngine.Object.Destroy(l);
         }
         latList.Clear();
         return GetCellTransfer(1,1,1);
@@ -437,6 +439,7 @@ public class Structure : MonoBehaviour
             GameObject.Destroy(bd.gameObject);
         }
         bondList.Clear();
+        GC.Collect();
 
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
@@ -513,7 +516,7 @@ public class ExtendStructrue
     {
         //alive = true;
         originStructure = origin;
-        extendTranform = Object.Instantiate(origin.nodePrefabVar).transform;
+        extendTranform = UnityEngine.Object.Instantiate(origin.nodePrefabVar).transform;
         extendTranform.SetParent(origin.transform);
 
         extendAtomList = new List<Atom> { };
@@ -538,7 +541,7 @@ public class ExtendStructrue
         //float stickRadius = originStructure.parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
-        Bond newBond = Object.Instantiate(originStructure.bondPrefabVar).GetComponent<Bond>();
+        Bond newBond = UnityEngine.Object.Instantiate(originStructure.bondPrefabVar).GetComponent<Bond>();
         extendBondList.Add(newBond);
 
         newBond.transform.position = originBond.transform.position + bias;
@@ -559,11 +562,11 @@ public class ExtendStructrue
     private Atom AddExtendAtom(Atom originAtom, Vector3 bias)
     {
 
-        Transform nodeTrans = Object.Instantiate(originStructure.nodePrefabVar).transform;
+        Transform nodeTrans = UnityEngine.Object.Instantiate(originStructure.nodePrefabVar).transform;
         nodeTrans.SetParent(extendTranform);
         nodeTrans.position = originAtom.transform.position + bias;
 
-        Atom newAtom = Object.Instantiate(originStructure.atomPrefabVar).GetComponent<Atom>();
+        Atom newAtom = UnityEngine.Object.Instantiate(originStructure.atomPrefabVar).GetComponent<Atom>();
         extendAtomList.Add(newAtom);
 
         //newAtom.nodeTrans = nodeTrans;
@@ -598,7 +601,7 @@ public class ExtendStructrue
                 {
                     //drawLine
                     LineRenderer line;
-                    line = Object.Instantiate(originStructure.latPrefabVar).GetComponent<LineRenderer>();
+                    line = UnityEngine.Object.Instantiate(originStructure.latPrefabVar).GetComponent<LineRenderer>();
                     line.positionCount = 2;//设置两点
                     line.startColor = Color.white; //设置直线颜色
                     line.endColor = Color.white;
@@ -623,6 +626,7 @@ public class ExtendStructrue
             GameObject.Destroy(bd.gameObject);
         }
         extendBondList.Clear();
+        GC.Collect();
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
             foreach (Bond bd in originStructure.bondList)
@@ -635,7 +639,7 @@ public class ExtendStructrue
     public void RemoveExtendBond(Bond bd)
     {
         this.extendBondList.Remove(bd);
-        Object.Destroy(bd.gameObject);
+        UnityEngine.Object.Destroy(bd.gameObject);
     }
 
     //public void 

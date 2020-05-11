@@ -174,7 +174,8 @@ public class ConFun : MonoBehaviour
     {
         //print(structureText);
         structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().SetTextWithoutNotify((currentStruc + 1).ToString());
-        structureText.transform.GetChild(2).GetComponent<Text>().text = string.Format("   of   {0:d} \t\tEnergy = {1:f2}", totalStrucs, energy);
+        structureText.transform.GetChild(3).GetComponent<Text>().text = totalStrucs.ToString();
+        structureText.transform.GetChild(5).GetComponent<Text>().text = energy.ToString("f3");
     }
 
     public void printStatusInfo(string str)

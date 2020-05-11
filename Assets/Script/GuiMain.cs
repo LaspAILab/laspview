@@ -50,6 +50,11 @@ public class GuiMain : MonoBehaviour
     private Transform cameraCenter;
     private Vector3 mouseLastPos;
 
+    GameObject castGO = null;
+    Ray mouseRay;
+    RaycastHit hitInfo;
+
+
     public bool updateBond;
     public bool editEnable;          //Pick Enalble
     private bool rotationMode3d = false;    //for rotate
@@ -161,9 +166,8 @@ void Awake()
 
 
         //Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        GameObject castGO = null;
-        Ray mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hitInfo;
+        castGO = null;
+        mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         if (mouseLastPos != Vector3.zero)
         {
             if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
@@ -276,7 +280,7 @@ void Awake()
                     foreach (GameObject go in pickGO)
                     {
                         foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                        { 
+                        {
                             ren.material.color = go.GetComponent<Atom>().color;
                         }
                     }
@@ -435,7 +439,7 @@ void Awake()
                             }
                         }
                     }
-                    else 
+                    else
                     {
                         foreach (KeyValuePair<Vector3, Atom> kvpair in atomScreenPosTemp)
                         {
@@ -564,7 +568,6 @@ void Awake()
                             foreach (GameObject ga in pickGO)
                             {
                                 Vector3 vec = Camera.main.WorldToScreenPoint(ga.transform.position);
-                                print(vec);
                                 pickAtomFurthestDis = Mathf.Max((vec - pickAtomAvgPosScreen).magnitude, pickAtomFurthestDis);
                             }
                             pickAtomFurthestDis = Mathf.Max(100.0f, pickAtomFurthestDis);
@@ -609,7 +612,7 @@ void Awake()
                                     ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.forward, -degree);
                                 }
                             }
-                           PickControlUpdate();
+                            PickControlUpdate();
 
 
                         }

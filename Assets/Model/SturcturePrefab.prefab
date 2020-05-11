@@ -90,6 +90,10 @@ MonoBehaviour:
   latList: []
   bondList: []
   latCenter: {fileID: 0}
+  cellTranslate: []
+  currentExtendA: 1
+  currentExtendB: 1
+  currentExtendC: 1
   pathid: 0
   conv: 0
   nminimum: 0

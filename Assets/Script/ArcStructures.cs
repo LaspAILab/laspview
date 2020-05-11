@@ -193,7 +193,7 @@ public class ArcStructures : MonoBehaviour
         catch (Exception ex)
         {
             ConFun.S.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.GetType() + ex.StackTrace + ex.Message);
-            print(currentStr);
+            //print(currentStr);
             //GameObject.Destroy(structureList[currentStr].gameObject);
         }
 
