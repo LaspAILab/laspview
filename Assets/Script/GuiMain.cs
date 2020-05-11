@@ -425,6 +425,7 @@ void Awake()
                             atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
 
                         }
+
                         foreach (ExtendStructrue ext in MainScr.S.CurrentStructure().extendStructs)
                         {
                             if (ext == null) continue;
