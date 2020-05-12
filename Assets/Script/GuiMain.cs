@@ -54,13 +54,22 @@ public class GuiMain : MonoBehaviour
     Ray mouseRay;
     RaycastHit hitInfo;
 
-
-    public bool updateBond;
     public bool editEnable;          //Pick Enalble
+    public bool onMove = false;
+    public bool onCameraRotate = false;
+    public bool onCameraTranslate = false;
+    public bool onAtomSelect = false;
+    public bool onAtomRotate = false;
+    public bool onAtonTranslate = false;
+
+
     private bool rotationMode3d = false;    //for rotate
+
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 offsetTemp;             //for tranlate    
+
+
     public List<GameObject> pickGO = new List<GameObject>();         //for Pick
     public List<GameObject> copyGO = new List<GameObject>();         //for Pick
     private List<GameObject> pasteGO = new List<GameObject>();
@@ -179,7 +188,7 @@ void Awake()
                 castGO = null;
             }
             //鼠标位置上的原子变大
-            if (true)
+            if (onMove == false)
             {
                 if (castGO == null)
                 {
@@ -220,7 +229,7 @@ void Awake()
             Input.GetKey(KeyCode.Mouse2) || Input.GetKeyUp(KeyCode.Mouse2) ||
             Input.GetAxis("Mouse ScrollWheel") != 0))
         {
-
+            //Ctrl +CV delete
             if (editEnable)
             {
                 //DELETE/Backspace删除原子
@@ -332,7 +341,7 @@ void Awake()
             }
         }
         // 如果有鼠标操作
-        else
+        else if(onMove == false)
         {
             // 鼠标开始操作时 先判断是否在UI上
             if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1) ||
@@ -384,6 +393,9 @@ void Awake()
                 //鼠标左键按下，无LeftCronl: 取消所有选中的原子，开始计时
                 if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
                 {
+                    onMove = true;
+                    onAtomSelect = true;
+
                     mouse0PressedTime = Time.time;
                     mouseStart = Input.mousePosition;
                     DisSelectPickGO();
@@ -397,6 +409,9 @@ void Awake()
                 //鼠标左键按下，有LeftCronl: 不取消所有选中的原子，开始计时（增加选中的原子）
                 else if (Input.GetKeyDown(KeyCode.Mouse0) && Input.GetKey(KeyCode.LeftControl))
                 {
+                    onMove = true;
+                    onAtomSelect = true;
+
                     mouse0PressedTime = Time.time;
                     mouseStart = Input.mousePosition;
 
@@ -406,84 +421,7 @@ void Awake()
                         mouseBox = new LineRenderer[4];
                     }
                 }
-                //按下鼠标时：按下的时间短，单选射线拾取选中的原子；按下事件长，框选中心位置在框内的原子，并更新颜色和框
-                else if (Input.GetKey(KeyCode.Mouse0))
-                {
-                    //shout presse, Select the castGO
-                    if (Time.time - mouse0PressedTime < 0.2f)
-                    {
-                        if (castGO != null)
-                        {
-                            if (!pickGO.Contains(castGO))
-                            {
-                                pickGO.Add(castGO);
-                            }
-                        }
-                    }
-                    //Long press, Project All the Atom and than Judge if should be Select
-                    else if (Time.time - mouse0PressedTime >= 0.2f && atomScreenPosTemp.Count() == 0)
-                    {
-                        atomScreenPosTemp.Clear();
-                        foreach (Atom at in MainScr.S.CurrentStructure().atomList)
-                        {
-                            atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
 
-                        }
-
-                        foreach (ExtendStructrue ext in MainScr.S.CurrentStructure().extendStructs)
-                        {
-                            if (ext == null) continue;
-                            foreach (Atom at in ext.extendAtomList)
-                            {
-                                atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        foreach (KeyValuePair<Vector3, Atom> kvpair in atomScreenPosTemp)
-                        {
-                            Vector3 screenPos = kvpair.Key;
-                            if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
-                                if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
-                                    if (!pickGO.Contains(kvpair.Value.gameObject))
-                                    {
-                                        pickGO.Add(kvpair.Value.gameObject);
-                                        SelectPickGO(kvpair.Value.gameObject);
-                                    }
-                        }
-
-                        foreach (LineRenderer r in mouseBox)
-                        {
-                            if (r != null)
-                            {
-                                UnityEngine.Object.Destroy(r.gameObject);
-                            }
-                        }
-                        Vector3 v1 = Input.mousePosition;
-                        Vector3 v2 = mouseStart;
-                        mouseBox[0] = this.mouseBoxLine(v1, new Vector3(v1.x, v2.y, 0f));
-                        mouseBox[1] = this.mouseBoxLine(v1, new Vector3(v2.x, v1.y, 0f));
-                        mouseBox[2] = this.mouseBoxLine(v2, new Vector3(v1.x, v2.y, 0f));
-                        mouseBox[3] = this.mouseBoxLine(v2, new Vector3(v2.x, v1.y, 0f));
-                    }
-                }
-                //鼠标左键抬起时：确保所有选中原子的颜色，移去框
-                else if (Input.GetKeyUp(KeyCode.Mouse0))
-                {
-                    atomScreenPosTemp.Clear();
-                    SelectPickGO();
-
-                    foreach (LineRenderer r in mouseBox)
-                    {
-                        if (r != null)
-                        {
-                            UnityEngine.Object.Destroy(r.gameObject);
-                        }
-                    }
-
-                    this.MeasurePickAtoms();
-                }
 
                 //如果没有LCtrl，则为常规镜头旋转、平移、缩放操作
                 else if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.LeftControl)))
@@ -657,6 +595,97 @@ void Awake()
                 }
             }
         }
+        else if (onMove)
+        {                
+            
+            if (onAtomSelect)
+            {
+                //Update：按下鼠标时：按下的时间短，单选射线拾取选中的原子；按下事件长，框选中心位置在框内的原子，并更新颜色和框
+                if (Input.GetKey(KeyCode.Mouse0))
+                {
+                    //shout presse, Select the castGO
+                    if (Time.time - mouse0PressedTime < 0.2f)
+                    {
+                        if (castGO != null)
+                        {
+                            if (!pickGO.Contains(castGO))
+                            {
+                                pickGO.Add(castGO);
+                            }
+                        }
+                    }
+                    //Long press, Project All the Atom and than Judge if should be Select
+                    else if (Time.time - mouse0PressedTime >= 0.2f && atomScreenPosTemp.Count() == 0)
+                    {
+                        atomScreenPosTemp.Clear();
+                        foreach (Atom at in MainScr.S.CurrentStructure().atomList)
+                        {
+                            atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
+
+                        }
+
+                        foreach (ExtendStructrue ext in MainScr.S.CurrentStructure().extendStructs)
+                        {
+                            if (ext == null) continue;
+                            foreach (Atom at in ext.extendAtomList)
+                            {
+                                atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (KeyValuePair<Vector3, Atom> kvpair in atomScreenPosTemp)
+                        {
+                            Vector3 screenPos = kvpair.Key;
+                            if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
+                                if ((screenPos.y - mouseStart.y) * (screenPos.y - Input.mousePosition.y) < 0)
+                                    if (!pickGO.Contains(kvpair.Value.gameObject))
+                                    {
+                                        pickGO.Add(kvpair.Value.gameObject);
+                                        SelectPickGO(kvpair.Value.gameObject);
+                                    }
+                        }
+
+                        foreach (LineRenderer r in mouseBox)
+                        {
+                            if (r != null)
+                            {
+                                UnityEngine.Object.Destroy(r.gameObject);
+                            }
+                        }
+                        Vector3 v1 = Input.mousePosition;
+                        Vector3 v2 = mouseStart;
+                        mouseBox[0] = this.mouseBoxLine(v1, new Vector3(v1.x, v2.y, 0f));
+                        mouseBox[1] = this.mouseBoxLine(v1, new Vector3(v2.x, v1.y, 0f));
+                        mouseBox[2] = this.mouseBoxLine(v2, new Vector3(v1.x, v2.y, 0f));
+                        mouseBox[3] = this.mouseBoxLine(v2, new Vector3(v2.x, v1.y, 0f));
+                    }
+                }
+                //End: 鼠标左键抬起时：确保所有选中原子的颜色，移去框
+                else if (Input.GetKey(KeyCode.Mouse0))
+                {
+                    atomScreenPosTemp.Clear();
+                    SelectPickGO();
+
+                    foreach (LineRenderer r in mouseBox)
+                    {
+                        if (r != null)
+                        {
+                            UnityEngine.Object.Destroy(r.gameObject);
+                        }
+                    }
+
+                    this.MeasurePickAtoms();
+
+                    onMove = false;
+                    onAtomSelect = false;
+                }
+
+            }
+        }
+
+
     }
 
 
@@ -723,7 +752,6 @@ void Awake()
             pickGO.Clear();
         }
     }
-
 
     private void MeasurePickAtoms()
     {
@@ -796,31 +824,30 @@ void Awake()
             pickAtomDerived.Remove(go.GetComponent<Atom>());
         }
 
+        changeBond.Clear();
         foreach (Atom a in pickAtomOrigin)
         {
             foreach (Bond b1 in a.transform.parent.GetComponentsInChildren<Bond>())
             {
-                //remove Bond who is from Pick Atom a to Unpick Atom 
-                //if (b1.point2OtherCell == true || !pickAtomOrigin.Contains(b1.pointToAtom))
-                //if (!pickAtomOrigin.Contains(b1.pointToAtom))
-                //{
-                    struc.bondList.Remove(b1);
-                    changeBond.Add(b1);
+                if (pickAtomOrigin.Contains(b1.pointToAtom)) continue;
+                struc.bondList.Remove(b1);
+                changeBond.Add(b1);
 
-                    //remove Bond who is from Unpick Atom to Pick Atom a
-                    foreach (Bond b2 in b1.pointToAtom.gameObject.transform.parent.GetComponentsInChildren<Bond>())
+                //remove Bond who is from Unpick Atom to Pick Atom a
+                foreach (Bond b2 in b1.pointToAtom.gameObject.transform.parent.GetComponentsInChildren<Bond>())
+                {
+                    if (b2.pointToAtom == a)
                     {
-                        if (b2.pointToAtom == a)
-                        {
-                            struc.bondList.Remove(b2);
-                            changeBond.Add(b2);
-                        }
+                        struc.bondList.Remove(b2);
+                        changeBond.Add(b2);
                     }
-                //}
+                }
+
             }
         }
 
         changeBondDerived.Clear();
+        List<Bond> temp = new List<Bond>();
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -830,7 +857,7 @@ void Awake()
                     if (i == 0 && j == 0 && k == 0) continue;
                     else if (struc.extendStructs[i, j, k] != null)
                     {
-                        List<Bond> temp = new List<Bond>();
+                        temp.Clear();
                         foreach (Bond bdExtend in struc.extendStructs[i, j, k].extendBondList)
                         {
                             if (changeBond.Contains(bdExtend.originBond))
@@ -878,7 +905,6 @@ void Awake()
 
 
 
-
         Vector3 dieta;
         float rate;
         float bondBoundry = struc.strucModelPara["tolerance"];
@@ -888,7 +914,7 @@ void Awake()
         {
             foreach (Bond b in changeBond)
             {
-                UnityEngine.Object.Destroy(b.gameObject);
+                ObjectPool.S.RestoreBond(b);
             }
         }
         changeBond.Clear();
@@ -898,11 +924,15 @@ void Awake()
         {
             foreach (Bond b in changeBondDerived)
             {
-                UnityEngine.Object.Destroy(b.gameObject);
+                ObjectPool.S.RestoreBond(b);
             }
         }
         changeBondDerived.Clear();
-        GC.Collect();
+        //foreach (Bond bd in ObjectPool.S.bondPool.pool)
+        //{
+        //    print(bd.GetHashCode());
+        //}
+        //GC.Collect();
 
         if (struc.strucModelPara["display style"] != 1)
         {
@@ -912,10 +942,11 @@ void Awake()
                 Vector3 p1 = a1.transform.position;
                 //print(p1);
                 Vector3 fractionalPos = inverse * p1;
+                //Vector3 fractionalPos = Vector3.zero;
                 int[] vecs = new int[3];
                 for (int i = 0; i < 3; i++)
                 {
-                    vecs[i] = Mathf.FloorToInt(fractionalPos[i] + 1.5e-7f);
+                    vecs[i] = Mathf.FloorToInt(fractionalPos[i] + 1.5e-3f);
                     //print(vecs[i]);
                 }
 
@@ -924,9 +955,10 @@ void Awake()
                     Vector3 p2 = a2.transform.parent.position;
 
                     Vector3 backBias = struc.GetCellTransfer(vecs[0], vecs[1], vecs[2]);
-                    if (struc.CheckBond(a1, a2, backBias, bondBoundry))
+
+
+                    if (a2 != a1 && struc.CheckBond(a1, a2, backBias, bondBoundry))
                     {
-                        //dieta = a2.nodeTrans.position - a1.nodeTrans.position;
                         dieta = a2.transform.position - a1.transform.position;
                         rate = a1.radius / (a1.radius + a2.radius);
                         changeBond.Add(struc.AddBond(a1, a2, dieta + backBias, rate));
@@ -953,7 +985,11 @@ void Awake()
 
                 }
             }
-
+            //print(ObjectPool.S.bondPool.pool.Count());
+            //foreach(Atom at in pickAtomOrigin)
+            //{
+            //    print((pickAtomOrigin.IndexOf(at),"th", at.transform.parent.GetComponentsInChildren<Bond>().Length, "bond"));
+            //}
             ////Update Extend Atom & Bond
 
             for (int i = 0; i < 3; i++)
@@ -968,36 +1004,43 @@ void Awake()
                             Vector3 bias = struc.GetCellTransfer(i, j, k);
                             foreach (Bond bd in changeBond)
                             {
-                                Bond newBond = UnityEngine.Object.Instantiate(struc.bondPrefabVar).GetComponent<Bond>();
+                                Bond newBond = ObjectPool.S.RentBond();
+
+                                int index = bd.fromAtom.index;
+                                newBond.GetComponent<Renderer>().material.color = struc.extendStructs[i, j, k].extendAtomList[index].GetComponent<Renderer>().material.color;
                                 changeBondDerived.Add(newBond);
 
+      
                                 newBond.transform.position = bd.transform.position + bias;
                                 newBond.transform.rotation = bd.transform.rotation;
                                 newBond.transform.localScale = bd.transform.localScale;
 
                                 newBond.originBond = bd;
                                 newBond.extendParent = struc.extendStructs[i, j, k];
+                                newBond.fromAtom = null;
+                                newBond.pointToAtom = null;
 
-                                int index = struc.atomList.IndexOf(bd.originAtom);
-                                newBond.GetComponent<Renderer>().material.color = struc.extendStructs[i, j, k].extendAtomList[index].GetComponent<Renderer>().material.color;
+
                             }
                         }
                     }
                 }
             }
         }
-       
+        //GC.Collect();
+        //print(ObjectPool.S.bondPool.pool.Count);
     }
 
     public void PickControlEnd()
     {
         Structure struc = MainScr.S.CurrentStructure();
         struc.MoveIntoLatticAtoms(struc.atomList);
-        foreach(Atom at1 in struc.atomList)
+        foreach (Atom at1 in struc.atomList)
         {
-            foreach(Atom at2 in at1.derivedAtom)
+            foreach (Atom at2 in at1.derivedAtom)
             {
                 at2.transform.parent.position = at1.transform.position + at2.extendParent.bias;
+                //at2.index = at1.index;
             }
         }
         this.PickControlUpdate();
@@ -1008,33 +1051,46 @@ void Awake()
             {
                 //Object.Destroy(b.gameObject);
                 struc.bondList.Add(bd);
-                bd.transform.SetParent(bd.originAtom.transform.parent);
+                bd.transform.SetParent(bd.fromAtom.transform.parent);
             }
-        }
-        changeBond.Clear();
+            changeBond.Clear();
 
-        //print(changeBondDerived.Count);
-        if (changeBondDerived.Count != 0)
-        {
-            foreach (Bond bd in changeBondDerived)
+
+            if (changeBondDerived.Count != 0)
             {
-                //Object.Destroy(b.gameObject);
-                bd.extendParent.extendBondList.Add(bd);
-                int index = struc.atomList.IndexOf(bd.originBond.originAtom);
-                bd.transform.SetParent(bd.extendParent.extendAtomList[index].transform.parent);
+                foreach (Bond bd in changeBondDerived)
+                {
+                    //Object.Destroy(b.gameObject);
+                    bd.extendParent.extendBondList.Add(bd);
+                    int index = bd.originBond.fromAtom.index;
+                    bd.transform.SetParent(bd.extendParent.extendAtomList[index].transform.parent);
+                }
             }
+            changeBondDerived.Clear();
         }
-        changeBondDerived.Clear();
+        //if (changeBond.Count != 0)
+        //{
+        //    foreach (Bond bd in changeBond)
+        //    {
+        //        ObjectPool.S.RestoreBond(bd);
+        //    }
+        //}
+        //changeBond.Clear();
+        //if (changeBondDerived.Count != 0)
+        //{
+        //    foreach (Bond bd in changeBondDerived)
+        //    {
+        //        ObjectPool.S.RestoreBond(bd);
+        //    }
+        //}
+        //changeBondDerived.Clear();
 
-
-
+        //DisSelectPickGO();
         //Dictionary<string, float> tempDic = new Dictionary<string, float> { { "lat range a", 1f }, { "lat range b", 1f }, { "lat range c", 1f } };
         //struc.ChangeLatRange(tempDic);
         //struc.strucModelPara = null;
         //struc.DrawModel();
 
-        pickAtomOrigin.Clear();
-        pickAtomDerived.Clear();
     }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN

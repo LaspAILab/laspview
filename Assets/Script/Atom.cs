@@ -14,6 +14,7 @@ public class Atom : MonoBehaviour
     public Atom originAtom;
     public ExtendStructrue extendParent; 
     public List<Atom> derivedAtom = new List<Atom>();
+    public int index;
 
     public string ele;
     public Color color;

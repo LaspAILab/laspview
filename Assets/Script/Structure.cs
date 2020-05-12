@@ -11,7 +11,7 @@ public class Structure : MonoBehaviour
     //public GameObject structureprefabVr;
     public GameObject atomPrefabVar;
     public GameObject latPrefabVar;
-    public GameObject bondPrefabVar;
+    //public GameObject bondPrefabVar;
     public GameObject nodePrefabVar;
     public ArcStructures parent;
 
@@ -69,7 +69,10 @@ public class Structure : MonoBehaviour
 
         Atom newAtom = Instantiate(atomPrefabVar).GetComponent<Atom>();
         newAtom.Init(cdnt, ele, node.transform, charge);
+
+        newAtom.index = this.atomList.Count;
         this.atomList.Add(newAtom);
+
         newAtom.transform.SetParent(node.transform, true);
         newAtom.transform.localPosition = Vector3.zero;
 
@@ -109,8 +112,8 @@ public class Structure : MonoBehaviour
         {
             foreach(Bond b in bondList)
             {
-                if(b != null)
-                    GameObject.Destroy(b.gameObject);
+                if (b != null)
+                    ObjectPool.S.RestoreBond(b);
             }
         }
         bondList.Clear();
@@ -191,15 +194,22 @@ public class Structure : MonoBehaviour
         float stickRadius = parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
-        Bond newBond = Instantiate(bondPrefabVar).GetComponent<Bond>();
+
+        Bond newBond = ObjectPool.S.RentBond();
+        //print(newBond.gameObject.name);
         newBond.Init(a, b, otherCell);
+
         newBond.transform.position = a.transform.position;
+        newBond.transform.localRotation = Quaternion.identity;
+
         newBond.transform.Translate(direction * 0.5f * rate);
+        //print(newBond.transform.position);
         newBond.transform.Rotate(new Vector3(-direction.z, 0, direction.x), -Vector3.Angle(Vector3.up, direction));
         //newBond.transform.localScale = Vector3.Scale(newBond.transform.localScale, new Vector3(1, direction.magnitude * rate / 2, 1));
         newBond.transform.localScale = new Vector3(stickRadius, direction.magnitude * rate / 2, stickRadius);
         newBond.GetComponent<Renderer>().material.color = a.GetComponent<Renderer>().material.color;
-        newBond.transform.SetParent(a.transform.parent);
+        newBond.transform.SetParent(a.transform.parent, true);
+
         return newBond;
     }
 
@@ -308,7 +318,7 @@ public class Structure : MonoBehaviour
     public void DrawModel()
     {
         this.MoveIntoLatticAtoms(this.atomList);
-        GuiMain.S.DisSelectPickGO();
+
         Dictionary<string, float> modelPara = parent.arcModelPara;
         if (strucModelPara == null)
         {
@@ -436,7 +446,7 @@ public class Structure : MonoBehaviour
         Dictionary<string, float> modelPara = parent.arcModelPara;
         foreach (Bond bd in bondList)
         {
-            GameObject.Destroy(bd.gameObject);
+            ObjectPool.S.RestoreBond(bd);
         }
         bondList.Clear();
         GC.Collect();
@@ -473,6 +483,7 @@ public class Structure : MonoBehaviour
                 }
             }
         }
+        GC.Collect();
         currentExtendA = a;
         currentExtendB = b;
         currentExtendC = c;
@@ -541,20 +552,24 @@ public class ExtendStructrue
         //float stickRadius = originStructure.parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
-        Bond newBond = UnityEngine.Object.Instantiate(originStructure.bondPrefabVar).GetComponent<Bond>();
+        Bond newBond = ObjectPool.S.RentBond();
         extendBondList.Add(newBond);
+
+
+        int index = originBond.fromAtom.index;
+        newBond.transform.SetParent(extendAtomList[index].transform.parent);
 
         newBond.transform.position = originBond.transform.position + bias;
         newBond.transform.rotation = originBond.transform.rotation;
         newBond.transform.localScale = originBond.transform.localScale;
 
-
-        newBond.originBond = originBond;
         newBond.extendParent = this;
+        newBond.originBond = originBond;
+        newBond.fromAtom = null;
+        newBond.pointToAtom = null;
 
-        int index = originStructure.atomList.IndexOf(originBond.originAtom);
         newBond.GetComponent<Renderer>().material.color = extendAtomList[index].GetComponent<Renderer>().material.color;
-        newBond.transform.SetParent(extendAtomList[index].transform.parent);
+
 
         return newBond;
     }
@@ -623,7 +638,7 @@ public class ExtendStructrue
         Dictionary<string, float> modelPara = originStructure.parent.arcModelPara;
         foreach (Bond bd in extendBondList)
         {
-            GameObject.Destroy(bd.gameObject);
+            ObjectPool.S.RestoreBond(bd);
         }
         extendBondList.Clear();
         GC.Collect();
@@ -636,11 +651,11 @@ public class ExtendStructrue
         }
     }
 
-    public void RemoveExtendBond(Bond bd)
-    {
-        this.extendBondList.Remove(bd);
-        UnityEngine.Object.Destroy(bd.gameObject);
-    }
+    ////public void RemoveExtendBond(Bond bd)
+    //{
+    //    this.extendBondList.Remove(bd);
+    //    //UnityEngine.Object.Destroy(bd.gameObject);
+    //}
 
     //public void 
 
@@ -649,7 +664,7 @@ public class ExtendStructrue
 
         foreach (Bond bd in extendBondList)
         {
-            GameObject.Destroy(bd.gameObject);
+            ObjectPool.S.RestoreBond(bd);
         }
         extendBondList.Clear();
         foreach (Atom at in extendAtomList)

@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Bond : MonoBehaviour
 {
-    public Atom originAtom;
-    public Atom pointToAtom;
+    public Atom fromAtom = null;
+    public Atom pointToAtom = null;
 
-    public Bond originBond;
-    public ExtendStructrue extendParent;
+    public Bond originBond = null;
+    public ExtendStructrue extendParent = null;
 
     public void Init(Atom origin, Atom pointTo, bool pointToOtherCell = false)
     {
-        originAtom = origin;
+        fromAtom = origin;
         pointToAtom = pointTo;
         originBond = this;
         extendParent = null;

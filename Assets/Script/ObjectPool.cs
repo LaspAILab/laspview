@@ -7,14 +7,14 @@ public class ObjectPool : MonoBehaviour
 {
     static public ObjectPool S;
 
-    public GameObject atomPrefabVar;
+    //public GameObject atomPrefabVar;
     public GameObject bondPrefabVar;
     public GameObject nodePrefabVar;
-    public GameObject extendPrefabVar;
+    //public GameObject extendPrefabVar;
 
-
+    private Vector3 defaultBondScale = new Vector3(0.35f, 1, 0.35f);
     //private ObjectPool<Atom> atomPool = new ObjectPool<Atom>();
-    private ObjectPool<Bond> bondPool = new ObjectPool<Bond>();
+    public ObjectPool<Bond> bondPool = new ObjectPool<Bond>();
     //private ObjectPool<Transform> nodePool = new ObjectPool<Transform>();
     //private ObjectPool<ExtendStructure> extendPool = new ObjectPool<ExtendStructure>();
     private Transform garbage;
@@ -30,7 +30,22 @@ public class ObjectPool : MonoBehaviour
         //extendPool.Init(extendPrefabVar);
 
         garbage = Instantiate(nodePrefabVar).GetComponent<Transform>();
+        garbage.transform.position = farBias;
         garbage.gameObject.name = "Garbage";
+    }
+
+    private void LateUpdate()
+    {
+        if(bondPool.temp.Count != 0)
+        {
+            
+            bondPool.pool.AddRange(bondPool.temp);
+            bondPool.temp.Clear();
+            //print(bondPool.temp.Count);
+
+
+        }
+
     }
 
     //public Atom RentAtom()
@@ -68,15 +83,20 @@ public class ObjectPool : MonoBehaviour
 
     public void RestoreBond(Bond bd)
     {
-        bd.gameObject.transform.position = farBias;
-        bd.originAtom = null;
+
+        bondPool.Restore(bd);
+
+        bd.transform.SetParent(garbage);
+        bd.gameObject.transform.localPosition = Vector3.zero;
+        bd.gameObject.transform.rotation = Quaternion.identity;
+        bd.gameObject.transform.localScale = defaultBondScale;
+
+        bd.fromAtom = null;
         bd.originBond = null;
         bd.pointToAtom = null;
         bd.extendParent = null;
-        bd.gameObject.transform.rotation = Quaternion.identity;
 
-        bondPool.Restore(bd);
-        bd.transform.SetParent(garbage);
+        //GameObject.Destroy(bd.gameObject);
     }
 
     //public ExtendStructure RentExtendStructure()
@@ -107,12 +127,13 @@ public class ObjectPool : MonoBehaviour
     //}
 }
 
-class ObjectPool<T>
+public class ObjectPool<T>
 {
     GameObject prefabGO;
 
     public List<T> pool = new List<T>();
-    List<T> used = new List<T>();
+    //List<T> used = new List<T>();
+    public List<T> temp = new List<T>();
     //int poolIndex = 0;
     public int max = 99999999;
 
@@ -128,22 +149,26 @@ class ObjectPool<T>
         {
             T component = GameObject.Instantiate(prefabGO).GetComponent<T>();
             //pool.Add(component);
-            used.Add(component);
+            //used.Add(component);
             return component;
         }
         else
         {
             T componet = pool[pool.Count - 1];
             pool.RemoveAt(pool.Count - 1);
-            used.Add(componet);
+            //used.Add(componet);
             return componet;
         }
     }
 
     public void Restore(T component)
     {
-        used.Remove(component);
-        pool.Add(component);
+        //used.Remove(component);
+        //if (!(temp.Contains(component)))
+        //{
+            temp.Add(component);
+        //}
+
     }
 
 }

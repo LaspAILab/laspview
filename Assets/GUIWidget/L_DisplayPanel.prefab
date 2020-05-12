@@ -2752,6 +2752,11 @@ PrefabInstance:
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
       value: f2
       objectReference: {fileID: 0}
+    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_Value
+      value: 0.4
+      objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376727, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
       propertyPath: m_AnchorMin.y
