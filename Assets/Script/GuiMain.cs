@@ -67,6 +67,7 @@ public class GuiMain : MonoBehaviour
 
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
+    private Vector3 pickAtomAvgPosScreen;
     private Vector3 offsetTemp;             //for tranlate    
 
 
@@ -169,9 +170,10 @@ void Awake()
         {
             mouseLastPos = Input.mousePosition;
         }
-        float mouse_x = (Input.mousePosition - mouseLastPos).x / Screen.width * 24;
-        float mouse_y = -(Input.mousePosition - mouseLastPos).y / Screen.height * 24;
-        mouseLastPos = Input.mousePosition;
+        //print(Input.mousePosition / Screen.height);
+        float mouse_x = (Input.mousePosition - mouseLastPos).x ;
+        float mouse_y = -(Input.mousePosition - mouseLastPos).y ;
+
 
 
         //Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -390,7 +392,7 @@ void Awake()
             }
             else if (rayStartOnUI == false)
             {
-                //鼠标左键按下，无LeftCronl: 取消所有选中的原子，开始计时
+                //鼠标左键按下，无LeftCronl: 准备开始选中原子：取消所有选中的原子，开始计时
                 if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
                 {
                     onMove = true;
@@ -406,7 +408,7 @@ void Awake()
                         mouseBox = new LineRenderer[4];
                     }
                 }
-                //鼠标左键按下，有LeftCronl: 不取消所有选中的原子，开始计时（增加选中的原子）
+                //鼠标左键按下，有LeftCronl: 准备开始选中原子：不取消所有选中的原子，开始计时（增加选中的原子）
                 else if (Input.GetKeyDown(KeyCode.Mouse0) && Input.GetKey(KeyCode.LeftControl))
                 {
                     onMove = true;
@@ -424,51 +426,21 @@ void Awake()
 
 
                 //如果没有LCtrl，则为常规镜头旋转、平移、缩放操作
-                else if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.LeftControl)))
+                else if (!(Input.GetKey(KeyCode.LeftControl)))
                 {
                     // When Mouse1 / LShit+mous0 was clicked(GetKeyDown) ,check rotation mode(鼠标右键可用LShift替换)
                     if (Input.GetKeyDown(KeyCode.Mouse1))
                     {
-                        //Right click of mouse: Rotation. Within tha lattice radius, 3D rotate. Beyond the radius, 2D rotate.
-                        //Judge By Ray Pickup
-                        if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("Default")))
-                        {
-                            //对"SturcturePrefab(Clone)"的拾取，决定旋转模式
-                            this.rotationMode3d = true;
-                        }
-                        else
-                        {
-                            //2D rotate
-                            this.rotationMode3d = false;
-                        }
+                        offsetTemp = MainScr.S.CurrentStructure().GetCellTransfer(1, 1, 1);
+                        onMove = true;
+                        onCameraRotate = true;
                     }
                     //when mouse1 / LShit+mous0 is pressed, rotate(鼠标右键可用LShift替换)
-                    else if (Input.GetKey(KeyCode.Mouse1))
-                    {
-                        if (this.rotationMode3d)
-                        {
-                            //3D rotate
-                            cameraTransform.RotateAround(cameraCenter.position, cameraTransform.up, mouse_x * 5);
-                            cameraTransform.RotateAround(cameraCenter.position, cameraTransform.right, mouse_y * 5);
-                        }
-                        else
-                        {
-                            //2D rotate
-                            Vector3 mouseViewport = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-                            float y = (mouseViewport.y - 0.5f);// theta of mouse to center
-                            float x = (mouseViewport.x - 0.5f);
-                            float square = y * y + x * x;//theta to rotate
-                            float degree = (y / square * mouse_x + x / square * mouse_y) * 2.4f;
-                            cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
-                        }
-                    }
                     else if (Input.GetKeyDown(KeyCode.Mouse2) || (Input.GetKeyDown(KeyCode.LeftShift)))
                     {
                         offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                    }
-                    else if (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift))
-                    {
-                        cameraTransform.position += (offsetTemp - Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                        onMove = true;
+                        onCameraTranslate = true;
                     }
                     else if (Input.GetAxis("Mouse ScrollWheel") > 0)
                     {
@@ -483,7 +455,7 @@ void Awake()
                     }
                 }
                 //如果没有LCtrl
-                else if (Input.GetKey(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.LeftControl))
+                else if (Input.GetKey(KeyCode.LeftControl))
                 {
                     //如在编辑模式下，为编辑原子旋转、平移操作
                     if (editEnable && pickGO.Count != 0)
@@ -501,110 +473,40 @@ void Awake()
                             }
                             pickAtomAvgPos /= pickGO.Count;
                             //pickAtomAvgPosScreen  is in Screen Space
-                            Vector3 pickAtomAvgPosScreen = Camera.main.WorldToScreenPoint(pickAtomAvgPos);
-                            float pickAtomFurthestDis = 0f;
-                            foreach (GameObject ga in pickGO)
-                            {
-                                Vector3 vec = Camera.main.WorldToScreenPoint(ga.transform.position);
-                                pickAtomFurthestDis = Mathf.Max((vec - pickAtomAvgPosScreen).magnitude, pickAtomFurthestDis);
-                            }
-                            pickAtomFurthestDis = Mathf.Max(100.0f, pickAtomFurthestDis);
-                            if ((Input.mousePosition - pickAtomAvgPosScreen).magnitude < pickAtomFurthestDis)
-                            {
-                                rotationMode3d = true;
-                            }
-                            else
-                            {
-                                rotationMode3d = false;
-                            }
-                            //print((Input.mousePosition - pickAtomAvgPosScreen).magnitude);
-                            //print(pickAtomFurthestDis);
-                            //print(pickAtomAvgPosScreen);
-                            //print(rotationMode3d);
+                            pickAtomAvgPosScreen = Camera.main.WorldToScreenPoint(pickAtomAvgPos);
+                            onMove = true;
+                            onAtomRotate = true;
+
                             PickControlStart();
 
                         }
-                        //LC+鼠标右键按住时：旋转选中原子
-                        else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
-                        {
-                            if (this.rotationMode3d)
-                            {
-                                //3D rotate
-                                foreach (GameObject ga in pickGO)
-                                {
-                                    //3D rotate
-                                    ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, -mouse_x * 8);
-                                    ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y * 8);
-                                }
-                            }
-                            else
-                            {
-                                //2D rotate
-                                foreach (GameObject ga in pickGO)
-                                {
-                                    Vector3 mouseViewport = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-                                    float y = (mouseViewport.y - 0.5f);// theta of mouse to center
-                                    float x = (mouseViewport.x - 0.5f);
-                                    float square = y * y + x * x;//theta to rotate
-                                    float degree = (y / square * mouse_x + x / square * mouse_y) * 2.4f;
-                                    ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.forward, -degree);
-                                }
-                            }
-                            PickControlUpdate();
 
-
-                        }
-                        //松开LC或鼠标右键：收尾
-                        else if ((Input.GetKeyUp(KeyCode.LeftControl) && Input.GetKey(KeyCode.Mouse1))
-                              || (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyUp(KeyCode.Mouse1)))
-                        {
-                            PickControlEnd();
-                            EditSaveSturc();
-                        }
 
                         //LC(LeftControl)+鼠标中键按下： 准备开始平移选中原子(鼠标右键可用LShift替换)
                         else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Mouse2) || Input.GetKeyDown(KeyCode.LeftShift))
                               || Input.GetKeyDown(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                         {
                             offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
+                            onMove = true;
+                            onAtonTranslate = true;
 
                             PickControlStart();
                         }
-                        //LC(LeftControl)+鼠标中键按下： 平移选中原子(鼠标右键可用LShift替换)
-                        else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
-                        {
-                            Vector3 vec = Camera.main.ScreenToWorldPoint(Input.mousePosition) - offsetTemp;
-                            foreach (GameObject go in pickGO)
-                            {
-                                go.transform.parent.position += vec;
-                            }
 
-                            offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-                            PickControlUpdate();
-                        }
-                        //松开LC或鼠标中键：收尾(鼠标右键可用LShift替换)
-                        else if ((Input.GetKeyUp(KeyCode.LeftControl) && (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
-                              || (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyUp(KeyCode.Mouse2) || Input.GetKeyUp(KeyCode.LeftShift))))
-                        {
-                            PickControlEnd();
-                            EditSaveSturc();
-                        }
                     }
                 }
             }
         }
         else if (onMove)
-        {                
-            
+        {
+            //选中原子
             if (onAtomSelect)
             {
                 //Update：按下鼠标时：按下的时间短，单选射线拾取选中的原子；按下事件长，框选中心位置在框内的原子，并更新颜色和框
                 if (Input.GetKey(KeyCode.Mouse0))
                 {
                     //shout presse, Select the castGO
-                    if (Time.time - mouse0PressedTime < 0.2f)
+                    if (Time.time - mouse0PressedTime < 0.05f)
                     {
                         if (castGO != null)
                         {
@@ -663,7 +565,7 @@ void Awake()
                     }
                 }
                 //End: 鼠标左键抬起时：确保所有选中原子的颜色，移去框
-                else if (Input.GetKey(KeyCode.Mouse0))
+                else if (!Input.GetKey(KeyCode.Mouse0))
                 {
                     atomScreenPosTemp.Clear();
                     SelectPickGO();
@@ -683,9 +585,124 @@ void Awake()
                 }
 
             }
+            else if (onCameraRotate)
+            {
+                if (Input.GetKey(KeyCode.Mouse1))
+                {
+                    if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("Default")))
+                    {
+                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.up, mouse_x * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude); //我也不知道为啥是360，调出来就是360
+                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.right, mouse_y * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude);
+                    }
+                    else
+                    {
+                        //2D rotate
+                        Vector3 centerScreen = Camera.main.WorldToScreenPoint(offsetTemp/2);
+                        Vector3 a = centerScreen - Input.mousePosition;
+                        Vector3 b = centerScreen - mouseLastPos;
+                        float degree;
+                        if (Vector3.Cross(a, b).z > 0)
+                        {
+                            degree = Vector3.Angle(a, b);
+                        }
+                        else
+                        {
+                            degree = -Vector3.Angle(a, b);
+                        }
+                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
+                    }
+                }
+                else if (!Input.GetKey(KeyCode.Mouse1))
+                {
+                    onMove = false;
+                    onCameraRotate = false;
+                }
+            }
+            else if (onCameraTranslate)
+            {
+                if (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift))
+                {
+                    cameraTransform.position += (offsetTemp - Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                }
+                else
+                {
+                    onMove = false;
+                    onCameraTranslate = false;
+                }
+            }
+            else if (onAtomRotate)
+            {
+                //LC+鼠标右键按住时：旋转选中原子
+                if (Input.GetKey(KeyCode.Mouse1))
+                {
+                    float pickAtomFurthestDis = 0f;
+                    foreach (GameObject ga in pickGO)
+                    {
+                        Vector3 vec = Camera.main.WorldToScreenPoint(ga.transform.position);
+                        pickAtomFurthestDis = Mathf.Max((vec - pickAtomAvgPosScreen).magnitude, pickAtomFurthestDis);
+                    }
+                    pickAtomFurthestDis = Mathf.Max(100.0f, pickAtomFurthestDis);
+                    if ((Input.mousePosition - pickAtomAvgPosScreen).magnitude < pickAtomFurthestDis)
+                    {
+                        //3D rotate
+                        foreach (GameObject ga in pickGO)
+                        {
+                            //3D rotate
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, -mouse_x * 8);
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y * 8);
+                        }
+                    }
+                    else
+                    {
+                        //2D rotate
+                        foreach (GameObject ga in pickGO)
+                        {
+                            Vector3 mouseViewport = Camera.main.ScreenToViewportPoint(Input.mousePosition);
+                            float y = (mouseViewport.y - 0.5f);// theta of mouse to center
+                            float x = (mouseViewport.x - 0.5f);
+                            float square = y * y + x * x;//theta to rotate
+                            float degree = (y / square * mouse_x + x / square * mouse_y) * 2.4f;
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.forward, -degree);
+                        }
+                    }
+                    PickControlUpdate();
+                }
+                //松开LC或鼠标右键：收尾
+                else if (!Input.GetKey(KeyCode.Mouse1)) 
+                {
+                    PickControlEnd();
+                    EditSaveSturc();
+                    onMove = false;
+                    onAtomRotate = false;
+                }
+            }
+            else if (onAtonTranslate)
+            {   //LC(LeftControl)+鼠标中键按下： 平移选中原子(鼠标右键可用LShift替换)
+                if ((Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
+                {
+                    Vector3 vec = Camera.main.ScreenToWorldPoint(Input.mousePosition) - offsetTemp;
+                    foreach (GameObject go in pickGO)
+                    {
+                        go.transform.parent.position += vec;
+                    }
+
+                    offsetTemp = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+                    PickControlUpdate();
+                }
+                //松开LC或鼠标中键：收尾(鼠标右键可用LShift替换)
+                else if (!(Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
+                {
+                    PickControlEnd();
+                    EditSaveSturc();
+                    onMove = false;
+                    onAtonTranslate = false;
+                }
+            }
+
         }
 
-
+        mouseLastPos = Input.mousePosition;
     }
 
 
