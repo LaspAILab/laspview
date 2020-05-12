@@ -591,7 +591,7 @@ void Awake()
                 {
                     if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("Default")))
                     {
-                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.up, mouse_x * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude); //我也不知道为啥是360，调出来就是360
+                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.up, mouse_x * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude); //我也不知道为啥是360，调出来就是(>.<)
                         cameraTransform.RotateAround(cameraCenter.position, cameraTransform.right, mouse_y * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude);
                     }
                     else
@@ -642,26 +642,37 @@ void Awake()
                         pickAtomFurthestDis = Mathf.Max((vec - pickAtomAvgPosScreen).magnitude, pickAtomFurthestDis);
                     }
                     pickAtomFurthestDis = Mathf.Max(100.0f, pickAtomFurthestDis);
+
+
                     if ((Input.mousePosition - pickAtomAvgPosScreen).magnitude < pickAtomFurthestDis)
                     {
                         //3D rotate
                         foreach (GameObject ga in pickGO)
                         {
                             //3D rotate
-                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, -mouse_x * 8);
-                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y * 8);
+                            //ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, mouse_x * 360 / Screen.height * Camera.main.orthographicSize / (pickAtomFurthestDis / Screen.height * Camera.main.orthographicSize));
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.up, -mouse_x / pickAtomFurthestDis * 90); //我也不知道为啥是90，调出来就是(>.<)
+                            ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y / pickAtomFurthestDis * 90);
+                            //ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.right, -mouse_y * 8);
                         }
                     }
                     else
                     {
                         //2D rotate
+                        Vector3 centerScreen = Camera.main.WorldToScreenPoint(offsetTemp / 2);
+                        Vector3 a = centerScreen - Input.mousePosition;
+                        Vector3 b = centerScreen - mouseLastPos;
+                        float degree;
+                        if (Vector3.Cross(a, b).z > 0)
+                        {
+                            degree = Vector3.Angle(a, b);
+                        }
+                        else
+                        {
+                            degree = -Vector3.Angle(a, b);
+                        }
                         foreach (GameObject ga in pickGO)
                         {
-                            Vector3 mouseViewport = Camera.main.ScreenToViewportPoint(Input.mousePosition);
-                            float y = (mouseViewport.y - 0.5f);// theta of mouse to center
-                            float x = (mouseViewport.x - 0.5f);
-                            float square = y * y + x * x;//theta to rotate
-                            float degree = (y / square * mouse_x + x / square * mouse_y) * 2.4f;
                             ga.transform.parent.RotateAround(pickAtomAvgPos, cameraTransform.forward, -degree);
                         }
                     }
