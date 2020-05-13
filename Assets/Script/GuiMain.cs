@@ -431,7 +431,8 @@ void Awake()
                     // When Mouse1 / LShit+mous0 was clicked(GetKeyDown) ,check rotation mode(鼠标右键可用LShift替换)
                     if (Input.GetKeyDown(KeyCode.Mouse1))
                     {
-                        offsetTemp = MainScr.S.CurrentStructure().GetCellTransfer(1, 1, 1);
+                        Structure struc = MainScr.S.CurrentStructure();
+                        offsetTemp = struc.GetCellTransfer((int)struc.strucModelPara["lat range a"], (int)struc.strucModelPara["lat range b"], (int)struc.strucModelPara["lat range c"]);
                         onMove = true;
                         onCameraRotate = true;
                     }
@@ -742,8 +743,8 @@ void Awake()
         //line.positionCount = 2;//设置两点
         //line.startColor = Color.white; //设置直线颜色
         //line.endColor = Color.white;
-        line.startWidth = 0.01f;//设置直线宽度
-        line.endWidth = 0.05f;
+        line.startWidth = 0.03f;//设置直线宽度
+        line.endWidth = 0.03f;
 
         //设置指示线的起点和终点
         line.SetPosition(0, Camera.main.ScreenToWorldPoint(v1) + Camera.main.transform.forward);
@@ -792,25 +793,23 @@ void Awake()
     {
         if (pickGO.Count == 1)
         {
-            string st = string.Format("{0} position: {1:f4} {2:f4} {3:f4}",  pickGO[0].GetComponent<Atom>().ele, pickGO[0].transform.position.x, pickGO[0].transform.position.y, pickGO[0].transform.position.z);
+            string st = string.Format("{0} position: {1:f4} {2:f4} {3:f4}",  pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[0].transform.position.x, pickGO[0].transform.position.y, pickGO[0].transform.position.z);
             ConFun.S.printStatusInfo(st);
-            //{ pickGO[0].transform.position.y}
-            //);
         }
         else if (pickGO .Count == 2)
         {
-            string st = string.Format("{0}-{1} distance:   {2:f4} ", pickGO[0].GetComponent<Atom>().ele, pickGO[1].GetComponent<Atom>().ele, (pickGO[0].transform.position - pickGO[1].transform.position).magnitude);
+            string st = string.Format("{0}-{1} distance:   {2:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, (pickGO[0].transform.position - pickGO[1].transform.position).magnitude);
             ConFun.S.printStatusInfo(st);
         }
         else if (pickGO.Count == 3)
         {
-            string st = string.Format("{0}-{1}-{2}  angle: {3:f4} ", pickGO[0].GetComponent<Atom>().ele, pickGO[1].GetComponent<Atom>().ele, pickGO[2].GetComponent<Atom>().ele,
+            string st = string.Format("{0}-{1}-{2}  angle: {3:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, pickGO[2].GetComponent<Atom>().originAtom.ele,
                   Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[2].transform.position - pickGO[1].transform.position));
             ConFun.S.printStatusInfo(st);       
         }
         else if (pickGO.Count == 4)
         {
-            string st = string.Format("{0}-{1}-{2}-{3} torison: {4:f4} ", pickGO[0].GetComponent<Atom>().ele, pickGO[1].GetComponent<Atom>().ele, pickGO[2].GetComponent<Atom>().ele, pickGO[3].GetComponent<Atom>().ele,
+            string st = string.Format("{0}-{1}-{2}-{3} torison: {4:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, pickGO[2].GetComponent<Atom>().originAtom.ele, pickGO[3].GetComponent<Atom>().originAtom.ele,
                   Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[3].transform.position - pickGO[2].transform.position));
             ConFun.S.printStatusInfo(st);
         }
@@ -1080,51 +1079,52 @@ void Awake()
         }
         this.PickControlUpdate();
 
-        if (changeBond.Count != 0)
-        {
-            foreach (Bond bd in changeBond)
-            {
-                //Object.Destroy(b.gameObject);
-                struc.bondList.Add(bd);
-                bd.transform.SetParent(bd.fromAtom.transform.parent);
-            }
-            changeBond.Clear();
-
-
-            if (changeBondDerived.Count != 0)
-            {
-                foreach (Bond bd in changeBondDerived)
-                {
-                    //Object.Destroy(b.gameObject);
-                    bd.extendParent.extendBondList.Add(bd);
-                    int index = bd.originBond.fromAtom.index;
-                    bd.transform.SetParent(bd.extendParent.extendAtomList[index].transform.parent);
-                }
-            }
-            changeBondDerived.Clear();
-        }
         //if (changeBond.Count != 0)
         //{
         //    foreach (Bond bd in changeBond)
         //    {
-        //        ObjectPool.S.RestoreBond(bd);
+        //        //Object.Destroy(b.gameObject);
+        //        struc.bondList.Add(bd);
+        //        bd.transform.SetParent(bd.fromAtom.transform.parent);
         //    }
-        //}
-        //changeBond.Clear();
-        //if (changeBondDerived.Count != 0)
-        //{
-        //    foreach (Bond bd in changeBondDerived)
+        //    changeBond.Clear();
+
+
+        //    if (changeBondDerived.Count != 0)
         //    {
-        //        ObjectPool.S.RestoreBond(bd);
+        //        foreach (Bond bd in changeBondDerived)
+        //        {
+        //            //Object.Destroy(b.gameObject);
+        //            bd.extendParent.extendBondList.Add(bd);
+        //            int index = bd.originBond.fromAtom.index;
+        //            bd.transform.SetParent(bd.extendParent.extendAtomList[index].transform.parent);
+        //        }
         //    }
+        //    changeBondDerived.Clear();
         //}
-        //changeBondDerived.Clear();
+        if (changeBond.Count != 0)
+        {
+            foreach (Bond bd in changeBond)
+            {
+                ObjectPool.S.RestoreBond(bd);
+            }
+        }
+        changeBond.Clear();
+        if (changeBondDerived.Count != 0)
+        {
+            foreach (Bond bd in changeBondDerived)
+            {
+                ObjectPool.S.RestoreBond(bd);
+            }
+        }
+        changeBondDerived.Clear();
 
         //DisSelectPickGO();
-        //Dictionary<string, float> tempDic = new Dictionary<string, float> { { "lat range a", 1f }, { "lat range b", 1f }, { "lat range c", 1f } };
-        //struc.ChangeLatRange(tempDic);
-        //struc.strucModelPara = null;
-        //struc.DrawModel();
+        Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
+        tempDic["display style"] = 1;
+        struc.ChangeLatRange(tempDic);
+        struc.strucModelPara = null;
+        struc.DrawModel();
 
     }
 

@@ -36,14 +36,9 @@ public class ObjectPool : MonoBehaviour
 
     private void LateUpdate()
     {
-        if(bondPool.temp.Count != 0)
-        {
-            bondPool.pool.AddRange(bondPool.temp);
-            bondPool.temp.Clear();
-            //print(bondPool.temp.Count);
-
-        }
-
+        bondPool.UpdatePool();
+        extendPool.UpdatePool();
+        //print(garbage.childCount);
     }
 
     //public Atom RentAtom()
@@ -97,6 +92,8 @@ public class ObjectPool : MonoBehaviour
         bd.originBond = null;
         bd.pointToAtom = null;
         bd.extendParent = null;
+
+        bondPool.Restore(bd);
         //GameObject.Destroy(bd.gameObject);
     }
 
@@ -107,24 +104,13 @@ public class ObjectPool : MonoBehaviour
 
     public void RestoreExtendStructrue(ExtendStructure extend)
     {
-
-        foreach (Bond bd in extend.extendBondList)
+        if (extend.originStructure == null)
         {
-            RestoreBond(bd);
+            return;
         }
-        extend.extendBondList.Clear();
-        foreach (Atom at in extend.extendAtomList)
-        {
-            //RestoreNode(at.transform.parent);
-            at.originAtom.derivedAtom.Remove(at);
-            //RestoreAtom(at);
-        }
-        extend.extendAtomList.Clear();
-        foreach (LineRenderer lt in extend.extendLatLineList)
-        {
-            GameObject.Destroy(lt.gameObject);
-        }
-        extend.extendLatLineList.Clear();
+        extend.originStructure = null;
+        extend.transform.SetParent(garbage);
+        extendPool.Restore(extend);
     }
 }
 
@@ -133,9 +119,7 @@ public class ObjectPool<T>
     GameObject prefabGO;
 
     public List<T> pool = new List<T>();
-    //List<T> used = new List<T>();
-    public List<T> temp = new List<T>();
-    //int poolIndex = 0;
+    public List<T> temp = new List<T>();   
     public int max = 99999999;
 
 
@@ -162,6 +146,14 @@ public class ObjectPool<T>
         }
     }
 
+    public void UpdatePool()
+    {
+        if (temp.Count != 0)
+        {
+            pool.AddRange(temp);
+            temp.Clear();
+        }
+    }
     public void Restore(T component)
     {
         //used.Remove(component);

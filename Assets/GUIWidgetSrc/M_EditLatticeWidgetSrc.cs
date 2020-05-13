@@ -35,9 +35,10 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         float gamma = float.Parse(paraDict["gamma"].GetComponent<InputField>().textComponent.text);
 
         Structure s = MainScr.S.CurrentStructure();
-        s.RmLattice();
+
         Matrix4x4 oldInverse = s.lat.inverse;
-        s.AddLat(new float[6] { a, b, c, alpha, betta, gamma });
+        s.abc = new float[6] { a, b, c, alpha, betta, gamma };
+        s.ChangeLat();
         Matrix4x4 newLattice = s.lat;
 
         if (paraDict["keep fractional position"].GetComponent<Toggle>().isOn)

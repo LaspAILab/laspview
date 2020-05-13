@@ -18,7 +18,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
 
         defaultModelPara = new Dictionary<string, float> { { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
                                                             { "display style", 0.0f }, { "stick radius", 0.35f }, { "tolerance", 0.63f },
-                                                             { "ball radius type", 0.0f },{ "ball scale", 0.5f },{ "ball radius", 1.0f }};
+                                                             { "ball radius type", 0.0f },{ "ball scale", 0.5f },{ "ball radius", 1.0f },{"background", 0.0f  } };
 
         //Set DisplayPanel
         this.transform.SetParent(GuiMain.S.leftCanvas.transform);

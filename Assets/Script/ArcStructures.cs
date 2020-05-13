@@ -241,6 +241,7 @@ public class ArcStructures : MonoBehaviour
     {
         foreach (Structure struc in structureList)
         {
+            struc.gameObject.SetActive(true);
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
@@ -250,6 +251,7 @@ public class ArcStructures : MonoBehaviour
                         if (struc.extendStructs[i, j, k] != null)
                         {
                             struc.extendStructs[i, j, k].DestroyExtendStructrue();
+                            ObjectPool.S.RestoreExtendStructrue(struc.extendStructs[i, j, k]);
                             struc.extendStructs[i, j, k] = null;
                         }
                     }
@@ -257,10 +259,11 @@ public class ArcStructures : MonoBehaviour
             }
             foreach(Bond bd in struc.bondList)
             {
-                GameObject.Destroy(bd.gameObject);
+                ObjectPool.S.RestoreBond(bd);
             }
             struc.bondList.Clear();
             struc.strucModelPara = null;
+            struc.gameObject.SetActive(false);
         }
         GC.Collect();
     }
