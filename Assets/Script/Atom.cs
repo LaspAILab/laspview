@@ -12,7 +12,7 @@ public class Atom : MonoBehaviour
 
     //public Transform nodeTrans;
     public Atom originAtom;
-    public ExtendStructrue extendParent; 
+    public ExtendStructure extendParent; 
     public List<Atom> derivedAtom = new List<Atom>();
     public int index;
 

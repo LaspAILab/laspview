@@ -61,7 +61,7 @@ public class GuiMain : MonoBehaviour
     public bool onAtomSelect = false;
     public bool onAtomRotate = false;
     public bool onAtonTranslate = false;
-
+    public float onMoveCollectTime;
 
     private bool rotationMode3d = false;    //for rotate
 
@@ -496,6 +496,7 @@ void Awake()
                     }
                 }
             }
+            onMoveCollectTime = Time.time;
         }
         else if (onMove)
         {
@@ -526,7 +527,7 @@ void Awake()
 
                         }
 
-                        foreach (ExtendStructrue ext in MainScr.S.CurrentStructure().extendStructs)
+                        foreach (ExtendStructure ext in MainScr.S.CurrentStructure().extendStructs)
                         {
                             if (ext == null) continue;
                             foreach (Atom at in ext.extendAtomList)
@@ -709,6 +710,12 @@ void Awake()
                     onMove = false;
                     onAtonTranslate = false;
                 }
+            }
+
+            if (Time.time - onMoveCollectTime > 0.1f)
+            {
+                GC.Collect();
+                onMoveCollectTime = Time.time;
             }
 
         }

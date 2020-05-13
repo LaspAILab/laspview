@@ -8,7 +8,7 @@ public class Bond : MonoBehaviour
     public Atom pointToAtom = null;
 
     public Bond originBond = null;
-    public ExtendStructrue extendParent = null;
+    public ExtendStructure extendParent = null;
 
     public void Init(Atom origin, Atom pointTo, bool pointToOtherCell = false)
     {

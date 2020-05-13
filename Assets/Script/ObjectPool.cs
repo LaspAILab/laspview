@@ -10,13 +10,13 @@ public class ObjectPool : MonoBehaviour
     //public GameObject atomPrefabVar;
     public GameObject bondPrefabVar;
     public GameObject nodePrefabVar;
-    //public GameObject extendPrefabVar;
+    public GameObject extendPrefabVar;
 
     private Vector3 defaultBondScale = new Vector3(0.35f, 1, 0.35f);
     //private ObjectPool<Atom> atomPool = new ObjectPool<Atom>();
     public ObjectPool<Bond> bondPool = new ObjectPool<Bond>();
     //private ObjectPool<Transform> nodePool = new ObjectPool<Transform>();
-    //private ObjectPool<ExtendStructure> extendPool = new ObjectPool<ExtendStructure>();
+    private ObjectPool<ExtendStructure> extendPool = new ObjectPool<ExtendStructure>();
     private Transform garbage;
 
     public Vector3 farBias = new Vector3(2500f, 0, 0);
@@ -27,7 +27,7 @@ public class ObjectPool : MonoBehaviour
         //atomPool.Init(atomPrefabVar);
         bondPool.Init(bondPrefabVar);
         //nodePool.Init(nodePrefabVar);
-        //extendPool.Init(extendPrefabVar);
+        extendPool.Init(extendPrefabVar);
 
         garbage = Instantiate(nodePrefabVar).GetComponent<Transform>();
         garbage.transform.position = farBias;
@@ -38,11 +38,9 @@ public class ObjectPool : MonoBehaviour
     {
         if(bondPool.temp.Count != 0)
         {
-            
             bondPool.pool.AddRange(bondPool.temp);
             bondPool.temp.Clear();
             //print(bondPool.temp.Count);
-
 
         }
 
@@ -78,13 +76,17 @@ public class ObjectPool : MonoBehaviour
 
     public Bond RentBond()
     {
-        return bondPool.Rent();
+        Bond bd = bondPool.Rent();
+        bd.originBond = bd;
+        return bd;
     }
 
     public void RestoreBond(Bond bd)
     {
-
-        bondPool.Restore(bd);
+        if (bd.originBond == null)
+        {
+            return;
+        }
 
         bd.transform.SetParent(garbage);
         bd.gameObject.transform.localPosition = Vector3.zero;
@@ -95,36 +97,35 @@ public class ObjectPool : MonoBehaviour
         bd.originBond = null;
         bd.pointToAtom = null;
         bd.extendParent = null;
-
         //GameObject.Destroy(bd.gameObject);
     }
 
-    //public ExtendStructure RentExtendStructure()
-    //{
-    //    return extendPool.Rent();
-    //}
+    public ExtendStructure RentExtendStructure()
+    {
+        return extendPool.Rent();
+    }
 
-    //public void RestoreExtendStructrue(ExtendStructure extend)
-    //{
+    public void RestoreExtendStructrue(ExtendStructure extend)
+    {
 
-    //    foreach (Bond bd in extend.extendBondList)
-    //    {
-    //        RestoreBond(bd);
-    //    }
-    //    extend.extendBondList.Clear();
-    //    foreach (Atom at in extend.extendAtomList)
-    //    {
-    //        RestoreNode(at.transform.parent);
-    //        at.originAtom.derivedAtom.Remove(at);
-    //        RestoreAtom(at);
-    //    }
-    //    extend.extendAtomList.Clear();
-    //    foreach (LineRenderer lt in extend.extendLatLineList)
-    //    {
-    //        GameObject.Destroy(lt.gameObject);
-    //    }
-    //    extend.extendLatLineList.Clear();
-    //}
+        foreach (Bond bd in extend.extendBondList)
+        {
+            RestoreBond(bd);
+        }
+        extend.extendBondList.Clear();
+        foreach (Atom at in extend.extendAtomList)
+        {
+            //RestoreNode(at.transform.parent);
+            at.originAtom.derivedAtom.Remove(at);
+            //RestoreAtom(at);
+        }
+        extend.extendAtomList.Clear();
+        foreach (LineRenderer lt in extend.extendLatLineList)
+        {
+            GameObject.Destroy(lt.gameObject);
+        }
+        extend.extendLatLineList.Clear();
+    }
 }
 
 public class ObjectPool<T>

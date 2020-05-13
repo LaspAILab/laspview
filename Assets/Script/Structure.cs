@@ -27,7 +27,7 @@ public class Structure : MonoBehaviour
     //public List<Bond> extendBondList;         //List of class & modelBond
     public Transform latCenter;     //center of lattice, generally used as camera center
     public Vector3[] cellTranslate;
-    public ExtendStructrue[,,] extendStructs;
+    public ExtendStructure[,,] extendStructs;
     public int currentExtendA = 1;
     public int currentExtendB = 1;
     public int currentExtendC = 1;
@@ -47,7 +47,7 @@ public class Structure : MonoBehaviour
     void Awake()
     {
         this.transform.position = Vector3.zero;
-        extendStructs = new ExtendStructrue[3,3,3];
+        extendStructs = new ExtendStructure[3,3,3];
     }
 
     public void AddAtom(string line, int type = 1)
@@ -472,7 +472,7 @@ public class Structure : MonoBehaviour
                     else if (extendStructs[i, j, k] == null && (i < a && j < b && k < c))
                     {
                         //print(((i, j, k), extendStructs[i, j, k], (i < a && j < b && k < c)));
-                        extendStructs[i, j, k] = new ExtendStructrue(this, i, j, k);
+                        extendStructs[i, j, k] = new ExtendStructure(this, i, j, k);
                         //print(extendStructs[i, j, k].extendAtomList[0].originAtom.derivedAtom.Count);
                     }
                     else if (extendStructs[i, j, k] != null && (i >= a || j >= b || k >= c))
@@ -511,7 +511,7 @@ public class Structure : MonoBehaviour
 }
 
 
-public class ExtendStructrue
+public class ExtendStructure
 {
     public Structure originStructure;
     public Transform extendTranform;
@@ -523,7 +523,7 @@ public class ExtendStructrue
     public List<LineRenderer> extendLatLineList;
 
 
-    public ExtendStructrue(Structure origin, int a0, int b0, int c0)
+    public ExtendStructure(Structure origin, int a0, int b0, int c0)
     {
         //alive = true;
         originStructure = origin;
