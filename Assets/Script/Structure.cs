@@ -315,6 +315,8 @@ public class Structure : MonoBehaviour
 
     public void DrawModel()
     {
+        GuiMain.S.CameraActicate();
+
         this.MoveIntoLatticAtoms(this.atomList);
 
         Dictionary<string, float> modelPara = parent.arcModelPara;

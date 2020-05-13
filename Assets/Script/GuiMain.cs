@@ -49,6 +49,7 @@ public class GuiMain : MonoBehaviour
     public Transform cameraTransform;
     private Transform cameraCenter;
     private Vector3 mouseLastPos;
+    private float noOperationTimeSince;
 
     GameObject castGO = null;
     Ray mouseRay;
@@ -62,8 +63,6 @@ public class GuiMain : MonoBehaviour
     public bool onAtomRotate = false;
     public bool onAtonTranslate = false;
     public float onMoveCollectTime;
-
-    private bool rotationMode3d = false;    //for rotate
 
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
@@ -165,6 +164,7 @@ void Awake()
     //************************** MOUSE INTERACTION *******************************+
     void Update()
     {
+
         //处理鼠标位置，如果鼠标没动就跳过一些处理
         if (mouseLastPos == null)
         {
@@ -721,9 +721,34 @@ void Awake()
 
         }
 
+
+        bool getkey = (Input.GetKey(KeyCode.Delete) || Input.GetKey(KeyCode.Backspace) || Input.GetKey(KeyCode.LeftControl));
+        bool mouseout = (Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width || Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height);
+        bool ifoperate = getkey || !(mouseout && onMove == false);// || (mouseLastPos != Input.mousePosition); 
+
+        if (ifoperate)
+        {
+            noOperationTimeSince = Time.time;
+        }
+        if (Time.time - noOperationTimeSince > 1f)
+        {
+            //相机渲染画面到贴图，会自动暂停相机的目标屏幕渲染
+            Camera.main.targetDisplay = 8;
+        }
+        else
+        {
+            //恢复相机
+            Camera.main.targetDisplay = 0;
+        }
+
+
         mouseLastPos = Input.mousePosition;
     }
 
+    public void CameraActicate()
+    {
+        noOperationTimeSince = 0;
+    }
 
 
     public List<RaycastResult> ClickObject()
@@ -743,8 +768,8 @@ void Awake()
         //line.positionCount = 2;//设置两点
         //line.startColor = Color.white; //设置直线颜色
         //line.endColor = Color.white;
-        line.startWidth = 0.03f;//设置直线宽度
-        line.endWidth = 0.03f;
+        line.startWidth = 0.02f;//设置直线宽度
+        line.endWidth = 0.02f;
 
         //设置指示线的起点和终点
         line.SetPosition(0, Camera.main.ScreenToWorldPoint(v1) + Camera.main.transform.forward);

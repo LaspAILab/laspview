@@ -65,6 +65,15 @@ end
         AddArc("test.arc" ,lines);
 #endif
     }
+
+    private void LateUpdate()
+    {
+
+
+    }
+
+
+
     public void AddArc(string wholeFilename)
     {
 #if !UNITY_WEBGL
