@@ -243,6 +243,7 @@ void Awake()
                         UnityEngine.Object.Destroy(go.transform.parent.gameObject);
                     }
                     MainScr.S.CurrentStructure().AddAllBond();
+                    //DisSelectPickGO()
                     pickGO.Clear();
                 }
                 //Ctrl_C 复制原子
@@ -278,36 +279,25 @@ void Awake()
                 //Ctrl+V 粘贴原子
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
                 {
+                    DisSelectPickGO();
+
                     pasteGO.Clear();
-                    Vector3 pasteBias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized;
+                    //add pasteGO
+                    Vector3 pasteBias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized * 3;
                     foreach (GameObject go in copyGO)
                     {
                         Atom a = go.GetComponent<Atom>();
                         Atom p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * pasteBias, a.charge);
+                        //print(p.gameObject.GetComponent<Renderer>().material.color);
+                        p.transform.parent.gameObject.SetActive(true);
                         pasteGO.Add(p.gameObject);
                     }
 
-                    //Cancel Select pickGO
-                    foreach (GameObject go in pickGO)
-                    {
-                        foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                        {
-                            ren.material.color = go.GetComponent<Atom>().color;
-                        }
-                    }
-                    pickGO.Clear();
-                    MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
 
+                    MainScr.S.CurrentStructure().AddAllBond();
                     //Select pastGO
                     pickGO = pasteGO;
-                    foreach (GameObject go in pasteGO)
-                    {
-                        foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-                        {
-                            ren.material.color = Color.yellow;
-                        }
-                    }
-
+                    SelectPickGO();
                     // clear copyGO
                     if (copyGO != null && copyGO.Count != 0)
                     {
