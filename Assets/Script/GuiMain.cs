@@ -68,6 +68,7 @@ public class GuiMain : MonoBehaviour
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 pickAtomAvgPosScreen;
     private Vector3 offsetTemp;             //for tranlate    
+    private List<List<AtomOperation>> operationUndoList = new List<List<AtomOperation>>();
 
 
     public List<GameObject> pickGO = new List<GameObject>();         //for Pick
@@ -328,7 +329,8 @@ void Awake()
                 //Ctrl+Z 撤回Undo
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
                 {
-                    //wait!
+                    EditUndoStruc();
+
                 }
             }
         }
@@ -347,14 +349,14 @@ void Awake()
                     //在UI上时，获得UI
                     foreach (RaycastResult r in ClickObject())
                     {
-                        dragCom = r.gameObject.GetComponent<syfDragUI>();
+                        //dragCom = r.gameObject.GetComponent<syfDragUI>();
                         //When GameObject contain syfDragUIComponent, it can be Dragged
-                        if (dragCom != null)
-                        {
-                            //But actually dragged GameObject is set in syfDragUI.dragGameObjcet
-                            selectGOOffset = dragCom.draggedGameObject.transform.position - Input.mousePosition;
-                            break;
-                        }
+                        ////if (dragCom != null)
+                        //{
+                        //    //But actually dragged GameObject is set in syfDragUI.dragGameObjcet
+                        //    //selectGOOffset = dragCom.draggedGameObject.transform.position - Input.mousePosition;
+                        //    break;
+                        //}
                     }
                 }
                 else
@@ -675,7 +677,7 @@ void Awake()
                 else if (!Input.GetKey(KeyCode.Mouse1)) 
                 {
                     PickControlEnd();
-                    EditSaveSturc();
+                    EditSaveStruc(pickAtomOrigin);
                     onMove = false;
                     onAtomRotate = false;
                 }
@@ -698,7 +700,7 @@ void Awake()
                 else if (!(Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift)))
                 {
                     PickControlEnd();
-                    EditSaveSturc();
+                    EditSaveStruc(pickAtomOrigin);
                     onMove = false;
                     onAtonTranslate = false;
                 }
@@ -846,13 +848,6 @@ void Awake()
     //****************** CAMERA CONTROL & MOUSE INTERACTION ***********************
     //****************************** END ******************************************
 
-    public void EditSaveSturc()
-    {
-        foreach(Atom a in MainScr.S.CurrentStructure().atomList)
-        {
-            a.cdnt = a.transform.parent.position;
-        }
-    }
 
 
     public void PickControlStart()
@@ -1135,7 +1130,6 @@ void Awake()
         }
         changeBondDerived.Clear();
 
-        //DisSelectPickGO();
         Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
         tempDic["display style"] = 1;
         struc.ChangeLatRange(tempDic);
@@ -1167,5 +1161,58 @@ void Awake()
         }
     }
 #endif
+
+    public void EditSaveStruc(List<Atom> operatedAtom)
+    {
+
+        Structure struc = MainScr.S.CurrentStructure();
+        List<AtomOperation> atomsOperate = new List<AtomOperation>();
+
+        foreach (Atom at in operatedAtom)
+        {
+            AtomOperation oneAtomOpt = new AtomOperation();
+            oneAtomOpt.Set(struc.atomList.IndexOf(at), at.cdnt, at.transform.position);
+            at.cdnt = at.transform.position;
+            atomsOperate.Add(oneAtomOpt);
+        }
+        operationUndoList.Add(atomsOperate);
+    }
+
+    public void EditUndoStruc()
+    {
+        Structure struc = MainScr.S.CurrentStructure();
+        print(operationUndoList.Count);
+        if (operationUndoList.Count == 0 || operationUndoList == null) return;
+        List<AtomOperation> atomsOperate = operationUndoList[operationUndoList.Count-1];
+
+        foreach(AtomOperation atOpt in atomsOperate)
+        {
+            struc.atomList[atOpt.movedAtomIndex].transform.position = atOpt.fromPos;
+        }
+        operationUndoList.RemoveAt(operationUndoList.Count - 1);
+
+        Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
+        tempDic["display style"] = 1;
+        struc.ChangeLatRange(tempDic);
+        struc.strucModelPara = null;
+        struc.DrawModel();
+    }
+
 }
 
+
+
+
+struct AtomOperation
+{
+    public int movedAtomIndex;
+    public Vector3 fromPos;
+    public Vector3 toPos;
+
+    public void Set(int atomIndex, Vector3 startPos, Vector3 endPos)
+    {
+        movedAtomIndex = atomIndex;
+        fromPos = startPos;
+        toPos = endPos;
+    }
+}

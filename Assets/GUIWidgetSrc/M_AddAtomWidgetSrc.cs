@@ -40,7 +40,7 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         }
         if (!ConFun.S.eleTable.ContainsKey(ele))
         {
-            ConFun.S.printStatusInfo("Err: "+ ele + "is not an available element.");
+            ConFun.S.printStatusInfo("Err: " + ele + "is not an available element.");
             return;
         }
 
@@ -61,7 +61,7 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         {
             ren.material.color = Color.yellow;
         }
-        GuiMain.S.EditSaveSturc();
+        GuiMain.S.EditSaveStruc(new List<Atom> { p });
     }
 
 

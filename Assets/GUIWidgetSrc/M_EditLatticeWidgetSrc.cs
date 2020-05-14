@@ -55,7 +55,7 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         MainScr.S.CurrentStructure().DrawModel();
         MainScr.S.CurrentStructure().AddAllBond();
         GuiMain.S.FocusCameraCenter();
-        GuiMain.S.EditSaveSturc();
+        GuiMain.S.EditSaveStruc(s.atomList);
     }
 
     public void SetLatPara(float[] abc)
