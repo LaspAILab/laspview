@@ -322,11 +322,11 @@ public class Structure : MonoBehaviour
         Dictionary<string, float> modelPara = parent.arcModelPara;
         if (strucModelPara == null)
         {
-
+            ChangeBackground();
             ChangeAtomModel(atomList);
             ChangeAllBondModel();
             ChangeLatRange(modelPara);
-            ChangeBackground();
+
             strucModelPara = new Dictionary<string, float>(modelPara);
             this.gameObject.SetActiveRecursively(true);
         }
