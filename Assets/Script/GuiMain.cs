@@ -445,7 +445,7 @@ void Awake()
                         //cameraTransform.Translate(Vector3.forward * -0.5f);
                     }
                 }
-                //如果没有LCtrl
+                //如果有LCtrl
                 else if (Input.GetKey(KeyCode.LeftControl))
                 {
                     //如在编辑模式下，为编辑原子旋转、平移操作
@@ -651,9 +651,10 @@ void Awake()
                     else
                     {
                         //2D rotate
-                        Vector3 centerScreen = Camera.main.WorldToScreenPoint(offsetTemp / 2);
-                        Vector3 a = centerScreen - Input.mousePosition;
-                        Vector3 b = centerScreen - mouseLastPos;
+                        Vector3 avgPosScreen = Camera.main.WorldToScreenPoint(pickAtomAvgPos);
+                        //print(avgPosScreen);
+                        Vector3 a = avgPosScreen - Input.mousePosition;
+                        Vector3 b = avgPosScreen - mouseLastPos;
                         float degree;
                         if (Vector3.Cross(a, b).z > 0)
                         {
