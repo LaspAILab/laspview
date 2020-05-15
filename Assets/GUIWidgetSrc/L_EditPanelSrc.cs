@@ -28,7 +28,7 @@ public class L_EditPanelSrc : MonoBehaviour
             GuiMain.S.SetAllUIInteract(L_ProjectPanelSrc.S.gameObject, !GuiMain.S.editEnable);
             GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !GuiMain.S.editEnable);
 #if !UNITY_WEBGL
-            GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !GuiMain.S.editEnable);
+            //GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !GuiMain.S.editEnable);
 #endif
             if (GuiMain.S.editEnable == true)
             {

@@ -190,6 +190,7 @@ GameObject:
   - component: {fileID: 539081823233144026}
   - component: {fileID: -908311290294776988}
   - component: {fileID: -7794882751133223499}
+  - component: {fileID: 316999567435684778}
   m_Layer: 5
   m_Name: M_EditLatticeWidget
   m_TagString: Untagged
@@ -271,7 +272,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 3
+  m_ChildAlignment: 1
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
@@ -318,6 +319,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f0cd60f5366d034aba24012fbb749f0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &316999567435684778
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 539081823233144031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd2e33bf67536d45ac40118d9829d28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  draggedGameObject: {fileID: 539081823233144031}
+  upperBound: 167.5
+  lowerBound: 167.5
+  leftBound: 110
+  rightBound: 110
 --- !u!1 &539081823282589619
 GameObject:
   m_ObjectHideFlags: 0
@@ -331,7 +349,6 @@ GameObject:
   - component: {fileID: 539081823282589630}
   - component: {fileID: 539081823282589631}
   - component: {fileID: 539081823282589616}
-  - component: {fileID: 539081823282589617}
   m_Layer: 5
   m_Name: Title
   m_TagString: Untagged
@@ -441,23 +458,6 @@ MonoBehaviour:
   m_ChildControlHeight: 1
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
---- !u!114 &539081823282589617
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 539081823282589619}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfd2e33bf67536d45ac40118d9829d28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  draggedGameObject: {fileID: 539081823233144031}
-  upperBound: 336
-  lowerBound: 336
-  leftBound: 455
-  rightBound: 455
 --- !u!1 &846362314929833257
 GameObject:
   m_ObjectHideFlags: 0
@@ -2043,7 +2043,7 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 3
     m_Bottom: 3
-  m_ChildAlignment: 0
+  m_ChildAlignment: 1
   m_Spacing: 3
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1

@@ -3,7 +3,15 @@ guid: 6f642a3e7715a494a99c75a46f71cb53
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - pauseTexture: {fileID: 21300000, guid: 46289f92d238d0a488094825e18f9cb6, type: 3}
+  - playTexture: {fileID: 21300000, guid: 671b1c446ad637346a2450110b7327fa, type: 3}
+  - btnHead: {instanceID: 0}
+  - btnFoward: {instanceID: 0}
+  - btnFocus: {instanceID: 0}
+  - btnPlay: {instanceID: 0}
+  - btnNext: {instanceID: 0}
+  - btnTail: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -91,7 +91,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !onPlay);
         GuiMain.S.SetAllUIInteract(L_EditPanelSrc.S.gameObject, !onPlay);
 #if !UNITY_WEBGL
-        GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !onPlay);
+        //GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !onPlay);
 #endif
         if (onPlay == true)
         {

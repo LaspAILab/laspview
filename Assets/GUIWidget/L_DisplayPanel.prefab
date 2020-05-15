@@ -1473,15 +1473,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 5266063729481074029}
     m_Modifications:
-    - target: {fileID: 3263236621818549623, guid: d12313401987ab249a452283ee907c9b,
-        type: 3}
-      propertyPath: m_Text
-      value: 0.10
-      objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_MinValue
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_WholeNumbers
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_MaxValue
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: f2
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
@@ -1507,31 +1522,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[1].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
-        type: 3}
-      propertyPath: m_MinValue
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
-        type: 3}
-      propertyPath: m_Value
-      value: 0.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
-        type: 3}
-      propertyPath: m_WholeNumbers
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
-        type: 3}
-      propertyPath: m_MaxValue
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
-        type: 3}
-      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: f2
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376727, guid: d12313401987ab249a452283ee907c9b,
         type: 3}

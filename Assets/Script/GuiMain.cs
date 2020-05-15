@@ -24,7 +24,7 @@ public class GuiMain : MonoBehaviour
     public GameObject M_EditLatticeWidgetPrefab;
 #if !UNITY_WEBGL
     public GameObject M_LaspInWidgetPrefab;
-    public GameObject R_LASPPanelPrefab;
+    //public GameObject R_LASPPanelPrefab;
     public GameObject R_ServerPanelPrefab;
 #endif
 
@@ -133,7 +133,7 @@ void Awake()
         GameObject m_EditLatticeWidget = Instantiate(M_EditLatticeWidgetPrefab);
 #if !UNITY_WEBGL
         GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
-        GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
+        //GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
         GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
 #endif
         GameObject l_EditPanel = Instantiate(L_EditPanelPrefab);
@@ -377,14 +377,16 @@ void Awake()
                     //在UI上时，获得UI
                     foreach (RaycastResult r in ClickObject())
                     {
-                        //dragCom = r.gameObject.GetComponent<syfDragUI>();
+                        dragCom = r.gameObject.GetComponent<syfDragUI>();
                         //When GameObject contain syfDragUIComponent, it can be Dragged
-                        ////if (dragCom != null)
-                        //{
-                        //    //But actually dragged GameObject is set in syfDragUI.dragGameObjcet
-                        //    //selectGOOffset = dragCom.draggedGameObject.transform.position - Input.mousePosition;
-                        //    break;
-                        //}
+                        if (dragCom != null)
+                        {
+                            Vector3 screemScale = transform.localScale;
+                            //But actually dragged GameObject is set in syfDragUI.dragGameObjcet
+                            selectGOOffset = dragCom.draggedGameObject.transform.position - Input.mousePosition * screemScale.x;
+                            print(selectGOOffset);
+                            break;
+                        }
                     }
                 }
                 else
@@ -396,18 +398,19 @@ void Awake()
             if (rayStartOnUI == true)
             {
                 //To move a Draggable Widget(GameObject that syfDragUI component poiting to)
-                if (Input.GetKey(KeyCode.Mouse2) && dragCom != null)
+                if ((Input.GetKey(KeyCode.Mouse2) ||Input.GetKey(KeyCode.Mouse0))  && dragCom != null)
                 {
-                    Vector3 screemScale = this.gameObject.transform.localScale;
-                    Vector3 widgetPos = Input.mousePosition + selectGOOffset;
-
-                    //MakeSure Draggable widget is still in the frame
-                    //A east home-made rectangle position limiter. If need update, you can write a UICollider youself. Use para in RectTransform
-                    widgetPos.y = Mathf.Max(widgetPos.y, dragCom.lowerBound * screemScale.y);
-                    widgetPos.y = Mathf.Min(widgetPos.y, Screen.height - dragCom.upperBound * screemScale.y);
-                    widgetPos.x = Mathf.Max(widgetPos.x, dragCom.leftBound * screemScale.x);
-                    widgetPos.x = Mathf.Min(widgetPos.x, Screen.width - dragCom.rightBound * screemScale.x);
+                    Vector3 screemScale = transform.localScale;
+                    Vector3 widgetPos = Input.mousePosition*screemScale.x + selectGOOffset;
+                    ////MakeSure Draggable widget is still in the frame
+                    ////A east home-made rectangle position limiter. If need update, you can write a UICollider youself. Use para in RectTransform
+                    widgetPos.y = Mathf.Max(widgetPos.y, dragCom.lowerBound);
+                    widgetPos.y = Mathf.Min(widgetPos.y, Screen.height - dragCom.upperBound);
+                    widgetPos.x = Mathf.Max(widgetPos.x, dragCom.leftBound);
+                    widgetPos.x = Mathf.Min(widgetPos.x, Screen.width - dragCom.rightBound);
+                    //print(widgetPos);
                     dragCom.draggedGameObject.transform.position = widgetPos;
+                    dragCom.draggedGameObject.transform.SetAsLastSibling();
                 }
             }
             else if (rayStartOnUI == false)

@@ -57,6 +57,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
             else if (kvp.Value.GetComponent<Slider>())
             {
                 float f = arcPara[kvp.Key];
+                //if (kvp.Value.GetComponent<Slider>().onValueChanged.lis)
                 kvp.Value.GetComponent<Slider>().onValueChanged.SetPersistentListenerState(1,UnityEngine.Events.UnityEventCallState.Off);
                 kvp.Value.GetComponent<Slider>().value = f;
                 //print(kvp.Value.transform.parent.GetComponent<syfSliderValueText>());
