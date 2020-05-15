@@ -45,16 +45,10 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         }
 
         Atom p = MainScr.S.CurrentStructure().AddAtom(ele, pos);
-
+        GuiMain.S.EditSaveStruc(new List<Atom> { p }, 'c');
         //Cancel pickGO
-        foreach (GameObject go in GuiMain.S.pickGO)
-        {
-            foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
-            {
-                ren.material.color = go.GetComponent<Atom>().color;
-            }
-        }
-        MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
+        GuiMain.S.DisSelectPickGO();
+        MainScr.S.CurrentStructure().ReDrawModel();
 
         GuiMain.S.pickGO = new List<GameObject> { p.gameObject };
         foreach (Renderer ren in p.transform.parent.GetComponentsInChildren<Renderer>())

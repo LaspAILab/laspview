@@ -33,30 +33,11 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         float alpha = float.Parse(paraDict["alpha"].GetComponent<InputField>().textComponent.text);
         float betta = float.Parse(paraDict["betta"].GetComponent<InputField>().textComponent.text);
         float gamma = float.Parse(paraDict["gamma"].GetComponent<InputField>().textComponent.text);
-
-        Structure s = MainScr.S.CurrentStructure();
-
-        Matrix4x4 oldInverse = s.lat.inverse;
-        s.abc = new float[6] { a, b, c, alpha, betta, gamma };
-        s.ChangeLat();
-        Matrix4x4 newLattice = s.lat;
-
-        if (paraDict["keep fractional position"].GetComponent<Toggle>().isOn)
-        {
-            foreach (Atom at in s.atomList)
-            {
-                Transform nodeTransform = at.transform.parent;
-                nodeTransform.position = newLattice * (oldInverse * nodeTransform.position);
-            }
-        }
-
-
-        //MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr);
-        MainScr.S.CurrentStructure().DrawModel();
-        MainScr.S.CurrentStructure().AddAllBond();
-        GuiMain.S.FocusCameraCenter();
-        GuiMain.S.EditSaveStruc(s.atomList);
+        MainScr.S.CurrentStructure().ChangeLatPara( new float[6] { a, b, c, alpha, betta, gamma }, paraDict["keep fractional position"].GetComponent<Toggle>().isOn);
     }
+
+
+
 
     public void SetLatPara(float[] abc)
     {

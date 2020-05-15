@@ -10,6 +10,7 @@ using UnityEngine.EventSystems;
 using B83.Win32;
 using System.Linq;
 using System;
+using TMPro;
 
 public class GuiMain : MonoBehaviour
 {
@@ -199,7 +200,16 @@ void Awake()
                     if (expandAtom != null)
                     {
                         // A -> null
-                        expandAtom.transform.localScale -= expandAtomScale;
+                        if (MainScr.S.CurrentStructure().strucModelPara["ball radius type"] == 0)
+                        {
+                            expandAtom.GetComponent<Atom>().ChangeScalingRatio(MainScr.S.CurrentStructure().strucModelPara["ball scale"]);
+                        }
+                        else
+                        {
+                            float radius = MainScr.S.CurrentStructure().strucModelPara["ball radius"];
+                            expandAtom.transform.localScale = Vector3.one * radius;
+                        }
+
                         expandAtom = null;
                     }
                 }
@@ -218,7 +228,15 @@ void Awake()
                 {
                     //cast atom change
                     //A -> B
-                    expandAtom.transform.localScale -= expandAtomScale;
+                    if (MainScr.S.CurrentStructure().strucModelPara["ball radius type"] == 0)
+                    {
+                        expandAtom.GetComponent<Atom>().ChangeScalingRatio(MainScr.S.CurrentStructure().strucModelPara["ball scale"]);
+                    }
+                    else
+                    {
+                        float radius = MainScr.S.CurrentStructure().strucModelPara["ball radius"];
+                        expandAtom.transform.localScale = Vector3.one * radius;
+                    }
                     expandAtom = castGO;
                     castGO.transform.localScale += expandAtomScale;
                 }
@@ -232,20 +250,25 @@ void Awake()
             Input.GetKey(KeyCode.Mouse2) || Input.GetKeyUp(KeyCode.Mouse2) ||
             Input.GetAxis("Mouse ScrollWheel") != 0))
         {
-            //Ctrl +CV delete
+            //Ctrl C V delete Z
             if (editEnable)
             {
                 //DELETE/Backspace删除原子
                 if (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
                 {
-                    foreach (GameObject go in pickGO)
+                    PickControlStart();
+                    EditSaveStruc(pickAtomOrigin, 'd');
+                    RestoreBondList(changeBond);
+
+                    Structure struc = MainScr.S.CurrentStructure();
+                    foreach (Atom at in pickAtomOrigin)
                     {
-                        MainScr.S.CurrentStructure().atomList.Remove(go.GetComponent<Atom>());
-                        UnityEngine.Object.Destroy(go.transform.parent.gameObject);
+                        struc.atomList.Remove(at);
+                        UnityEngine.Object.Destroy(at.transform.parent.gameObject);
                     }
-                    MainScr.S.CurrentStructure().AddAllBond();
-                    //DisSelectPickGO()
-                    pickGO.Clear();
+                    DisSelectPickGO();
+                    struc.ReDrawModel();
+
                 }
                 //Ctrl_C 复制原子
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
@@ -282,20 +305,25 @@ void Awake()
                 {
                     DisSelectPickGO();
 
+                    List<Atom> pasteAtom = new List<Atom>();
                     pasteGO.Clear();
                     //add pasteGO
                     Vector3 pasteBias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized * 3;
                     foreach (GameObject go in copyGO)
                     {
                         Atom a = go.GetComponent<Atom>();
+
                         Atom p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * pasteBias, a.charge);
                         //print(p.gameObject.GetComponent<Renderer>().material.color);
                         p.transform.parent.gameObject.SetActive(true);
+                        pasteAtom.Add(p);
                         pasteGO.Add(p.gameObject);
                     }
 
 
-                    MainScr.S.CurrentStructure().AddAllBond();
+                    MainScr.S.CurrentStructure().ReDrawModel();
+                    EditSaveStruc(pasteAtom, 'c');
+
                     //Select pastGO
                     pickGO = pasteGO;
                     SelectPickGO();
@@ -309,7 +337,7 @@ void Awake()
                     }
                     copyGO.Clear();
 
-                    // pickGO.CopyTo(copyGO):Copy them to cdnt +copyBias
+                    // pickGO.CopyTo(copyGO):Copy them to copyBias
                     foreach (GameObject go in pickGO)
                     {
                         Atom a = go.GetComponent<Atom>();
@@ -329,8 +357,8 @@ void Awake()
                 //Ctrl+Z 撤回Undo
                 else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
                 {
+                    DisSelectPickGO();
                     EditUndoStruc();
-
                 }
             }
         }
@@ -887,7 +915,7 @@ void Awake()
                         changeBond.Add(b2);
                     }
                 }
-
+                //print(struc.bondList.Count);
             }
         }
 
@@ -955,29 +983,16 @@ void Awake()
         float bondBoundry = struc.strucModelPara["tolerance"];
         Matrix4x4 inverse = struc.lat.inverse;
 
-        if (changeBond.Count != 0)
-        {
-            foreach (Bond b in changeBond)
-            {
-                ObjectPool.S.RestoreBond(b);
-            }
-        }
-        changeBond.Clear();
-
-        //print(changeBondDerived.Count);
-        if (changeBondDerived.Count != 0)
-        {
-            foreach (Bond b in changeBondDerived)
-            {
-                ObjectPool.S.RestoreBond(b);
-            }
-        }
-        changeBondDerived.Clear();
+        RestoreBondList(changeBond);
+        RestoreBondList(changeBondDerived);
         //foreach (Bond bd in ObjectPool.S.bondPool.pool)
         //{
         //    print(bd.GetHashCode());
         //}
         //GC.Collect();
+
+
+
 
         if (struc.strucModelPara["display style"] != 1)
         {
@@ -1080,14 +1095,7 @@ void Awake()
     {
         Structure struc = MainScr.S.CurrentStructure();
         struc.MoveIntoLatticAtoms(struc.atomList);
-        foreach (Atom at1 in struc.atomList)
-        {
-            foreach (Atom at2 in at1.derivedAtom)
-            {
-                at2.transform.parent.position = at1.transform.position + at2.extendParent.bias;
-                //at2.index = at1.index;
-            }
-        }
+        struc.ChangeExtendAtomPos();
         this.PickControlUpdate();
 
         //if (changeBond.Count != 0)
@@ -1113,22 +1121,8 @@ void Awake()
         //    }
         //    changeBondDerived.Clear();
         //}
-        if (changeBond.Count != 0)
-        {
-            foreach (Bond bd in changeBond)
-            {
-                ObjectPool.S.RestoreBond(bd);
-            }
-        }
-        changeBond.Clear();
-        if (changeBondDerived.Count != 0)
-        {
-            foreach (Bond bd in changeBondDerived)
-            {
-                ObjectPool.S.RestoreBond(bd);
-            }
-        }
-        changeBondDerived.Clear();
+        RestoreBondList(changeBond);
+        RestoreBondList(changeBondDerived);
 
         Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
         tempDic["display style"] = 1;
@@ -1136,6 +1130,20 @@ void Awake()
         struc.strucModelPara = null;
         struc.DrawModel();
 
+    }
+
+
+
+    private void RestoreBondList(List<Bond> bondList)
+    {
+        if (bondList.Count != 0)
+        {
+            foreach (Bond bd in bondList)
+            {
+                ObjectPool.S.RestoreBond(bd);
+            }
+        }
+        bondList.Clear();
     }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
@@ -1162,18 +1170,68 @@ void Awake()
     }
 #endif
 
-    public void EditSaveStruc(List<Atom> operatedAtom)
+    public void EditSaveStruc(List<Atom> operatedAtom, char tag = 'm')
     {
 
         Structure struc = MainScr.S.CurrentStructure();
         List<AtomOperation> atomsOperate = new List<AtomOperation>();
-
-        foreach (Atom at in operatedAtom)
+        if (tag == 'm')
         {
-            AtomOperation oneAtomOpt = new AtomOperation();
-            oneAtomOpt.Set(struc.atomList.IndexOf(at), at.cdnt, at.transform.position);
-            at.cdnt = at.transform.position;
-            atomsOperate.Add(oneAtomOpt);
+            foreach (Atom at in operatedAtom)
+            {
+                AtomOperation oneAtomOpt = new AtomOperation();
+                oneAtomOpt.SetMove(struc.atomList.IndexOf(at), at.cdnt);
+                at.cdnt = at.transform.position;
+                atomsOperate.Add(oneAtomOpt);
+            }
+        }
+        else if (tag == 'd')
+        {
+            foreach (Atom at in operatedAtom)
+            {
+                AtomOperation oneAtomOpt = new AtomOperation();
+                oneAtomOpt.SetDel(struc.atomList.IndexOf(at), at.ele, at.cdnt);
+                atomsOperate.Add(oneAtomOpt);
+            }
+            atomsOperate.Sort((a, b) =>
+            {
+                var o = a.movedAtomIndex - b.movedAtomIndex;
+                return o;
+            });
+        }
+        else if (tag == 'c')
+        {   
+            foreach(Atom at in operatedAtom)
+            {
+                AtomOperation oneAtomOpt = new AtomOperation();
+                
+                oneAtomOpt.SetAdd(at.index);
+                atomsOperate.Add(oneAtomOpt);
+            }
+            atomsOperate.Sort((a, b) =>
+            {
+                var o = a.movedAtomIndex - b.movedAtomIndex;
+                return -o;
+            });
+        }
+        else if (tag == 'l')
+        {
+            AtomOperation latOpt = new AtomOperation();
+            latOpt.tag = 'l';
+            latOpt.abc4lat = MainScr.S.CurrentStructure().abc;
+            atomsOperate.Add(latOpt);
+
+            foreach (Atom at in operatedAtom)
+            {
+                AtomOperation oneAtomOpt = new AtomOperation();
+                oneAtomOpt.SetMove(struc.atomList.IndexOf(at), at.cdnt);
+                atomsOperate.Add(oneAtomOpt);
+            }
+            atomsOperate.Sort((a, b) =>
+            {
+                var o = a.movedAtomIndex - b.movedAtomIndex;
+                return o;
+            });
         }
         operationUndoList.Add(atomsOperate);
     }
@@ -1181,21 +1239,51 @@ void Awake()
     public void EditUndoStruc()
     {
         Structure struc = MainScr.S.CurrentStructure();
-        print(operationUndoList.Count);
-        if (operationUndoList.Count == 0 || operationUndoList == null) return;
+        //print(operationUndoList.Count);
+        if (operationUndoList.Count == 0) return;
         List<AtomOperation> atomsOperate = operationUndoList[operationUndoList.Count-1];
 
+        print(struc.atomList);
         foreach(AtomOperation atOpt in atomsOperate)
         {
-            struc.atomList[atOpt.movedAtomIndex].transform.position = atOpt.fromPos;
+            if (atOpt.tag == 'm')
+            {
+                Atom at = struc.atomList[atOpt.movedAtomIndex];
+                at.transform.parent.position = atOpt.fromPos;
+                at.cdnt = atOpt.fromPos;
+            }
+            else if (atOpt.tag == 'd')
+            {     
+                struc.AddAtom(atOpt.ele, atOpt.fromPos);
+                Atom at = struc.atomList[struc.atomList.Count - 1];
+                struc.atomList.RemoveAt(struc.atomList.Count - 1);
+                at.transform.parent.SetSiblingIndex(atOpt.movedAtomIndex);
+                struc.atomList.Insert(atOpt.movedAtomIndex, at);
+            }
+            else if (atOpt.tag == 'c')
+            {
+                Atom at = struc.atomList[atOpt.movedAtomIndex];
+                struc.atomList.RemoveAt(atOpt.movedAtomIndex);
+                UnityEngine.Object.Destroy(at.transform.parent.gameObject);
+
+            }
+            else if (atOpt.tag == 'l')
+            {
+                struc.abc = atOpt.abc4lat;
+                struc.ChangeLat();
+            }
         }
+
+
+        atomsOperate = null;
         operationUndoList.RemoveAt(operationUndoList.Count - 1);
 
-        Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
-        tempDic["display style"] = 1;
-        struc.ChangeLatRange(tempDic);
-        struc.strucModelPara = null;
-        struc.DrawModel();
+        //Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
+        //tempDic["display style"] = 1;
+        //struc.ChangeLatRange(tempDic);
+        //struc.strucModelPara = null;
+        //struc.DrawModel();
+        struc.ReDrawModel();
     }
 
 }
@@ -1206,13 +1294,37 @@ void Awake()
 struct AtomOperation
 {
     public int movedAtomIndex;
-    public Vector3 fromPos;
-    public Vector3 toPos;
+    public char tag;
 
-    public void Set(int atomIndex, Vector3 startPos, Vector3 endPos)
+    public Vector3 fromPos;
+    //public Vector3 toPos;
+
+    public string ele;
+    public float[] abc4lat;
+    //tag = 'm' move Atom
+    //tag = 'c' creat Atom
+    //tag = 'd' delete Atom
+    //tag = 'l' change lattice
+
+    public void SetMove(int atomIndex, Vector3 startPos)
     {
+        tag = 'm';
         movedAtomIndex = atomIndex;
         fromPos = startPos;
-        toPos = endPos;
+        //toPos = endPos;
     }
+
+    public void SetDel(int atomIndex, string element, Vector3 pos)
+    {
+        tag = 'd';
+        movedAtomIndex = atomIndex;
+        ele = element;
+        fromPos = pos;
+    }
+    public void SetAdd(int atomIndex)
+    {
+        tag = 'c';
+        movedAtomIndex = atomIndex;
+    }
+
 }

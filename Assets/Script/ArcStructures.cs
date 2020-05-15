@@ -89,6 +89,9 @@ public class ArcStructures : MonoBehaviour
         return newStru;
 
     }
+
+
+
     public void ArcRead(string filename, string[] lines, bool noE = false, string fname = null)
     {   //Initilization function outside Unity3d frame. Need to be call soon after Instantiation.
         this.filename = filename;
@@ -102,7 +105,6 @@ public class ArcStructures : MonoBehaviour
 
             for (; startingPoint < lines.Length - 1; startingPoint++)
             {
-                print(3);
                 if (lines[startingPoint].Contains("Energy")) break;
             }
         }

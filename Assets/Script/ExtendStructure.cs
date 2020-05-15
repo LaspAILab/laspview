@@ -31,6 +31,7 @@ public class ExtendStructure : MonoBehaviour
         {
             AddExtendAtom(at, bias);
         }
+        print(origin.bondList.Count);
         foreach (Bond bd in origin.bondList)
         {
             AddExtendBond(bd, bias);
@@ -135,6 +136,7 @@ public class ExtendStructure : MonoBehaviour
         }
         extendBondList.Clear();
         GC.Collect();
+        //print(originStructure.bondList.Count);
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
             foreach (Bond bd in originStructure.bondList)

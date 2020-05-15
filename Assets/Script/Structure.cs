@@ -159,6 +159,7 @@ public class Structure : MonoBehaviour
                 }
             }
         }
+        //print(bondList.Count);
     }
     
     public void AddAllBond()
@@ -324,7 +325,9 @@ public class Structure : MonoBehaviour
         {
             ChangeBackground();
             ChangeAtomModel(atomList);
+            ChangeExtendAtomPos();
             ChangeAllBondModel();
+
             ChangeLatRange(modelPara);
 
             strucModelPara = new Dictionary<string, float>(modelPara);
@@ -404,9 +407,24 @@ public class Structure : MonoBehaviour
        
     } 
 
+    public void ReDrawModel()
+    {
+        Dictionary<string, float> tempDic = new Dictionary<string, float>(parent.arcModelPara);
+        tempDic["lat range a"] = 1;
+        tempDic["lat range b"] = 1;
+        tempDic["lat range c"] = 1;
+        ChangeLatRange(tempDic);
+        strucModelPara = null;
+        DrawModel();
+    }
+
     public void ChangeAtomModel(List<Atom> listOfAtom)
     {
         Dictionary<string, float> modelPara = parent.arcModelPara;
+        foreach (Atom at in listOfAtom)
+        {
+            at.index = atomList.IndexOf(at);
+        }
         if (modelPara["display style"] == 0 || modelPara["display style"] == 1)
         {
             if (modelPara["ball radius type"] == 0)
@@ -422,6 +440,7 @@ public class Structure : MonoBehaviour
         {
             foreach (Atom at in listOfAtom) at.transform.localScale = 0.4f * Vector3.one;
         }
+
     }
 
     public void ChangeAllBondModel()
@@ -502,6 +521,39 @@ public class Structure : MonoBehaviour
         }
 
 
+    }
+
+    public void ChangeLatPara(float[] abc, bool keepFractionalPos)
+    {
+        GuiMain.S.EditSaveStruc(atomList, 'l');
+        Matrix4x4 oldInverse = this.lat.inverse;
+        this.abc = abc;
+        ChangeLat();
+        Matrix4x4 newLattice = this.lat;
+
+        if (keepFractionalPos)
+        {
+            foreach (Atom at in atomList)
+            {
+                Transform nodeTransform = at.transform.parent;
+                nodeTransform.position = newLattice * (oldInverse * nodeTransform.position);
+            }
+        }
+        GuiMain.S.FocusCameraCenter();
+        ReDrawModel();
+
+    }
+
+    public void ChangeExtendAtomPos()
+    {
+        foreach (Atom at1 in this.atomList)
+        {
+            foreach (Atom at2 in at1.derivedAtom)
+            {
+                at2.transform.parent.position = at1.transform.position + at2.extendParent.bias;
+                //at2.index = at1.index;
+            }
+        }
     }
 
     public void ChangeLatRange(Dictionary<string, float> modelPara)
