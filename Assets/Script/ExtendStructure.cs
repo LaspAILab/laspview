@@ -31,7 +31,7 @@ public class ExtendStructure : MonoBehaviour
         {
             AddExtendAtom(at, bias);
         }
-        print(origin.bondList.Count);
+        //print(origin.bondList.Count);
         foreach (Bond bd in origin.bondList)
         {
             AddExtendBond(bd, bias);

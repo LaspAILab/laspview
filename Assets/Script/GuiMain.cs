@@ -734,7 +734,7 @@ void Awake()
                 }
             }
 
-            if (Time.time - onMoveCollectTime > 0.1f)
+            if (Time.time - onMoveCollectTime > 0.2f)
             {
                 GC.Collect();
                 onMoveCollectTime = Time.time;
@@ -744,7 +744,7 @@ void Awake()
 
 
         bool getkey = (Input.GetKey(KeyCode.Delete) || Input.GetKey(KeyCode.Backspace) || Input.GetKey(KeyCode.LeftControl));
-        bool mouseout = (Input.mousePosition.x < 0 || Input.mousePosition.x > Screen.width || Input.mousePosition.y < 0 || Input.mousePosition.y > Screen.height);
+        bool mouseout = (Input.mousePosition.x < -50 || Input.mousePosition.x > Screen.width + 50 || Input.mousePosition.y < -50 || Input.mousePosition.y > Screen.height + 50);
         bool ifoperate = getkey || !(mouseout && onMove == false);// || (mouseLastPos != Input.mousePosition); 
 
         if (ifoperate)
@@ -1243,7 +1243,7 @@ void Awake()
         if (operationUndoList.Count == 0) return;
         List<AtomOperation> atomsOperate = operationUndoList[operationUndoList.Count-1];
 
-        print(struc.atomList);
+        //print(struc.atomList);
         foreach(AtomOperation atOpt in atomsOperate)
         {
             if (atOpt.tag == 'm')
