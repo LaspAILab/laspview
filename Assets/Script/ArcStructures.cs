@@ -79,7 +79,7 @@ public class ArcStructures : MonoBehaviour
         return (false, false);
     }
 
-    private Structure AddSturcture()
+    public Structure AddSturcture()
     {
         Structure newStru = Instantiate(StructurPrefabVar).GetComponent<Structure>();
         structureList.Add(newStru);

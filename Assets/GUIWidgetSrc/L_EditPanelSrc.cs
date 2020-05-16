@@ -57,12 +57,29 @@ public class L_EditPanelSrc : MonoBehaviour
             {
 #if !UNITY_WEBGL
                 GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
-                R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>().interactable = false;
+                GuiMain.S.SetUIInteract(R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>(), false);
 #endif
                 GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
                 B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
                 GuiMain.S.FocusCameraCenter();
                 GuiMain.S.DisSelectPickGO();
+                GuiMain.S.EditClearUndoList();
+
+                //Close Edit Widget
+                Button btn = paraDict["add atom"].GetComponent<Button>();
+                GuiMain.S.SetUIInteract(btn, true);
+                M_AddAtomWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+                M_AddAtomWidgetSrc.S.gameObject.SetActive(false);
+
+                btn = paraDict["edit lattice"].GetComponent<Button>();
+                GuiMain.S.SetUIInteract(btn, true);
+                M_EditLatticeWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+                M_EditLatticeWidgetSrc.S.gameObject.SetActive(false);
+
+                btn = paraDict["supercell"].GetComponent<Button>();
+                GuiMain.S.SetUIInteract(btn, true);
+                M_SupercellWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+                M_SupercellWidgetSrc.S.gameObject.SetActive(false);
             }
 
         });
@@ -98,4 +115,18 @@ public class L_EditPanelSrc : MonoBehaviour
             M_EditLatticeWidgetSrc.S.gameObject.SetActive(false);
         });
     }
+    public void EditPanelSuperCell()
+    {
+        Button btn = paraDict["supercell"].GetComponent<Button>();
+        GuiMain.S.SetUIInteract(btn, false);
+
+        M_SupercellWidgetSrc.S.gameObject.SetActive(true);
+        M_SupercellWidgetSrc.S.closeBtn.onClick.AddListener(() =>
+        {
+            GuiMain.S.SetUIInteract(btn, true);
+            M_SupercellWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+            M_SupercellWidgetSrc.S.gameObject.SetActive(false);
+        });
+    }
+
 }

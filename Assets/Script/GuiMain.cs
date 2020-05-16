@@ -22,8 +22,9 @@ public class GuiMain : MonoBehaviour
     public GameObject L_ProjectPanelPrefab;
     public GameObject M_AddAtomWidgetPrefab;
     public GameObject M_EditLatticeWidgetPrefab;
+    public GameObject M_SupercellWidgetPrefab;
 #if !UNITY_WEBGL
-    public GameObject M_LaspInWidgetPrefab;
+    //public GameObject M_LaspInWidgetPrefab;
     //public GameObject R_LASPPanelPrefab;
     public GameObject R_ServerPanelPrefab;
 #endif
@@ -131,10 +132,11 @@ void Awake()
         GameObject l_DisplayPanel = Instantiate(L_DisplayPanelPrefab);
         GameObject m_AddAtomWidget = Instantiate(M_AddAtomWidgetPrefab);
         GameObject m_EditLatticeWidget = Instantiate(M_EditLatticeWidgetPrefab);
+        GameObject m_SupercellWidget = Instantiate(M_SupercellWidgetPrefab);
 #if !UNITY_WEBGL
         GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
         //GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
-        GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
+        //GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
 #endif
         GameObject l_EditPanel = Instantiate(L_EditPanelPrefab);
     }
@@ -355,8 +357,9 @@ void Awake()
                     }
                 }
                 //Ctrl+Z 撤回Undo
-                else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z))
+                else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.X)))
                 {
+                    print(10);
                     DisSelectPickGO();
                     EditUndoStruc();
                 }
@@ -384,7 +387,7 @@ void Awake()
                             Vector3 screemScale = transform.localScale;
                             //But actually dragged GameObject is set in syfDragUI.dragGameObjcet
                             selectGOOffset = dragCom.draggedGameObject.transform.position - Input.mousePosition * screemScale.x;
-                            print(selectGOOffset);
+                            //print(selectGOOffset);
                             break;
                         }
                     }
@@ -1287,6 +1290,15 @@ void Awake()
         //struc.strucModelPara = null;
         //struc.DrawModel();
         struc.ReDrawModel();
+    }
+
+    public void EditClearUndoList()
+    {
+        foreach(List<AtomOperation> atOpts in operationUndoList)
+        {
+            atOpts.Clear();
+        }
+        GC.Collect();
     }
 
 }

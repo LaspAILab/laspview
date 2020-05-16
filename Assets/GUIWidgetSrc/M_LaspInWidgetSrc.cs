@@ -22,7 +22,7 @@ public class M_LaspInWidgetSrc : MonoBehaviour
         closeBtn = transform.GetChild(0).GetChild(2).GetComponent<Button>();
 
         //Set lasp.in Editor Widget
-        this.transform.SetParent(GameObject.Find("Canvas").transform);
+        this.transform.SetParent(GameObject.Find("PhysicalResizer").transform);
         this.transform.position = new Vector3(Screen.width / 2, Screen.height / 2);
         this.gameObject.SetActive(false);
     }

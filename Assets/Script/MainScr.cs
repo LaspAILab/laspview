@@ -66,14 +66,6 @@ end
 #endif
     }
 
-    private void LateUpdate()
-    {
-
-
-    }
-
-
-
     public void AddArc(string wholeFilename)
     {
 #if !UNITY_WEBGL
@@ -125,12 +117,12 @@ end
     }
 
 
-    public void AddArcByCoroutine(string fileName, string msg)
+    public void AddArcByCorouWaiting(string fileName, string msg)
     {
-        StartCoroutine(AddArcCorou( fileName, msg));
+        StartCoroutine(AddArcWaiting( fileName, msg));
     }
 
-    IEnumerator AddArcCorou(string fileName, string msg)
+    IEnumerator AddArcWaiting(string fileName, string msg)
     {
         while (true)
         {

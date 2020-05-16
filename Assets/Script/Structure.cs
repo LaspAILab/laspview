@@ -599,15 +599,10 @@ public class Structure : MonoBehaviour
     }
 
 
-    public void DeDrawModel()
-    {
-        //foreach (Bond b in bondList)
-        //{
-        //    //Destroy all bond before setActive False to save memory
-        //    UnityEngine.Object.Destroy(b.gameObject);
-        //}
-        //bondList.Clear();
-    }
+    //public void DeDrawModel()
+    //{
+    //    GuiMain.S.EditClearUndoList();
+    //}
 
 }
 

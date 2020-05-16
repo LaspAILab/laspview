@@ -407,8 +407,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: EditWidgetAddAtom
+      - m_Target: {fileID: 8782407543106750398}
+        m_MethodName: Supercell
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -453,8 +453,9 @@ GameObject:
   - component: {fileID: 3725877872559701000}
   - component: {fileID: 6156580423377092380}
   - component: {fileID: 1671532955275573574}
+  - component: {fileID: 8782407543106750398}
   m_Layer: 5
-  m_Name: M_SuperCellWidget
+  m_Name: M_SupercellWidget
   m_TagString: Untagged
   m_Icon: {fileID: 3443629218296621865, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
@@ -469,7 +470,7 @@ RectTransform:
   m_GameObject: {fileID: 4791832997610671859}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4146260431895995035}
   - {fileID: 8512538346502809936}
@@ -588,6 +589,19 @@ MonoBehaviour:
   lowerBound: 110
   leftBound: 112
   rightBound: 112
+--- !u!114 &8782407543106750398
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4791832997610671859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2202c624d237097448b25d50ff577a8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  closeBtn: {fileID: 0}
 --- !u!1 &5270711757168874227
 GameObject:
   m_ObjectHideFlags: 0
@@ -664,7 +678,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Add Atom
+  m_Text: Supercell
 --- !u!1001 &367983332207384841
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -676,6 +690,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_MinWidth
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3263236621818549623, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_Text
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
@@ -926,6 +945,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_MinWidth
       value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 3263236621818549623, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_Text
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
@@ -1363,6 +1387,11 @@ PrefabInstance:
       propertyPath: m_MinWidth
       value: 100
       objectReference: {fileID: 0}
+    - target: {fileID: 3263236621818549623, guid: d12313401987ab249a452283ee907c9b,
+        type: 3}
+      propertyPath: m_Text
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3484598759964376724, guid: d12313401987ab249a452283ee907c9b,
         type: 3}
       propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
@@ -1726,7 +1755,7 @@ PrefabInstance:
     - target: {fileID: 7152635501029438337, guid: 9472de56116bb5741baa80874ef17234,
         type: 3}
       propertyPath: m_Text
-      value: '  SuperCell'
+      value: '  Supercell'
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9472de56116bb5741baa80874ef17234, type: 3}

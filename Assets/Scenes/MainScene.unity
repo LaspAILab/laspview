@@ -211,7 +211,7 @@ PrefabInstance:
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -12.5
+      value: -12.499985
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -334,7 +334,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: NaN}
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 2.035e-42, w: 5.9e-44}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -791,7 +791,7 @@ MonoBehaviour:
     type: 3}
   M_EditLatticeWidgetPrefab: {fileID: 539081823233144031, guid: fc02f28fcafafa044b0d0f9e427c2b64,
     type: 3}
-  M_LaspInWidgetPrefab: {fileID: 2236528130817420199, guid: 04c324c53a01e9c45847e686a7ca5908,
+  M_SupercellWidgetPrefab: {fileID: 4791832997610671859, guid: 71ba854c434856045b4dbe81ca96d575,
     type: 3}
   R_ServerPanelPrefab: {fileID: 1061375235224783102, guid: 074ef9b03177749438e8c530df4fe809,
     type: 3}

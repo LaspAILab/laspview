@@ -95,15 +95,15 @@ public class R_ServerPanelSrc : MonoBehaviour
         {
             Btn1.GetComponentInChildren<Text>().text = "Stop Listening";
             Btn2.GetComponentInChildren<Text>().text = "Listening...";
-            Btn2.interactable = false;
-            localAddrDp.interactable = false;
+            GuiMain.S.SetUIInteract(Btn2, false);
+            GuiMain.S.SetUIInteract(localAddrDp, false);
         }
         else
         {
             Btn1.GetComponentInChildren<Text>().text = "Check Local IP";
             Btn2.GetComponentInChildren<Text>().text = "Start Listening";
-            Btn2.interactable = true;
-            localAddrDp.interactable = true;
+            GuiMain.S.SetUIInteract(Btn2, true);
+            GuiMain.S.SetUIInteract(localAddrDp, true);
         }
     }
 
@@ -111,7 +111,7 @@ public class R_ServerPanelSrc : MonoBehaviour
     {
         //Btn of "Send Local IP"
         Button serverBtn = this.transform.GetChild(3).GetChild(0).gameObject.GetComponent<Button>();
-        serverBtn.interactable = false;
+        GuiMain.S.SetUIInteract(serverBtn, false);
         LocalClient client = gameObject.AddComponent<LocalClient>();
         string remoteip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
@@ -138,7 +138,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         }
 
         Object.Destroy(client);
-        serverBtn.interactable = true;
+        GuiMain.S.SetUIInteract(serverBtn, true);
 
     }
     //public void CheckIP2RemoteAsyn1()
@@ -160,7 +160,7 @@ public class R_ServerPanelSrc : MonoBehaviour
 
         //Btn of "Send Structures"
         Button serverBtn = this.transform.GetChild(3).GetChild(1).gameObject.GetComponent<Button>();
-        serverBtn.interactable = false;
+        GuiMain.S.SetUIInteract(serverBtn, false);
         LocalClient client = gameObject.AddComponent<LocalClient>();
         string ip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
@@ -188,7 +188,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         }
 
         Object.Destroy(client);
-        serverBtn.interactable = true;
+        GuiMain.S.SetUIInteract(serverBtn, true);
 
     }
 
