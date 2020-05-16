@@ -91,7 +91,7 @@ end
             //print(lines.Length);
             newArc.ArcRead(filename, lines);
         }
-        catch(Exception)
+        catch (Exception)
         {
             GameObject.Destroy(newArc.gameObject);
             ConFun.S.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
@@ -100,6 +100,23 @@ end
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
         DrawArc(arcList.Count - 1);
     }
+
+    //public void AddArc_Corou(string filename, string[] lines)
+    //{
+    //    ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
+    //    MainScr.S.arcList.Add(newArc);
+    //    try
+    //    {
+    //        //print(lines.Length);
+    //        StartCoroutine(newArc.ArcRead_2(filename, lines));
+    //    }
+    //    catch (Exception)
+    //    {
+    //        GameObject.Destroy(newArc.gameObject);
+    //        ConFun.S.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
+    //    }
+
+    //}
 
     public void AddArc(string filename, string msg)
     {
@@ -129,8 +146,9 @@ end
         }
     }
 
-    public void DrawArc(int arcIndex)
+    public void DrawArc(int arcIndex = -1)
     {
+        if (arcIndex == -1) arcIndex = arcList.Count - 1;
         arcList[currentArc].DeDrawArc();
         arcList[currentArc].gameObject.SetActive(false);
         ArcStructures targetArc = arcList[arcIndex];
