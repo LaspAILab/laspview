@@ -77,7 +77,7 @@ public class ConFun : MonoBehaviour
             { "Lr", 2.50f }, { "Rf", 2.50f }, { "Db", 2.50f }, { "Sg", 2.50f }, { "Bh", 2.50f },
             { "Hs", 2.50f }, { "Mt", 2.50f }, { "Ds", 2.50f }, { "Rg", 2.50f }, { "Cn", 2.50f },
             { "Uut", 2.50f }, { "Fl", 2.50f }, { "Uup", 2.50f }, { "Lv", 2.50f }, { "Uus", 2.50f },
-            { "UUo", 2.50f }
+            { "Uuo", 2.50f }
         };
 
         eleTable = new Dictionary<string, int>()
@@ -105,7 +105,7 @@ public class ConFun : MonoBehaviour
                 { "Fm",100},{ "Md",101},{ "No",102},{ "Lr",103},{ "Rf",104},
                 { "Db",105},{ "Sg",106},{ "Bh",107},{ "Hs",108},{ "Mt",109},
                 { "Ds",110},{ "Rg",111},{ "Cn",112},{ "Uut",113},{ "Fl",114},
-                { "Uup",115},{ "Lv",116},{ "Uus",117},{ "UUo",118}
+                { "Uup",115},{ "Lv",116},{ "Uus",117},{ "Uuo",118}
         };
         eleColor = new Dictionary<string,Color> () 
         {
@@ -130,7 +130,9 @@ public class ConFun : MonoBehaviour
             { "Pa",rgb2float(0, 161, 255)},{ "U" ,rgb2float(0, 143, 255)},{ "Np",rgb2float(0, 128, 255)},{ "Pu",rgb2float(0, 107, 255)},{ "Am",rgb2float(84, 92, 242)},
             { "Cm",rgb2float(120, 92, 227)},{ "Bk",rgb2float(138, 79, 227)},{ "Cf",rgb2float(161, 54, 212)},{ "Es",rgb2float(179, 31, 212)},{ "Fm",rgb2float(179, 31, 186)},
             { "Md",rgb2float(179, 13, 166)},{ "No",rgb2float(189, 13, 135)},{ "Lr",rgb2float(199, 0, 102)},{ "Rf",rgb2float(204, 0, 89)},{ "Db",rgb2float(209, 0, 79)},
-            { "Sg",rgb2float(217, 0, 69)},{ "Bh",rgb2float(224, 0, 56)},{ "Hs",rgb2float(230, 0, 46)},{ "Mt",rgb2float(235, 0, 38)}
+            { "Sg",rgb2float(217, 0, 69)},{ "Bh",rgb2float(224, 0, 56)},{ "Hs",rgb2float(230, 0, 46)},{ "Mt",rgb2float(235, 0, 38)},{ "Ds",rgb2float(240, 0, 31)},
+            { "Rg",rgb2float(245, 0, 25)},{ "Cn",rgb2float(250, 0, 20)},{ "Uut",rgb2float(255, 0, 10)},{ "Fl",rgb2float(255, 0, 10)},{ "Uup",rgb2float(255, 0, 10)},
+            { "Lv",rgb2float(255, 0, 10)},{ "Uus",rgb2float(255, 0, 10)},{ "Uuo",rgb2float(255, 0, 10)}
         };
     }
 

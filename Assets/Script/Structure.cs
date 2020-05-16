@@ -283,8 +283,8 @@ public class Structure : MonoBehaviour
                     line.positionCount = 2;//设置两点
                     line.startColor = lineColor; //设置直线颜色
                     line.endColor = lineColor;
-                    line.startWidth = 0.03f;//设置直线宽度
-                    line.endWidth = 0.03f;
+                    line.startWidth = 0.04f;//设置直线宽度
+                    line.endWidth = 0.04f;
 
                     //设置指示线的起点和终点
                     line.SetPosition(0, strucCorner[i]);
