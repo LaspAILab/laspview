@@ -20,19 +20,15 @@ public class R_ServerPanelSrc : MonoBehaviour
         this.transform.SetParent(GuiMain.S.rightCanvas.transform);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
+        //print default remote ip on ServerIP inputfield;
+        
+        //check local IP   
+        GuiMain.S.SetUIInteract(this.transform.GetChild(2).GetChild(0).GetComponent<Button>(), false);
         Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
         svrButton.onClick.AddListener(() =>
         {
             GuiMain.S.BtnHideObject(svrButton, this.gameObject);
-            //when Btn1.text = "Check Local IP"
-            Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
-            List<string> addrString = MainScr.S.localServer.GetIPAddress();
-            List<Dropdown.OptionData> addrDrop = new List<Dropdown.OptionData>();
-            foreach (string str in addrString)
-            {
-                addrDrop.Add(new Dropdown.OptionData(str));
-            }
-            localAddrDp.options = addrDrop;
+
         });
         this.gameObject.SetActive(false);
     }
@@ -41,10 +37,35 @@ public class R_ServerPanelSrc : MonoBehaviour
 
     private void Start()
     {
-        //print default remote ip on ServerIP inputfield;
         this.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.S.globalPara["remote_ip"];
-        //check local IP   
-        GuiMain.S.SetUIInteract(this.transform.GetChild(2).GetChild(0).GetComponent<Button>(), false);
+        Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
+        svrButton.onClick.AddListener(() =>
+        {
+            if (this.gameObject.activeSelf)
+            {
+                Dropdown Dp = this.GetComponentInChildren<Dropdown>();
+                List<string> addr = MainScr.S.localServer.GetIPAddress();
+                List<Dropdown.OptionData> addDrop = new List<Dropdown.OptionData>();
+                foreach (string str in addr)
+                {
+                    addDrop.Add(new Dropdown.OptionData(str));
+                }
+                Dp.options = addDrop;
+                NetCheckIP2Remote();
+            }
+
+        });
+
+        Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
+        List<string> addrString = MainScr.S.localServer.GetIPAddress();
+        List<Dropdown.OptionData> addrDrop = new List<Dropdown.OptionData>();
+        foreach (string str in addrString)
+        {
+            addrDrop.Add(new Dropdown.OptionData(str));
+        }
+        localAddrDp.options = addrDrop;
+        NetCheckIP2Remote();
+
     }
 
     //**************************** Server Panel **************************************
@@ -128,6 +149,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         string remoteip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
         string localip = this.transform.GetChild(0).GetComponentInChildren<Dropdown>().captionText.text;
+        
 
         await Task.Run(() =>
         {

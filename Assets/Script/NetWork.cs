@@ -104,7 +104,7 @@ namespace ViewerNetwork
                             if (Regex.IsMatch(m3.Value, "0.0.0")) continue;
                             if (Regex.IsMatch(m3.Value, @".255$")) continue;
                             if (!ipv4Addresses.Contains(m3.Value)) ipv4Addresses.Add(m3.Value);
-                            print(m3.Value);
+                            //print(m3.Value);
                         }
                     }
                 }
@@ -187,7 +187,7 @@ namespace ViewerNetwork
             string msgRtn;
 
             tlistener.Start();
-            printOnMainTrhead("Socket: start listening " + tlistener.LocalEndpoint);
+            printOnMainTrhead("Start Listening " + tlistener.LocalEndpoint);
 
             
 
@@ -402,12 +402,13 @@ namespace ViewerNetwork
             remotePort = int.Parse(ConFun.S.globalPara["remote_port"]);
             if (!Regex.IsMatch(remoteIP, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$"))
             {
+                print(ip);
                 ConFun.S.printStatusInfo("wrong remote IP adress format");
                 return false;
             }
             if (!(1000 < remotePort && remotePort < 99999))
             {
-                ConFun.S.printStatusInfo("wrong remote Port format");
+                //ConFun.S.printStatusInfo("wrong remote Port format");
                 return false;
             }
             //ConFun.S.printStatusInfo((remoteIP, remotePort));

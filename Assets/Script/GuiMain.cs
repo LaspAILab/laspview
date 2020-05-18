@@ -874,7 +874,7 @@ void Awake()
         cameraCenter.position = vec;
         cameraTransform.position = vec;
         cameraTransform.Translate(Vector3.back.normalized * vec.magnitude * 4);
-        Camera.main.orthographicSize = vec.magnitude;
+        Camera.main.orthographicSize = vec.magnitude + 3.5f;
     }
 
     //****************** CAMERA CONTROL & MOUSE INTERACTION ***********************
