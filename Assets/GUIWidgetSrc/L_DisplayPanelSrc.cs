@@ -67,6 +67,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
 
             }
         }
+        DisplayOnSytleChange();
     }
 
 
@@ -93,5 +94,56 @@ public class L_DisplayPanelSrc : MonoBehaviour
         }
         return modelPara;
     }
+
+
+    public void DisplayOnSytleChange()
+    {
+        int style = displayPanelPara.paraDict["display style"].GetComponent<Dropdown>().value;
+        {
+            if (style == 0)
+            {
+                displayPanelPara.paraDict["ball radius type"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["ball scale"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["ball radius"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["stick radius"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["tolerance"].transform.parent.gameObject.SetActive(true);
+            }
+            else if (style == 1)
+            {
+                displayPanelPara.paraDict["ball radius type"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["ball scale"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["ball radius"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["stick radius"].transform.parent.gameObject.SetActive(false);
+                displayPanelPara.paraDict["tolerance"].transform.parent.gameObject.SetActive(false);
+            }
+            else if (style == 2)
+            {
+                displayPanelPara.paraDict["ball radius type"].transform.parent.gameObject.SetActive(false);
+                displayPanelPara.paraDict["ball scale"].transform.parent.gameObject.SetActive(false);
+                displayPanelPara.paraDict["ball radius"].transform.parent.gameObject.SetActive(false);
+                displayPanelPara.paraDict["stick radius"].transform.parent.gameObject.SetActive(true);
+                displayPanelPara.paraDict["tolerance"].transform.parent.gameObject.SetActive(true);
+            }
+            DisplayOnBallStyleChange();
+        }
+    }
+
+
+    public void DisplayOnBallStyleChange()
+    {
+        int style = displayPanelPara.paraDict["ball radius type"].GetComponent<Dropdown>().value;
+        if (style == 0)
+        {
+            displayPanelPara.paraDict["ball scale"].transform.parent.gameObject.SetActive(true);
+            displayPanelPara.paraDict["ball radius"].transform.parent.gameObject.SetActive(false);
+        }
+        else if (style == 1)
+        {
+            displayPanelPara.paraDict["ball scale"].transform.parent.gameObject.SetActive(false);
+            displayPanelPara.paraDict["ball radius"].transform.parent.gameObject.SetActive(true);
+        }
+
+    }
+
 }
 

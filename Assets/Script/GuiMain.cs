@@ -202,15 +202,7 @@ void Awake()
                     if (expandAtom != null)
                     {
                         // A -> null
-                        if (MainScr.S.CurrentStructure().strucModelPara["ball radius type"] == 0)
-                        {
-                            expandAtom.GetComponent<Atom>().ChangeScalingRatio(MainScr.S.CurrentStructure().strucModelPara["ball scale"]);
-                        }
-                        else
-                        {
-                            float radius = MainScr.S.CurrentStructure().strucModelPara["ball radius"];
-                            expandAtom.transform.localScale = Vector3.one * radius;
-                        }
+                        MainScr.S.CurrentStructure().ChangeAtomModel(new List<Atom> { expandAtom.GetComponent<Atom>() });
 
                         expandAtom = null;
                     }
@@ -230,15 +222,16 @@ void Awake()
                 {
                     //cast atom change
                     //A -> B
-                    if (MainScr.S.CurrentStructure().strucModelPara["ball radius type"] == 0)
-                    {
-                        expandAtom.GetComponent<Atom>().ChangeScalingRatio(MainScr.S.CurrentStructure().strucModelPara["ball scale"]);
-                    }
-                    else
-                    {
-                        float radius = MainScr.S.CurrentStructure().strucModelPara["ball radius"];
-                        expandAtom.transform.localScale = Vector3.one * radius;
-                    }
+                    //if (MainScr.S.CurrentStructure().strucModelPara["ball radius type"] == 0)
+                    //{
+                    //    expandAtom.GetComponent<Atom>().ChangeScalingRatio(MainScr.S.CurrentStructure().strucModelPara["ball scale"]);
+                    //}
+                    //else
+                    //{
+                    //    float radius = MainScr.S.CurrentStructure().strucModelPara["ball radius"];
+                    //    expandAtom.transform.localScale = Vector3.one * radius;
+                    //}
+                    MainScr.S.CurrentStructure().ChangeAtomModel(new List<Atom> { expandAtom.GetComponent<Atom>() });
                     expandAtom = castGO;
                     castGO.transform.localScale += expandAtomScale;
                 }
@@ -795,8 +788,8 @@ void Awake()
         //line.positionCount = 2;//设置两点
         //line.startColor = Color.white; //设置直线颜色
         //line.endColor = Color.white;
-        line.startWidth = 0.02f;//设置直线宽度
-        line.endWidth = 0.02f;
+        line.startWidth = 0.002f * Camera.main.orthographicSize;//设置直线宽度
+        line.endWidth = 0.002f * Camera.main.orthographicSize;
 
         //设置指示线的起点和终点
         line.SetPosition(0, Camera.main.ScreenToWorldPoint(v1) + Camera.main.transform.forward);

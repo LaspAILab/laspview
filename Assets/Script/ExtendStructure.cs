@@ -114,8 +114,8 @@ public class ExtendStructure : MonoBehaviour
                     line.positionCount = 2;//设置两点
                     line.startColor = lineColor; //设置直线颜色
                     line.endColor = lineColor;
-                    line.startWidth = 0.04f;//设置直线宽度
-                    line.endWidth = 0.04f;
+                    line.startWidth = 0.0015f * originStructure.GetCellTransfer(1, 1, 1).magnitude;//设置直线宽度
+                    line.endWidth = 0.0015f * originStructure.GetCellTransfer(1, 1, 1).magnitude;
 
                     //设置指示线的起点和终点
                     line.SetPosition(0, strucCorner[i] + bias);
