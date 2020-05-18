@@ -50,7 +50,11 @@ public class L_FilePanelSrc : MonoBehaviour
             };
         StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", extensions, true, (string[] paths) =>
         {
-            FileRead(paths);
+            if (paths.Length != 0)
+            {
+                FileRead(paths);
+            }
+
         });
 #endif
     }

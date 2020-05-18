@@ -114,7 +114,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         {
 #if !UNITY_WEBGL
             GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
-            R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>().interactable = false;
+            R_ServerPanelSrc.S.NetLocalBtnChange();
 #endif
             this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
         }

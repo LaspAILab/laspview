@@ -82,7 +82,7 @@ public class ObjectPool : MonoBehaviour
         {
             return;
         }
-
+        bd.gameObject.SetActive(true);
         bd.transform.SetParent(garbage);
         bd.gameObject.transform.localPosition = Vector3.zero;
         bd.gameObject.transform.rotation = Quaternion.identity;

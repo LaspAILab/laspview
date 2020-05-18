@@ -323,18 +323,19 @@ public class Structure : MonoBehaviour
         Dictionary<string, float> modelPara = parent.arcModelPara;
         if (strucModelPara == null)
         {
+            
             ChangeBackground();
             ChangeAtomModel(atomList);
             ChangeExtendAtomPos();
             ChangeAllBondModel();
-
             ChangeLatRange(modelPara);
-
-            strucModelPara = new Dictionary<string, float>(modelPara);
             this.gameObject.SetActiveRecursively(true);
+            strucModelPara = new Dictionary<string, float>(modelPara);
+            
         }
         else
         {
+            
             if (strucModelPara["lat range a"] != modelPara["lat range a"] ||
            strucModelPara["lat range b"] != modelPara["lat range b"] ||
            strucModelPara["lat range c"] != modelPara["lat range c"])

@@ -45,12 +45,13 @@ public class ArcStructures : MonoBehaviour
 
     public (bool, bool) DrawStructure(int i)
     {
+        GuiMain.S.DisSelectPickGO();
         if (i != currentStr)
         {
             //structureList[currentStr].DeDrawModel();
             structureList[currentStr].gameObject.SetActiveRecursively(false);
         }
-        GuiMain.S.DisSelectPickGO();
+        
         structureList[i].DrawModel();
         currentStr = i;
         ConFun.S.printStructureInfo(currentStr, structureList.Count, structureList[currentStr].energy);

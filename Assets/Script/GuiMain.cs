@@ -743,7 +743,7 @@ void Awake()
 
         }
 
-
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         bool getkey = (Input.GetKey(KeyCode.Delete) || Input.GetKey(KeyCode.Backspace) || Input.GetKey(KeyCode.LeftControl));
         bool mouseout = (Input.mousePosition.x < -50 || Input.mousePosition.x > Screen.width + 50 || Input.mousePosition.y < -50 || Input.mousePosition.y > Screen.height + 50);
         bool ifoperate = getkey || !(mouseout && onMove == false);// || (mouseLastPos != Input.mousePosition); 
@@ -765,11 +765,14 @@ void Awake()
 
 
         mouseLastPos = Input.mousePosition;
+#endif
     }
 
     public void CameraActicate()
     {
-        noOperationTimeSince = 0;
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        noOperationTimeSince = Time.time;
+#endif
     }
 
 
