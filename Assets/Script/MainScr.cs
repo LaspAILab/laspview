@@ -126,7 +126,7 @@ end
     {
         while (true)
         {
-            if (GuiMain.S.editEnable || B_ToolbarPanelSrc.S.onPlay)
+            if (GuiMain.S.onMove || B_ToolbarPanelSrc.S.onPlay)
             {
                 yield return null;
             }

@@ -57,7 +57,7 @@ public class GuiMain : MonoBehaviour
     Ray mouseRay;
     RaycastHit hitInfo;
 
-    public bool editEnable;          //Pick Enalble
+    //public bool editEnable;          //Pick Enalble
     public bool onMove = false;
     public bool onCameraRotate = false;
     public bool onCameraTranslate = false;
@@ -70,7 +70,7 @@ public class GuiMain : MonoBehaviour
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 pickAtomAvgPosScreen;
     private Vector3 offsetTemp;             //for tranlate    
-    private List<List<AtomOperation>> operationUndoList = new List<List<AtomOperation>>();
+    
 
 
     public List<GameObject> pickGO = new List<GameObject>();         //for Pick
@@ -246,7 +246,7 @@ void Awake()
             Input.GetAxis("Mouse ScrollWheel") != 0))
         {
             //Ctrl C V delete Z
-            if (editEnable)
+            if (true)
             {
                 //DELETE/Backspace删除原子
                 if (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace))
@@ -478,7 +478,7 @@ void Awake()
                 else if (Input.GetKey(KeyCode.LeftControl))
                 {
                     //如在编辑模式下，为编辑原子旋转、平移操作
-                    if (editEnable && pickGO.Count != 0)
+                    if (pickGO.Count != 0)
                     {
                         //LC(LeftControl)+鼠标右键按下： 准备开始旋转选中原子
                         if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Mouse1)
@@ -538,7 +538,7 @@ void Awake()
                         }
                     }
                     //Long press, Project All the Atom and than Judge if should be Select
-                    else if (Time.time - mouse0PressedTime >= 0.2f && atomScreenPosTemp.Count() == 0)
+                    else if (Time.time - mouse0PressedTime >= 0.05f && atomScreenPosTemp.Count() == 0)
                     {
                         atomScreenPosTemp.Clear();
                         foreach (Atom at in MainScr.S.CurrentStructure().atomList)
@@ -1232,15 +1232,15 @@ void Awake()
                 return o;
             });
         }
-        operationUndoList.Add(atomsOperate);
+        struc.operationUndoList.Add(atomsOperate);
     }
 
     public void EditUndoStruc()
     {
         Structure struc = MainScr.S.CurrentStructure();
         //print(operationUndoList.Count);
-        if (operationUndoList.Count == 0) return;
-        List<AtomOperation> atomsOperate = operationUndoList[operationUndoList.Count-1];
+        if (struc.operationUndoList.Count == 0) return;
+        List<AtomOperation> atomsOperate = struc.operationUndoList[struc.operationUndoList.Count-1];
 
         //print(struc.atomList);
         foreach(AtomOperation atOpt in atomsOperate)
@@ -1275,7 +1275,7 @@ void Awake()
 
 
         atomsOperate = null;
-        operationUndoList.RemoveAt(operationUndoList.Count - 1);
+        struc.operationUndoList.RemoveAt(struc.operationUndoList.Count - 1);
 
         //Dictionary<string, float> tempDic = new Dictionary<string, float>(struc.strucModelPara);
         //tempDic["display style"] = 1;
@@ -1287,7 +1287,7 @@ void Awake()
 
     public void EditClearUndoList()
     {
-        foreach(List<AtomOperation> atOpts in operationUndoList)
+        foreach(List<AtomOperation> atOpts in MainScr.S.CurrentStructure().operationUndoList)
         {
             atOpts.Clear();
         }
@@ -1299,7 +1299,7 @@ void Awake()
 
 
 
-struct AtomOperation
+public struct AtomOperation
 {
     public int movedAtomIndex;
     public char tag;

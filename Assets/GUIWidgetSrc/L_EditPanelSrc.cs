@@ -24,20 +24,20 @@ public class L_EditPanelSrc : MonoBehaviour
         edButton.onClick.AddListener(() =>
         {
             GuiMain.S.BtnHideObject(edButton, this.gameObject);
-            GuiMain.S.editEnable = !GuiMain.S.editEnable;
-            GuiMain.S.SetAllUIInteract(L_ProjectPanelSrc.S.gameObject, !GuiMain.S.editEnable);
-            GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !GuiMain.S.editEnable);
+            //GuiMain.S.editEnable = !GuiMain.S.editEnable;
+            //GuiMain.S.SetAllUIInteract(L_ProjectPanelSrc.S.gameObject, !GuiMain.S.editEnable);
+            //GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !GuiMain.S.editEnable);
 #if !UNITY_WEBGL
             //GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !GuiMain.S.editEnable);
 #endif
-            if (GuiMain.S.editEnable == true)
+            //if (GuiMain.S.editEnable == true)
             {
                 //GuiMain.S.DisSelectPickGO();
-                foreach (Selectable c in B_ToolbarPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
-                {
-                    if (c.gameObject.name != "FocusCenterBtn")
-                        GuiMain.S.SetUIInteract(c, false);
-                }
+                //foreach (Selectable c in B_ToolbarPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
+                //{
+                //    if (c.gameObject.name != "FocusCenterBtn")
+                //        GuiMain.S.SetUIInteract(c, false);
+                //}
 #if !UNITY_WEBGL
                 //foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
                 //{
@@ -50,40 +50,40 @@ public class L_EditPanelSrc : MonoBehaviour
                 //}
                 //R_ServerPanelSrc.S.NetLocalBtnChange();
                 
-                GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
+                //GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
 #endif
             }
-            else
-            {
-#if !UNITY_WEBGL
-                GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
-                GuiMain.S.SetUIInteract(R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>(), false);
-#endif
-                GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
-                B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
-                GuiMain.S.FocusCameraCenter();
-                GuiMain.S.DisSelectPickGO();
-                GuiMain.S.EditClearUndoList();
+//            if (edButton.)
+//            {
+//#if !UNITY_WEBGL
+//                //GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
+//                //GuiMain.S.SetUIInteract(R_ServerPanelSrc.S.transform.GetChild(2).GetChild(1).GetComponent<Button>(), false);
+//#endif
+//                //GuiMain.S.SetAllUIInteract(B_ToolbarPanelSrc.S.gameObject, true);
+//                //B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
+//                //GuiMain.S.FocusCameraCenter();
+//                GuiMain.S.DisSelectPickGO();
+//                GuiMain.S.EditClearUndoList();
 
-                //Close Edit Widget
-                Button btn = paraDict["add atom"].GetComponent<Button>();
-                GuiMain.S.SetUIInteract(btn, true);
-                M_AddAtomWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
-                M_AddAtomWidgetSrc.S.gameObject.SetActive(false);
+//                //Close Edit Widget
+//                Button btn = paraDict["add atom"].GetComponent<Button>();
+//                GuiMain.S.SetUIInteract(btn, true);
+//                M_AddAtomWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+//                M_AddAtomWidgetSrc.S.gameObject.SetActive(false);
 
-                btn = paraDict["edit lattice"].GetComponent<Button>();
-                GuiMain.S.SetUIInteract(btn, true);
-                M_EditLatticeWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
-                M_EditLatticeWidgetSrc.S.gameObject.SetActive(false);
+//                btn = paraDict["edit lattice"].GetComponent<Button>();
+//                GuiMain.S.SetUIInteract(btn, true);
+//                M_EditLatticeWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+//                M_EditLatticeWidgetSrc.S.gameObject.SetActive(false);
 
-                btn = paraDict["supercell"].GetComponent<Button>();
-                GuiMain.S.SetUIInteract(btn, true);
-                M_SupercellWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
-                M_SupercellWidgetSrc.S.gameObject.SetActive(false);
-            }
+//                btn = paraDict["supercell"].GetComponent<Button>();
+//                GuiMain.S.SetUIInteract(btn, true);
+//                M_SupercellWidgetSrc.S.closeBtn.onClick.RemoveAllListeners();
+//                M_SupercellWidgetSrc.S.gameObject.SetActive(false);
+//            }
 
         });
-        GuiMain.S.editEnable = false;
+        //GuiMain.S.editEnable = false;
         this.gameObject.SetActive(false);
     }
     // Start is called before the first frame update

@@ -41,7 +41,7 @@ public class Structure : MonoBehaviour
     public float nopathway = 0.0F;
     public bool ts = false;
 
-
+    public List<List<AtomOperation>> operationUndoList = new List<List<AtomOperation>>();
 
 
     void Awake()
