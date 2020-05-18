@@ -23,6 +23,23 @@ public class ConFun : MonoBehaviour
                                         new Vector3(1,1,1),new Vector3(0,0,1),new Vector3(0,1,0),new Vector3(1,0,0) };
     public float bondBoundry;
 
+    string[] noteInfoText = new string[]
+    {
+        "Drag Right Mouse: rotate camera",
+        "Drag Middle Mouse: translate camera",
+        "Press Left Mouse: select atoms",
+        "LCtrl + Drag Right Mouse: rotate selected atoms",
+        "LCtrl + Drag Middle Mouse: translate selected atoms",
+        "LCtrl + C: copy selected atoms",
+        "LCtrl + V: paste copied atoms",
+        "LCtrl + Z: Undo last modification of the structure",
+
+        "Middle Mouse can be replaced by LShift",
+
+        //"PlayerBar: "
+
+    };
+
     public GameObject structureText;
     public Text statusText;
 
@@ -186,6 +203,12 @@ public class ConFun : MonoBehaviour
 #if UNITY_EDITOR
         Debug.Log(str);
 #endif
+    }
+
+    public void printNoteInfo()
+    {
+        string str = noteInfoText[Random.Range(0, noteInfoText.Length)];
+        statusText.text = str;
     }
 
     public void printErrorInfo()

@@ -24,6 +24,15 @@ public class R_ServerPanelSrc : MonoBehaviour
         svrButton.onClick.AddListener(() =>
         {
             GuiMain.S.BtnHideObject(svrButton, this.gameObject);
+            //when Btn1.text = "Check Local IP"
+            Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
+            List<string> addrString = MainScr.S.localServer.GetIPAddress();
+            List<Dropdown.OptionData> addrDrop = new List<Dropdown.OptionData>();
+            foreach (string str in addrString)
+            {
+                addrDrop.Add(new Dropdown.OptionData(str));
+            }
+            localAddrDp.options = addrDrop;
         });
         this.gameObject.SetActive(false);
     }
@@ -35,7 +44,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         //print default remote ip on ServerIP inputfield;
         this.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.S.globalPara["remote_ip"];
         //check local IP   
-        NetLocalBtn1();
+        GuiMain.S.SetUIInteract(this.transform.GetChild(2).GetChild(0).GetComponent<Button>(), false);
     }
 
     //**************************** Server Panel **************************************
@@ -51,15 +60,16 @@ public class R_ServerPanelSrc : MonoBehaviour
     {
         if (lclSrvrListening == false)
         {
-            //when Btn1.text = "Check Local IP"
-            Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
-            List<string> addrString = MainScr.S.localServer.GetIPAddress();
-            List<Dropdown.OptionData> addrDrop = new List<Dropdown.OptionData>();
-            foreach (string str in addrString)
-            {
-                addrDrop.Add(new Dropdown.OptionData(str));
-            }
-            localAddrDp.options = addrDrop;
+            ////when Btn1.text = "Check Local IP"
+            //Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
+            //List<string> addrString = MainScr.S.localServer.GetIPAddress();
+            //List<Dropdown.OptionData> addrDrop = new List<Dropdown.OptionData>();
+            //foreach (string str in addrString)
+            //{
+            //    addrDrop.Add(new Dropdown.OptionData(str));
+            //}
+            //localAddrDp.options = addrDrop;
+            //GuiMain.S.SetUIInteract(this.transform.GetChild(2).GetChild(0).GetComponent<Button>(), false) ;
         }
         else
         {
@@ -93,15 +103,17 @@ public class R_ServerPanelSrc : MonoBehaviour
         Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
         if (lclSrvrListening == true)
         {
-            Btn1.GetComponentInChildren<Text>().text = "Stop Listening";
+            //Btn1.GetComponentInChildren<Text>().text = "Stop Listening";
             Btn2.GetComponentInChildren<Text>().text = "Listening...";
+            GuiMain.S.SetUIInteract(Btn1, true);
             GuiMain.S.SetUIInteract(Btn2, false);
             GuiMain.S.SetUIInteract(localAddrDp, false);
         }
         else
         {
-            Btn1.GetComponentInChildren<Text>().text = "Check Local IP";
+            //Btn1.GetComponentInChildren<Text>().text = "Check Local IP";
             Btn2.GetComponentInChildren<Text>().text = "Start Listening";
+            GuiMain.S.SetUIInteract(Btn1, false);
             GuiMain.S.SetUIInteract(Btn2, true);
             GuiMain.S.SetUIInteract(localAddrDp, true);
         }

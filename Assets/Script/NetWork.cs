@@ -220,7 +220,7 @@ namespace ViewerNetwork
         private bool JudgeMsgHead(string head)
         {
             string user = Regex.Match(head, @"\A<laspview user=([^/<>]*)>").Groups[1].ToString();
-            print(user);
+            //print(user);
             if (user == ConFun.S.globalPara["user"] || user == "local")
             {
                 return true;
@@ -278,6 +278,7 @@ namespace ViewerNetwork
             {
                 //MainScr.S.AddArc(fileName, msg);
                 MainScr.S.AddArcByCorouWaiting(fileName, msg);
+                File.Delete(fileName);
             }, null);
         }
 

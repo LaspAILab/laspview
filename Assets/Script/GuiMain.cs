@@ -637,6 +637,7 @@ void Awake()
                 {
                     onMove = false;
                     onCameraRotate = false;
+                    ConFun.S.printNoteInfo();
                 }
             }
             else if (onCameraTranslate)
@@ -649,6 +650,7 @@ void Awake()
                 {
                     onMove = false;
                     onCameraTranslate = false;
+                    ConFun.S.printNoteInfo();
                 }
             }
             else if (onAtomRotate)

@@ -211,7 +211,7 @@ PrefabInstance:
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -12.499985
+      value: 18.2
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -221,7 +221,7 @@ PrefabInstance:
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: -125
+      value: -63.6
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -807,7 +807,6 @@ MonoBehaviour:
   menuBtnStatus: 0
   rayStartOnUI: 0
   cameraTransform: {fileID: 0}
-  editEnable: 0
   onMove: 0
   onCameraRotate: 0
   onCameraTranslate: 0
@@ -2520,8 +2519,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -127.5, y: -336}
-  m_SizeDelta: {x: 255, y: 600}
+  m_AnchoredPosition: {x: -127.5, y: -313.3}
+  m_SizeDelta: {x: 255, y: 554.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1392490029
 MonoBehaviour:
