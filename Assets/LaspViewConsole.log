@@ -3,6 +3,7 @@ remote_ip=10.158.134.241
 remote_port=9538
 local_port=9540
 arc_default=PeriodicTable.arc
+
 lasp_dir=./LASP4win
 nnpot_dir=./LaspNNPot
 lasp_prefab_dir=./LaspPrefab
