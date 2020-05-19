@@ -350,9 +350,9 @@ void Awake()
                     }
                 }
                 //Ctrl+Z 撤回Undo
-                else if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.Z) || Input.GetKeyDown(KeyCode.X)))
+                else if ((Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.Z)) || Input.GetKeyDown(KeyCode.Escape))
                 {
-                    print(10);
+                    //print(10);
                     DisSelectPickGO();
                     EditUndoStruc();
                 }
