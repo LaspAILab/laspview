@@ -84,7 +84,7 @@ namespace ViewerNetwork
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
             string lines = RunCmd("chcp 437 &  ipconfig -all");
 #elif UNITY_STANDALONE_OSX
-            string lines = RunCms("ipconfig");
+            string lines = RunCmd("ipconfig");
 #endif
             //print(lines);
             foreach(string li in Regex.Split(lines, "\n", RegexOptions.Multiline))
