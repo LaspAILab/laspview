@@ -48,14 +48,19 @@ public class L_FilePanelSrc : MonoBehaviour
             new ExtensionFilter("arc Files", "arc", "car"),
             new ExtensionFilter("All Files", "*" ),
             };
+
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", extensions, true, (string[] paths) =>
         {
             if (paths.Length != 0)
             {
                 FileRead(paths);
             }
-
         });
+#elif UNITY_STANDALONE_OSX
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", extensions, true);
+        FileRead(paths);
+#endif
 #endif
     }
 
@@ -92,12 +97,15 @@ public class L_FilePanelSrc : MonoBehaviour
     public void FileSaveSingle()
     {
 
-        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", ".arc", "", (string path) => 
-        { 
-            string str = MainScr.S.CurrentArc().ArcWrite();
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", ".arc", "", (string path) =>
+        {
+            if (path != null && path != "")
+            {
+                string str = MainScr.S.CurrentArc().ArcWrite();
 #if !UNITY_WEBGL
-            File.WriteAllText(path, str);
+                File.WriteAllText(path, str);
 #endif
+            }
         });
     }
 
