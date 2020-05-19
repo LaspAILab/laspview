@@ -43,7 +43,7 @@ public class MainScr : MonoBehaviour
     {
 #if !UNITY_WEBGL
         string filename = ConFun.S.globalPara["arc_default"];
-        AddArc(filename);
+        AddArc(Application.dataPath+ "/"+  filename);
 #else
         string lines = 
 @"!BIOSYM archive 2 

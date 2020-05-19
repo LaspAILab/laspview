@@ -164,7 +164,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         });
         if (str == null)
         {
-            ConFun.S.printStatusInfo("Local IP has been sent.");
+            ConFun.S.printStatusInfo("Local IP of "+ ConFun.S.globalPara["user"] + " has been sent.");
         }
         else
         {

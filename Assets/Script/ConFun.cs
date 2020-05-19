@@ -36,7 +36,13 @@ public class ConFun : MonoBehaviour
 
         "Middle Mouse can be replaced by LShift",
 
-        //"PlayerBar: "
+        "CHANGE \"user\" in LaspViewConsole.log FIRST!",
+
+        "Click [Server]-[Start Listening] to prepare for receive file",
+        "Shell: \"Easy.py xx.arc\" to display .arc here",
+        "Shell: \"Easy.py -cl\" to copy latest sent file",
+        "Shell: \"Easy.py -ls\" to list dir of your temp dir",
+        "Shell: \"Easy.py -clear\" to rm all file in your temp dir",
 
     };
 
@@ -162,7 +168,8 @@ public class ConFun : MonoBehaviour
     {
         globalPara = new Dictionary<string, string>();
 #if !UNITY_WEBGL
-        string[] lines = File.ReadAllLines("LaspViewConsole.log");
+        //print(Application.dataPath + "/LaspViewConsole.log");
+        string[] lines = File.ReadAllLines(Application.dataPath+"/LaspViewConsole.log");
 #else
         string[] lines = { };
         //string[] lines = { " arc_default = lowestpath - 1.arc "};
@@ -207,8 +214,8 @@ public class ConFun : MonoBehaviour
 
     public void printNoteInfo()
     {
-        string str = noteInfoText[Random.Range(0, noteInfoText.Length)];
-        statusText.text = str;
+        //string str = noteInfoText[Random.Range(0, noteInfoText.Length)];
+        //statusText.text = str;
     }
 
     public void printErrorInfo()
