@@ -168,7 +168,7 @@ public class ConFun : MonoBehaviour
     {
         globalPara = new Dictionary<string, string>();
 #if !UNITY_WEBGL
-        //printStatusInfo(Application.dataPath);
+// printStatusInfo(Application.dataPath);
         string[] lines = File.ReadAllLines(Application.dataPath+"/LaspViewConsole.log");
 #else
         string[] lines = { };

@@ -763,9 +763,9 @@ void Awake()
             Camera.main.targetDisplay = 0;
         }
 
-
-        mouseLastPos = Input.mousePosition;
 #endif
+        mouseLastPos = Input.mousePosition;
+
     }
 
     public void CameraActicate()

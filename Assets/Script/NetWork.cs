@@ -76,6 +76,7 @@ namespace ViewerNetwork
             {
                 if (addr.AddressFamily == AddressFamily.InterNetwork) // judge if it is ipv4
                 {
+                    if (addr.ToString() == "127.0.0.1") continue;
                     ipv4Addresses.Add(addr.ToString());
                 }
             }
@@ -84,14 +85,16 @@ namespace ViewerNetwork
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
             string lines = RunCmd("chcp 437 &  ipconfig -all");
 #elif UNITY_STANDALONE_OSX
-            string lines = RunCmd("ipconfig");
+            string lines = RunCmd("ls");
 #endif
-            //print(lines);
+            print(lines);
+            
+            //File.WriteAllText("test.txt", lines);
             foreach(string li in Regex.Split(lines, "\n", RegexOptions.Multiline))
             {
                 //print(li);
-                Match m1 = Regex.Match(li, @"addr", RegexOptions.IgnoreCase);
-                if (m1.Success)
+                //Match m1 = Regex.Match(li, @"addr", RegexOptions.IgnoreCase);
+                //if (m1.Success)
                 {
                     //print(m1);
                     MatchCollection m2 = Regex.Matches(li, @"((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)");
@@ -104,7 +107,7 @@ namespace ViewerNetwork
                             if (Regex.IsMatch(m3.Value, "0.0.0")) continue;
                             if (Regex.IsMatch(m3.Value, @".255$")) continue;
                             if (!ipv4Addresses.Contains(m3.Value)) ipv4Addresses.Add(m3.Value);
-                            //print(m3.Value);
+                            print(m3.Value);
                         }
                     }
                 }
@@ -119,15 +122,26 @@ namespace ViewerNetwork
         private string RunCmd(string  cmd)
         {
             Process p = new System.Diagnostics.Process();
+#if !UNITY_STANDALONE_OSX
             p.StartInfo.FileName = "cmd.exe";
             p.StartInfo.Arguments = "/c  " + cmd;
+#else
+            p.StartInfo.FileName = "ifconfig";
+            //p.StartInfo.Arguments = "echo 12345";
+            print(cmd);
+#endif
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardInput = true;
             p.StartInfo.RedirectStandardError = true;
             p.StartInfo.CreateNoWindow = true;
             p.Start();
-            return p.StandardOutput.ReadToEnd();
+            string output= p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            p.Close();
+            return output;
+
+            //return p.StandardOutput.ReadToEnd();
         }
     }
 
