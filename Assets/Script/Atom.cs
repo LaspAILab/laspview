@@ -29,8 +29,8 @@ public class Atom : MonoBehaviour
         this.ele = ele;
         this.cdnt = cdnt;
         this.charge = charge;
-        this.radius = 2 * ConFun.S.eleRadius[ele];
-        this.color = ConFun.S.eleColor[ele];
+        radius = 2 * ConFun.elements[ele].Radius;
+        color = ConFun.elements[ele].Color;
         Renderer render = this.GetComponent<Renderer>();
         render.material.color = this.color;
 
