@@ -42,7 +42,7 @@ public class MainScr : MonoBehaviour
     void Start()
     {
 #if !UNITY_WEBGL
-        string filename = ConFun.S.globalPara["arc_default"];
+        string filename = ConFun.GlobalConfig["arc_default"];
         AddArc(Application.dataPath+ "/"+  filename);
 #else
         string lines = 
@@ -86,7 +86,7 @@ end
         catch (Exception)
         {
             GameObject.Destroy(newArc.gameObject);
-            ConFun.S.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
+            ConFun.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
         }
         arcList.Add(newArc);
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
@@ -105,7 +105,7 @@ end
     //    catch (Exception)
     //    {
     //        GameObject.Destroy(newArc.gameObject);
-    //        ConFun.S.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
+    //        ConFun.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
     //    }
 
     //}
@@ -169,8 +169,4 @@ end
         localServer.Quit1();
     }
 #endif
-
-
-
-
 }

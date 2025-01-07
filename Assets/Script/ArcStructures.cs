@@ -54,7 +54,7 @@ public class ArcStructures : MonoBehaviour
         
         structureList[i].DrawModel();
         currentStr = i;
-        ConFun.S.printStructureInfo(currentStr, structureList.Count, structureList[currentStr].energy);
+        ConFun.printStructureInfo(currentStr, structureList.Count, structureList[currentStr].energy);
         if (true)
         {
             //GuiMain.S.FocusCameraCenter();
@@ -101,7 +101,7 @@ public class ArcStructures : MonoBehaviour
         //若文件行数大于(300个原子，100个结构，约等于30000行)，只执行25000个原子的结构
         if (lines.Length > 30000)
         {
-            ConFun.S.printStatusInfo(filename + "is too long. Only last several structures is loaded.");
+            ConFun.printStatusInfo(filename + "is too long. Only last several structures is loaded.");
             startingPoint = lines.Length - 8000;
 
             for (; startingPoint < lines.Length - 1; startingPoint++)
@@ -124,11 +124,11 @@ public class ArcStructures : MonoBehaviour
                         if (!lines[i].Contains("****"))
                         {
                             AddSturcture();
-                            structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(lines[i])[4]);
-                            structureList[currentStr].conv = float.Parse(ConFun.S.PySplit(lines[i])[2]);
+                            structureList[currentStr].energy = float.Parse(ConFun.PySplit(lines[i])[4]);
+                            structureList[currentStr].conv = float.Parse(ConFun.PySplit(lines[i])[2]);
                             try
                             {
-                                structureList[currentStr].pathid = int.Parse(ConFun.S.PySplit(lines[i])[1]);
+                                structureList[currentStr].pathid = int.Parse(ConFun.PySplit(lines[i])[1]);
                             }
                             catch (System.Exception)
                             {
@@ -147,23 +147,23 @@ public class ArcStructures : MonoBehaviour
                         if (!lines[i].Contains("****"))
                         {
                             AddSturcture();
-                            structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(lines[i])[4]);
+                            structureList[currentStr].energy = float.Parse(ConFun.PySplit(lines[i])[4]);
                         }
                         else
                         {
                             AddSturcture();
                         }
                         currentStr += 1;
-                        structureList[currentStr].nminimum = int.Parse(ConFun.S.PySplit(lines[i])[1]);
-                        structureList[currentStr].numstr = int.Parse(ConFun.S.PySplit(lines[i])[2]);
+                        structureList[currentStr].nminimum = int.Parse(ConFun.PySplit(lines[i])[1]);
+                        structureList[currentStr].numstr = int.Parse(ConFun.PySplit(lines[i])[2]);
                     }
                     else if (lines[i].Contains("React") || lines[i].Contains("TS"))
                     {
                         currentStr += 1;
                         AddSturcture();
-                        structureList[currentStr].energy = float.Parse(ConFun.S.PySplit(lines[i])[4]);
-                        structureList[currentStr].numstr = int.Parse(ConFun.S.PySplit(lines[i])[2]);
-                        structureList[currentStr].nopathway = int.Parse(ConFun.S.PySplit(lines[i])[1]);
+                        structureList[currentStr].energy = float.Parse(ConFun.PySplit(lines[i])[4]);
+                        structureList[currentStr].numstr = int.Parse(ConFun.PySplit(lines[i])[2]);
+                        structureList[currentStr].nopathway = int.Parse(ConFun.PySplit(lines[i])[1]);
                         if (lines[i].Contains("React")) structureList[currentStr].ts = false;
                         else structureList[currentStr].ts = true;
                     }
@@ -195,7 +195,7 @@ public class ArcStructures : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ConFun.S.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.GetType() + ex.StackTrace + ex.Message);
+            ConFun.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.GetType() + ex.StackTrace + ex.Message);
             //print(currentStr);
             //GameObject.Destroy(structureList[currentStr].gameObject);
         }

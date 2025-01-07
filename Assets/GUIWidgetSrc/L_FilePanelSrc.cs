@@ -76,7 +76,7 @@ public class L_FilePanelSrc : MonoBehaviour
         var outputText = "";
         for (int i = 0; i < urlArr.Length; i++)
         {
-            ConFun.S.printStatusInfo(urlArr[i]);
+            ConFun.printStatusInfo(urlArr[i]);
             var loader = new WWW(urlArr[i]);
             yield return loader;
             outputText += loader.text;

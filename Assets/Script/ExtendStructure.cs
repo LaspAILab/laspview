@@ -101,7 +101,7 @@ public class ExtendStructure : MonoBehaviour
         //print(lat);
         for (int i = 0; i < 8; i++)
         {
-            strucCorner[i] = originStructure.lat * ConFun.S.latCorner[i];
+            strucCorner[i] = originStructure.lat * ConFun.LatticeCorners[i];
         }
         Color lineColor = originStructure.latList[0].startColor;
         for (int i = 0; i < 4; i++)

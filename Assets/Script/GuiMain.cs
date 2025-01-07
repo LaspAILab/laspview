@@ -544,7 +544,6 @@ void Awake()
                         foreach (Atom at in MainScr.S.CurrentStructure().atomList)
                         {
                             atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
-
                         }
 
                         foreach (ExtendStructure ext in MainScr.S.CurrentStructure().extendStructs)
@@ -637,7 +636,7 @@ void Awake()
                 {
                     onMove = false;
                     onCameraRotate = false;
-                    ConFun.S.printNoteInfo();
+                    ConFun.printNoteInfo();
                 }
             }
             else if (onCameraTranslate)
@@ -650,7 +649,7 @@ void Awake()
                 {
                     onMove = false;
                     onCameraTranslate = false;
-                    ConFun.S.printNoteInfo();
+                    ConFun.printNoteInfo();
                 }
             }
             else if (onAtomRotate)
@@ -844,24 +843,24 @@ void Awake()
         if (pickGO.Count == 1)
         {
             string st = string.Format("{0} position: {1:f4} {2:f4} {3:f4}",  pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[0].transform.position.x, pickGO[0].transform.position.y, pickGO[0].transform.position.z);
-            ConFun.S.printStatusInfo(st);
+            ConFun.printStatusInfo(st);
         }
         else if (pickGO .Count == 2)
         {
             string st = string.Format("{0}-{1} distance:   {2:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, (pickGO[0].transform.position - pickGO[1].transform.position).magnitude);
-            ConFun.S.printStatusInfo(st);
+            ConFun.printStatusInfo(st);
         }
         else if (pickGO.Count == 3)
         {
             string st = string.Format("{0}-{1}-{2}  angle: {3:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, pickGO[2].GetComponent<Atom>().originAtom.ele,
                   Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[2].transform.position - pickGO[1].transform.position));
-            ConFun.S.printStatusInfo(st);       
+            ConFun.printStatusInfo(st);       
         }
         else if (pickGO.Count == 4)
         {
             string st = string.Format("{0}-{1}-{2}-{3} torison: {4:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, pickGO[2].GetComponent<Atom>().originAtom.ele, pickGO[3].GetComponent<Atom>().originAtom.ele,
                   Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[3].transform.position - pickGO[2].transform.position));
-            ConFun.S.printStatusInfo(st);
+            ConFun.printStatusInfo(st);
         }
     }
 
@@ -1166,7 +1165,7 @@ void Awake()
     {
         // do something with the dropped file names. aPos will contain the 
         // mouse position within the window where the files has been dropped.
-        ConFun.S.printStatusInfo("Dropped " + string.Join(" ", aFiles) + " files");
+        ConFun.printStatusInfo("Dropped " + string.Join(" ", aFiles) + " files");
         foreach (string file in aFiles)
         {
             MainScr.S.AddArc(file);

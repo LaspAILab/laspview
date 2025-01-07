@@ -52,7 +52,7 @@ public class Structure : MonoBehaviour
 
     public void AddAtom(string line, int type = 1)
     {
-        string[] lineSp = ConFun.S.PySplit(line);
+        string[] lineSp = ConFun.PySplit(line);
         if (type == 1)
         {
             Vector3 cdnt = new Vector3(float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]));
@@ -219,7 +219,7 @@ public class Structure : MonoBehaviour
 
     public void AddLat(string line)
     {
-        string[] lineSp = ConFun.S.PySplit(line);
+        string[] lineSp = ConFun.PySplit(line);
 
         float[] abc = new float[6] { float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]),
                                      float.Parse(lineSp[4]),float.Parse(lineSp[5]),float.Parse(lineSp[6])};
@@ -229,7 +229,7 @@ public class Structure : MonoBehaviour
 
     public void AddLat(float[] abc)
     {
-        //string[] lineSp = ConFun.S.PySplit(line);
+        //string[] lineSp = ConFun.PySplit(line);
 
         //float[] abc = new float[6] { float.Parse(lineSp[1]), float.Parse(lineSp[2]), float.Parse(lineSp[3]),
         //                             float.Parse(lineSp[4]),float.Parse(lineSp[5]),float.Parse(lineSp[6])};
@@ -271,7 +271,7 @@ public class Structure : MonoBehaviour
         //print(lat);
         for (int i = 0; i < 8; i++)
         {
-            strucCorner[i] = this.lat * ConFun.S.latCorner[i];
+            strucCorner[i] = this.lat * ConFun.LatticeCorners[i];
         }
         for (int i = 0; i < 4; i++)
             for (int j = 4; j < 8; j++)
@@ -329,7 +329,7 @@ public class Structure : MonoBehaviour
             ChangeExtendAtomPos();
             ChangeAllBondModel();
             ChangeLatRange(modelPara);
-            this.gameObject.SetActiveRecursively(true);
+            gameObject.SetActiveRecursively(true);
             strucModelPara = new Dictionary<string, float>(modelPara);
             
         }
@@ -402,7 +402,7 @@ public class Structure : MonoBehaviour
                 ChangeBackground();
             }
 
-            this.gameObject.SetActiveRecursively(true);
+            gameObject.SetActiveRecursively(true);
             strucModelPara = new Dictionary<string, float>(modelPara);
         }
        
