@@ -51,10 +51,10 @@ public class R_LASPPanelSrc : MonoBehaviour
 
     public void LaspSetPanel()
     {
-        lasp_dir = ConFun.S.globalPara["lasp_dir"];
-        lasp_prefab_dir = ConFun.S.globalPara["lasp_prefab_dir"];
-        nnpot_dir = ConFun.S.globalPara["nnpot_dir"];
-        lasp_run_dir = ConFun.S.globalPara["lasp_run_dir"];
+        lasp_dir = ConFun.GlobalConfig["lasp_dir"];
+        lasp_prefab_dir = ConFun.GlobalConfig["lasp_prefab_dir"];
+        nnpot_dir = ConFun.GlobalConfig["nnpot_dir"];
+        lasp_run_dir = ConFun.GlobalConfig["lasp_run_dir"];
 
         laspParaSet.SetActive(laspParaSetActive);
         //Set Lasp Panel, Mainly Selectable Item in Prefav dir
@@ -132,7 +132,7 @@ public class R_LASPPanelSrc : MonoBehaviour
             int i = 0;
             for (i = 0; i < lines.Length; i++)
             {
-                string[] para = ConFun.S.PySplit(lines[i].ToLower());
+                string[] para = ConFun.PySplit(lines[i].ToLower());
                 para[0] = para[0];
                 if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
                 {
@@ -202,7 +202,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         for (i = 0; i < lines.Length; i++)
         {
             string st = lines[i];
-            string[] para = ConFun.S.PySplit(lines[i].ToLower());
+            string[] para = ConFun.PySplit(lines[i].ToLower());
             if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
             {
                 if (para[0] == "potential")
@@ -213,7 +213,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     else
                     {
-                        ConFun.S.printStatusInfo("Only NN is allowed for potential");
+                        ConFun.printStatusInfo("Only NN is allowed for potential");
                     }
                 }
                 else if (para[0] == "explore_type")
@@ -224,7 +224,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     else
                     {
-                        ConFun.S.printStatusInfo("Only SSW is allowed for explore_type");
+                        ConFun.printStatusInfo("Only SSW is allowed for explore_type");
                     }
                 }
                 else if (para[0] == "run_type")
@@ -237,7 +237,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     else
                     {
-                        ConFun.S.printStatusInfo("Only 5, 15, 2, 12, 1, 11 is allowed for run_type");
+                        ConFun.printStatusInfo("Only 5, 15, 2, 12, 1, 11 is allowed for run_type");
                     }
                 }
                 else if (para[0] == "%block" && para[1] == "netinfo")
@@ -246,7 +246,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     Dropdown dp = laspPanelPara.paraDict["nn pot"].GetComponent<Dropdown>();
                     i++;
 
-                    para = ConFun.S.PySplit(lines[i].ToLower());
+                    para = ConFun.PySplit(lines[i].ToLower());
                     int j = 0;
                     for (; j < dp.options.Count; j++)
                     {
@@ -258,7 +258,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     if (j == dp.options.Count)
                     {
-                        ConFun.S.printStatusInfo($"NN pot not available in {nnpot_dir}");
+                        ConFun.printStatusInfo($"NN pot not available in {nnpot_dir}");
                     }
                     while (!Regex.IsMatch(lines[i], @"%endblock netinfo") && i < lines.Length)
                     {

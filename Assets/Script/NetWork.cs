@@ -166,16 +166,16 @@ namespace ViewerNetwork
         public void Start()
         {
             //creak work directory
-            if (false == System.IO.Directory.Exists(tempPath))
+            if (false == Directory.Exists(tempPath))
             {
                 Directory.CreateDirectory(tempPath);
             }
 
 
-            localPort = int.Parse(ConFun.S.globalPara["local_port"]);
+            localPort = int.Parse(ConFun.GlobalConfig["local_port"]);
             if (!(1000 < localPort && localPort < 99999))
             {
-                ConFun.S.printStatusInfo("wrong local Port format");
+                ConFun.printStatusInfo("wrong local Port format");
                 return;
             }
         }
@@ -285,7 +285,7 @@ namespace ViewerNetwork
         {
             string user = Regex.Match(head, @"\A<laspview user=([^/<>]*)>").Groups[1].ToString();
             //print(user);
-            if (user == ConFun.S.globalPara["user"] || user == "local")
+            if (user == ConFun.GlobalConfig["user"] || user == "local")
             {
                 return true;
             }
@@ -331,7 +331,7 @@ namespace ViewerNetwork
                         return "Stop"; //means closer server
                     }
                 }
-                return ConFun.S.globalPara["user"] + "local reveive" + tag + "succeed";
+                return ConFun.GlobalConfig["user"] + "local reveive" + tag + "succeed";
             }
 
         }
@@ -361,7 +361,7 @@ namespace ViewerNetwork
                 Loom.QueueOnMainThread((param) =>
                 {
                     R_ServerPanelSrc.S.NetLocalBtnChange();
-                    ConFun.S.printStatusInfo("Stop Listening");
+                    ConFun.printStatusInfo("Stop Listening");
                 }, null);
             });
         }
@@ -393,7 +393,7 @@ namespace ViewerNetwork
         {
             Loom.QueueOnMainThread((param) =>
             {
-                ConFun.S.printStatusInfo(str);
+                ConFun.printStatusInfo(str);
             }, null);
         }
     }
@@ -413,19 +413,19 @@ namespace ViewerNetwork
         {
             //check if IPAdress format in ip.txt is correct
             remoteIP = ip;
-            remotePort = int.Parse(ConFun.S.globalPara["remote_port"]);
+            remotePort = int.Parse(ConFun.GlobalConfig["remote_port"]);
             if (!Regex.IsMatch(remoteIP, @"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$"))
             {
                 print(ip);
-                ConFun.S.printStatusInfo("wrong remote IP adress format");
+                ConFun.printStatusInfo("wrong remote IP adress format");
                 return false;
             }
             if (!(1000 < remotePort && remotePort < 99999))
             {
-                //ConFun.S.printStatusInfo("wrong remote Port format");
+                //ConFun.printStatusInfo("wrong remote Port format");
                 return false;
             }
-            //ConFun.S.printStatusInfo((remoteIP, remotePort));
+            //ConFun.printStatusInfo((remoteIP, remotePort));
             return true;
 
         }
@@ -507,7 +507,7 @@ namespace ViewerNetwork
         {
             Loom.QueueOnMainThread((param) =>
             {
-                ConFun.S.printStatusInfo(str);
+                ConFun.printStatusInfo(str);
             }, null);
         }
 

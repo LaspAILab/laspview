@@ -37,7 +37,7 @@ public class R_ServerPanelSrc : MonoBehaviour
 
     private void Start()
     {
-        this.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.S.globalPara["remote_ip"];
+        this.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.GlobalConfig["remote_ip"];
         Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
         svrButton.onClick.AddListener(() =>
         {
@@ -157,18 +157,18 @@ public class R_ServerPanelSrc : MonoBehaviour
             {
                 StringBuilder msgList = new StringBuilder("CheckIP=" + localip);
                 msgList = client.AddTag(msgList, "sig");
-                msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.S.globalPara["user"]);
+                msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.GlobalConfig["user"]);
                 str = client.SynSendMsg(msgList.ToString());
 
             }
         });
         if (str == null)
         {
-            ConFun.S.printStatusInfo("Local IP of "+ ConFun.S.globalPara["user"] + " has been sent.");
+            ConFun.printStatusInfo("Local IP of "+ ConFun.GlobalConfig["user"] + " has been sent.");
         }
         else
         {
-            ConFun.S.printStatusInfo(str);
+            ConFun.printStatusInfo(str);
         }
 
         Object.Destroy(client);
@@ -207,18 +207,18 @@ public class R_ServerPanelSrc : MonoBehaviour
             {
                 StringBuilder msgList = new StringBuilder(text);
                 msgList = client.AddTag(msgList, "file", attr);
-                msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.S.globalPara["user"]);
+                msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.GlobalConfig["user"]);
 
                 str = client.SynSendMsg(msgList.ToString());
             }
         });
         if (str == null)
         {
-            ConFun.S.printStatusInfo(attr + " has been sent.");
+            ConFun.printStatusInfo(attr + " has been sent.");
         }
         else
         {
-            ConFun.S.printStatusInfo(str);
+            ConFun.printStatusInfo(str);
         }
 
         Object.Destroy(client);
@@ -241,7 +241,7 @@ public class R_ServerPanelSrc : MonoBehaviour
     //    {
     //        laspInEditorpanel.SetActive(true);
     //        btn.image.color = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
-    //        laspInEditorText.text = File.ReadAllText(ConFun.S.globalPara["laspin_default"]);
+    //        laspInEditorText.text = File.ReadAllText(ConFun.GlobalConfig["laspin_default"]);
     //    }
     //}
 
@@ -264,7 +264,7 @@ public class R_ServerPanelSrc : MonoBehaviour
     //            StringBuilder msgList = new StringBuilder(text);
 
     //            msgList = client.AddTag(msgList, "file", attr);
-    //            msgList = client.AddTag(msgList, "laspview", "user="+ConFun.S.globalPara["user"]);
+    //            msgList = client.AddTag(msgList, "laspview", "user="+ConFun.GlobalConfig["user"]);
 
     //            str = client.SynSendMsg(msgList.ToString());
 
@@ -272,11 +272,11 @@ public class R_ServerPanelSrc : MonoBehaviour
     //    });
     //    if (str == null)
     //    {
-    //        ConFun.S.printStatusInfo("lasp.in has been sent.");
+    //        ConFun.printStatusInfo("lasp.in has been sent.");
     //    }
     //    else
     //    {
-    //        ConFun.S.printStatusInfo(str);
+    //        ConFun.printStatusInfo(str);
     //    }
 
     //    Object.Destroy(client);
@@ -285,7 +285,7 @@ public class R_ServerPanelSrc : MonoBehaviour
 
     //public void NetEditLaspInSave()
     //{
-    //    File.WriteAllText(ConFun.S.globalPara["laspin_default"], laspInEditorText.text);
+    //    File.WriteAllText(ConFun.globalPara["laspin_default"], laspInEditorText.text);
     //}
 
     //public void NetEditLaspInQuit()

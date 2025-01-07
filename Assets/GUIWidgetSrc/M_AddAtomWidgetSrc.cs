@@ -35,12 +35,12 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
 
         if (ele.Trim() == "")
         {
-            ConFun.S.printStatusInfo("Err: No Element");
+            ConFun.printStatusInfo("Err: No Element");
             return;
         }
-        if (!ConFun.S.eleTable.ContainsKey(ele))
+        if (!ConFun.elements.ContainsKey(ele))
         {
-            ConFun.S.printStatusInfo("Err: " + ele + "is not an available element.");
+            ConFun.printStatusInfo("Err: " + ele + "is not an available element.");
             return;
         }
 
