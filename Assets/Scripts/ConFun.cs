@@ -45,7 +45,7 @@ public struct ElementData
 
 public class ConFun : MonoBehaviour
 {
-    public static Dictionary<string, ElementData> elements;
+    public static Dictionary<string, ElementData> Elements;
     public static Dictionary<string, string> GlobalConfig;
     public List<string> NecessaryConfigKeys;
     public static readonly Vector3[] LatticeCorners = { new(0,0,0), new(1,1,0), new(1,0,1), new(0,1,1),
@@ -76,16 +76,16 @@ public class ConFun : MonoBehaviour
     };
 
     public static GameObject structureText;
-    public static Text statusText;
+    static Text statusLabel;
 
     void Awake()
     {
         structureText = GameObject.Find("StructureText");
-        statusText = GameObject.Find("StatusText").GetComponent<Text>();
+        statusLabel = GameObject.Find("StatusText").GetComponent<Text>();
 #if !UNITY_WEBGL
         NecessaryConfigKeys = new List<string> { "user", "remote_ip", "remote_port", "local_port" };
 #else
-        necessaryGlobalPara = new List<string>();
+        NecessaryConfigKeys = new List<string>();
 #endif
         ReadPeriodicTable();
         ReadGlobalConfig();
@@ -102,7 +102,7 @@ public class ConFun : MonoBehaviour
     {
         var periodicTableJson = Resources.Load<TextAsset>("Elements");
         var rawElements = JsonUtility.FromJson<ElementContainer>(periodicTableJson.text).Elements;
-        elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
+        Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
     }
 
     public void ReadGlobalConfig()
@@ -125,7 +125,7 @@ public class ConFun : MonoBehaviour
         {
             if (!GlobalConfig.ContainsKey(para))
             {
-                printStatusInfo("NOT Cantain KEY " + para + " ,plz check allkey.log and RESTART the program");
+                UpdateStatusLabel("NOT Cantain KEY " + para + " ,plz check allkey.log and RESTART the program");
             }
         }
     }
@@ -145,9 +145,9 @@ public class ConFun : MonoBehaviour
         structureText.transform.GetChild(5).GetComponent<Text>().text = energy.ToString("f3");
     }
 
-    public static void printStatusInfo(string str)
+    public static void UpdateStatusLabel(string str)
     {
-        statusText.text = str;
+        statusLabel.text = str;
 #if UNITY_EDITOR
         Debug.Log(str);
 #endif

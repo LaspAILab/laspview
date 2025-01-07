@@ -213,7 +213,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     else
                     {
-                        ConFun.printStatusInfo("Only NN is allowed for potential");
+                        ConFun.UpdateStatusLabel("Only NN is allowed for potential");
                     }
                 }
                 else if (para[0] == "explore_type")
@@ -224,7 +224,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     else
                     {
-                        ConFun.printStatusInfo("Only SSW is allowed for explore_type");
+                        ConFun.UpdateStatusLabel("Only SSW is allowed for explore_type");
                     }
                 }
                 else if (para[0] == "run_type")
@@ -237,7 +237,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     else
                     {
-                        ConFun.printStatusInfo("Only 5, 15, 2, 12, 1, 11 is allowed for run_type");
+                        ConFun.UpdateStatusLabel("Only 5, 15, 2, 12, 1, 11 is allowed for run_type");
                     }
                 }
                 else if (para[0] == "%block" && para[1] == "netinfo")
@@ -258,7 +258,7 @@ public class R_LASPPanelSrc : MonoBehaviour
                     }
                     if (j == dp.options.Count)
                     {
-                        ConFun.printStatusInfo($"NN pot not available in {nnpot_dir}");
+                        ConFun.UpdateStatusLabel($"NN pot not available in {nnpot_dir}");
                     }
                     while (!Regex.IsMatch(lines[i], @"%endblock netinfo") && i < lines.Length)
                     {

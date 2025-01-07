@@ -10,8 +10,8 @@ public class ExtendStructure : MonoBehaviour
 
     public Vector3 bias;
 
-    public List<Atom> extendAtomList;
-    public List<Bond> extendBondList;
+    public List<AtomScript> extendAtomList;
+    public List<BondScript> extendBondList;
     public List<LineRenderer> extendLatLineList;
 
 
@@ -21,18 +21,18 @@ public class ExtendStructure : MonoBehaviour
         originStructure = origin;
         this.transform.SetParent(origin.transform);
 
-        extendAtomList = new List<Atom> { };
-        extendBondList = new List<Bond> { };
+        extendAtomList = new List<AtomScript> { };
+        extendBondList = new List<BondScript> { };
         extendLatLineList = new List<LineRenderer> { };
 
         bias = originStructure.GetCellTransfer(a0, b0, c0);
 
-        foreach (Atom at in origin.atomList)
+        foreach (AtomScript at in origin.atomList)
         {
             AddExtendAtom(at, bias);
         }
         //print(origin.bondList.Count);
-        foreach (Bond bd in origin.bondList)
+        foreach (BondScript bd in origin.bondList)
         {
             AddExtendBond(bd, bias);
         }
@@ -40,12 +40,12 @@ public class ExtendStructure : MonoBehaviour
 
     }
 
-    private Bond AddExtendBond(Bond originBond, Vector3 bias)
+    private BondScript AddExtendBond(BondScript originBond, Vector3 bias)
     {
         //float stickRadius = originStructure.parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
-        Bond newBond = ObjectPool.S.RentBond();
+        BondScript newBond = ObjectPool.S.RentBond();
         extendBondList.Add(newBond);
 
 
@@ -67,14 +67,14 @@ public class ExtendStructure : MonoBehaviour
         return newBond;
     }
 
-    private Atom AddExtendAtom(Atom originAtom, Vector3 bias)
+    private AtomScript AddExtendAtom(AtomScript originAtom, Vector3 bias)
     {
 
         Transform nodeTrans = UnityEngine.Object.Instantiate(originStructure.nodePrefabVar).transform;
         nodeTrans.SetParent(this.transform);
         nodeTrans.position = originAtom.transform.position + bias;
 
-        Atom newAtom = UnityEngine.Object.Instantiate(originStructure.atomPrefabVar).GetComponent<Atom>();
+        AtomScript newAtom = UnityEngine.Object.Instantiate(originStructure.atomPrefabVar).GetComponent<AtomScript>();
         extendAtomList.Add(newAtom);
 
         //newAtom.nodeTrans = nodeTrans;
@@ -130,7 +130,7 @@ public class ExtendStructure : MonoBehaviour
     public void ChangeExtendBondModel()
     {
         Dictionary<string, float> modelPara = originStructure.parent.arcModelPara;
-        foreach (Bond bd in extendBondList)
+        foreach (BondScript bd in extendBondList)
         {
             ObjectPool.S.RestoreBond(bd);
         }
@@ -139,7 +139,7 @@ public class ExtendStructure : MonoBehaviour
         //print(originStructure.bondList.Count);
         if (modelPara["display style"] == 0 || modelPara["display style"] == 2)
         {
-            foreach (Bond bd in originStructure.bondList)
+            foreach (BondScript bd in originStructure.bondList)
             {
                 AddExtendBond(bd, bias);
             }
@@ -165,12 +165,12 @@ public class ExtendStructure : MonoBehaviour
     public void DestroyExtendStructrue()
     {
 
-        foreach (Bond bd in extendBondList)
+        foreach (BondScript bd in extendBondList)
         {
             ObjectPool.S.RestoreBond(bd);
         }
         extendBondList.Clear();
-        foreach (Atom at in extendAtomList)
+        foreach (AtomScript at in extendAtomList)
         {
             at.originAtom.derivedAtom.Remove(at);
             GameObject.Destroy(at.transform.parent.gameObject);

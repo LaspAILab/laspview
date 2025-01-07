@@ -20,10 +20,10 @@ public class Structure : MonoBehaviour
     public float energy = 0.0F;     //energy
     public float[] abc;             //a, b, c, alpha, betta, gamma of periodic condition
     public Matrix4x4 lat;          //matrix form of periodic contition
-    public List<Atom> atomList;         //List of class & model Atom
+    public List<AtomScript> atomList;         //List of class & model Atom
     //public List<Atom> extandAtomList;
     public List<LineRenderer> latList;  //List of model of periodic condittion
-    public List<Bond> bondList;         //List of class & modelBond
+    public List<BondScript> bondList;         //List of class & modelBond
     //public List<Bond> extendBondList;         //List of class & modelBond
     public Transform latCenter;     //center of lattice, generally used as camera center
     public Vector3[] cellTranslate;
@@ -60,14 +60,14 @@ public class Structure : MonoBehaviour
         }
     }
 
-    public Atom AddAtom(string ele, Vector3 cdnt,  int charge = 0)
+    public AtomScript AddAtom(string ele, Vector3 cdnt,  int charge = 0)
     {
         
         GameObject node = Instantiate(nodePrefabVar);
         node.transform.position = cdnt;
         node.transform.SetParent(this.transform);
 
-        Atom newAtom = Instantiate(atomPrefabVar).GetComponent<Atom>();
+        AtomScript newAtom = Instantiate(atomPrefabVar).GetComponent<AtomScript>();
         newAtom.Init(cdnt, ele, node.transform, charge);
 
         newAtom.index = this.atomList.Count;
@@ -81,14 +81,14 @@ public class Structure : MonoBehaviour
     }
 
 
-    public void MoveIntoLatticAtoms(List<Atom> alist)
+    public void MoveIntoLatticAtoms(List<AtomScript> alist)
     {
         //Check if an Atom is in the Lattice
         //Only change postion, won't change cdnt
         Transform nodeTransform;
 
         Matrix4x4 inverse = this.lat.inverse;
-        foreach (Atom a in alist)
+        foreach (AtomScript a in alist)
         {
             nodeTransform = a.transform.parent;
             Vector3 fractionalPos = inverse * nodeTransform.position;
@@ -110,7 +110,7 @@ public class Structure : MonoBehaviour
     {
         if (bondList.Count != 0)
         {
-            foreach(Bond b in bondList)
+            foreach(BondScript b in bondList)
             {
                 if (b != null)
                     ObjectPool.S.RestoreBond(b);
@@ -167,7 +167,7 @@ public class Structure : MonoBehaviour
         this.AddAllBond(parent.arcModelPara["tolerance"]);
     }
 
-    public bool CheckBond(Atom atom, Atom btom, float bondBoundry)
+    public bool CheckBond(AtomScript atom, AtomScript btom, float bondBoundry)
     {
         float len0 = (atom.radius + btom.radius);
         float len = (btom.transform.position - atom.transform.position).magnitude;
@@ -179,7 +179,7 @@ public class Structure : MonoBehaviour
             return false;
     }
 
-    public bool CheckBond(Atom atom, Atom btom, Vector3 cellTranslate, float bondBoundry)
+    public bool CheckBond(AtomScript atom, AtomScript btom, Vector3 cellTranslate, float bondBoundry)
     {
 
         float len0 = (atom.radius + btom.radius);
@@ -190,13 +190,13 @@ public class Structure : MonoBehaviour
             return false;
     }
 
-    public Bond AddBond(Atom a, Atom b, Vector3 direction, float rate, bool otherCell = false)
+    public BondScript AddBond(AtomScript a, AtomScript b, Vector3 direction, float rate, bool otherCell = false)
     {
         float stickRadius = parent.arcModelPara["stick radius"];
 
         //a is the point to atom, b is the parent;
 
-        Bond newBond = ObjectPool.S.RentBond();
+        BondScript newBond = ObjectPool.S.RentBond();
         //print(newBond.gameObject.name);
         newBond.Init(a, b, otherCell);
 
@@ -374,7 +374,7 @@ public class Structure : MonoBehaviour
             if (strucModelPara["stick radius"] != modelPara["stick radius"])
             {
                 float radius = modelPara["stick radius"];
-                foreach (Bond bd in bondList)
+                foreach (BondScript bd in bondList)
                 {
                     bd.gameObject.transform.localScale = new Vector3(radius, bd.gameObject.transform.localScale.y, radius);
                 }
@@ -387,7 +387,7 @@ public class Structure : MonoBehaviour
                             if (extendStructs[i, j, k] != null)
                             {
 
-                                foreach (Bond bd in extendStructs[i, j, k].extendBondList)
+                                foreach (BondScript bd in extendStructs[i, j, k].extendBondList)
                                 {
                                     bd.gameObject.transform.localScale = new Vector3(radius, bd.gameObject.transform.localScale.y, radius);
                                 }
@@ -419,10 +419,10 @@ public class Structure : MonoBehaviour
         DrawModel();
     }
 
-    public void ChangeAtomModel(List<Atom> listOfAtom)
+    public void ChangeAtomModel(List<AtomScript> listOfAtom)
     {
         Dictionary<string, float> modelPara = parent.arcModelPara;
-        foreach (Atom at in listOfAtom)
+        foreach (AtomScript at in listOfAtom)
         {
             at.index = atomList.IndexOf(at);
         }
@@ -430,16 +430,16 @@ public class Structure : MonoBehaviour
         {
             if (modelPara["ball radius type"] == 0)
             {
-                foreach (Atom at in listOfAtom) at.ChangeScalingRatio(modelPara["ball scale"]);
+                foreach (AtomScript at in listOfAtom) at.ChangeScalingRatio(modelPara["ball scale"]);
             }
             else if (modelPara["ball radius type"] == 1)
             {
-                foreach (Atom at in listOfAtom) at.transform.localScale = modelPara["ball radius"] * Vector3.one;
+                foreach (AtomScript at in listOfAtom) at.transform.localScale = modelPara["ball radius"] * Vector3.one;
             }
         }
         else if (modelPara["display style"] == 2)
         {
-            foreach (Atom at in listOfAtom) at.transform.localScale = 0.4f * Vector3.one;
+            foreach (AtomScript at in listOfAtom) at.transform.localScale = 0.4f * Vector3.one;
         }
 
     }
@@ -447,7 +447,7 @@ public class Structure : MonoBehaviour
     public void ChangeAllBondModel()
     {
         Dictionary<string, float> modelPara = parent.arcModelPara;
-        foreach (Bond bd in bondList)
+        foreach (BondScript bd in bondList)
         {
             ObjectPool.S.RestoreBond(bd);
         }
@@ -534,7 +534,7 @@ public class Structure : MonoBehaviour
 
         if (keepFractionalPos)
         {
-            foreach (Atom at in atomList)
+            foreach (AtomScript at in atomList)
             {
                 Transform nodeTransform = at.transform.parent;
                 nodeTransform.position = newLattice * (oldInverse * nodeTransform.position);
@@ -547,9 +547,9 @@ public class Structure : MonoBehaviour
 
     public void ChangeExtendAtomPos()
     {
-        foreach (Atom at1 in this.atomList)
+        foreach (AtomScript at1 in this.atomList)
         {
-            foreach (Atom at2 in at1.derivedAtom)
+            foreach (AtomScript at2 in at1.derivedAtom)
             {
                 at2.transform.parent.position = at1.transform.position + at2.extendParent.bias;
                 //at2.index = at1.index;

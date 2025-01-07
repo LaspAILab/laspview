@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Bond : MonoBehaviour
+public class BondScript : MonoBehaviour
 {
-    public Atom fromAtom = null;
-    public Atom pointToAtom = null;
+    public AtomScript fromAtom = null;
+    public AtomScript pointToAtom = null;
 
-    public Bond originBond = null;
+    public BondScript originBond = null;
     public ExtendStructure extendParent = null;
 
-    public void Init(Atom origin, Atom pointTo, bool pointToOtherCell = false)
+    public void Init(AtomScript origin, AtomScript pointTo, bool pointToOtherCell = false)
     {
         fromAtom = origin;
         pointToAtom = pointTo;

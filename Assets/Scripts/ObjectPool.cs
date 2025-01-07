@@ -14,7 +14,7 @@ public class ObjectPool : MonoBehaviour
 
     private Vector3 defaultBondScale = new Vector3(0.35f, 1, 0.35f);
     //private ObjectPool<Atom> atomPool = new ObjectPool<Atom>();
-    public ObjectPool<Bond> bondPool = new ObjectPool<Bond>();
+    public ObjectPool<BondScript> bondPool = new ObjectPool<BondScript>();
     //private ObjectPool<Transform> nodePool = new ObjectPool<Transform>();
     private ObjectPool<ExtendStructure> extendPool = new ObjectPool<ExtendStructure>();
     private Transform garbage;
@@ -69,14 +69,14 @@ public class ObjectPool : MonoBehaviour
     //    nodeTrans.transform.SetParent(garbage);
     //}
 
-    public Bond RentBond()
+    public BondScript RentBond()
     {
-        Bond bd = bondPool.Rent();
+        BondScript bd = bondPool.Rent();
         bd.originBond = bd;
         return bd;
     }
 
-    public void RestoreBond(Bond bd)
+    public void RestoreBond(BondScript bd)
     {
         if (bd.originBond == null)
         {
