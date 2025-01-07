@@ -164,11 +164,11 @@ public class R_ServerPanelSrc : MonoBehaviour
         });
         if (str == null)
         {
-            ConFun.printStatusInfo("Local IP of "+ ConFun.GlobalConfig["user"] + " has been sent.");
+            ConFun.UpdateStatusLabel("Local IP of "+ ConFun.GlobalConfig["user"] + " has been sent.");
         }
         else
         {
-            ConFun.printStatusInfo(str);
+            ConFun.UpdateStatusLabel(str);
         }
 
         Object.Destroy(client);
@@ -214,11 +214,11 @@ public class R_ServerPanelSrc : MonoBehaviour
         });
         if (str == null)
         {
-            ConFun.printStatusInfo(attr + " has been sent.");
+            ConFun.UpdateStatusLabel(attr + " has been sent.");
         }
         else
         {
-            ConFun.printStatusInfo(str);
+            ConFun.UpdateStatusLabel(str);
         }
 
         Object.Destroy(client);

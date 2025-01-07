@@ -35,17 +35,17 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
 
         if (ele.Trim() == "")
         {
-            ConFun.printStatusInfo("Err: No Element");
+            ConFun.UpdateStatusLabel("Err: No Element");
             return;
         }
-        if (!ConFun.elements.ContainsKey(ele))
+        if (!ConFun.Elements.ContainsKey(ele))
         {
-            ConFun.printStatusInfo("Err: " + ele + "is not an available element.");
+            ConFun.UpdateStatusLabel("Err: " + ele + "is not an available element.");
             return;
         }
 
-        Atom p = MainScr.S.CurrentStructure().AddAtom(ele, pos);
-        GuiMain.S.EditSaveStruc(new List<Atom> { p }, 'c');
+        AtomScript p = MainScr.S.CurrentStructure().AddAtom(ele, pos);
+        GuiMain.S.EditSaveStruc(new List<AtomScript> { p }, 'c');
         //Cancel pickGO
         GuiMain.S.DisSelectPickGO();
         MainScr.S.CurrentStructure().ReDrawModel();
@@ -55,7 +55,7 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         {
             ren.material.color = Color.yellow;
         }
-        GuiMain.S.EditSaveStruc(new List<Atom> { p });
+        GuiMain.S.EditSaveStruc(new List<AtomScript> { p });
     }
 
 

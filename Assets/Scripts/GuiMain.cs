@@ -70,7 +70,7 @@ public class GuiMain : MonoBehaviour
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 pickAtomAvgPosScreen;
     private Vector3 offsetTemp;             //for tranlate    
-    
+
 
 
     public List<GameObject> pickGO = new List<GameObject>();         //for Pick
@@ -82,18 +82,18 @@ public class GuiMain : MonoBehaviour
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
     static Vector3 copyBias = new Vector3(2500f, 0, 0);
-    private List<Atom> pickAtomOrigin = new List<Atom>(); //for pick Atom
-    private List<Atom> pickAtomDerived = new List<Atom>();
+    private List<AtomScript> pickAtomOrigin = new List<AtomScript>(); //for pick Atom
+    private List<AtomScript> pickAtomDerived = new List<AtomScript>();
     //private List<>
-    private List<Bond> changeBond = new List<Bond>();
-    private List<Bond> changeBondDerived = new List<Bond>();
+    private List<BondScript> changeBond = new List<BondScript>();
+    private List<BondScript> changeBondDerived = new List<BondScript>();
 
 
-    private Dictionary<Vector3, Atom> atomScreenPosTemp = new Dictionary<Vector3, Atom>();
-//************************** END  *****************************
+    private Dictionary<Vector3, AtomScript> atomScreenPosTemp = new Dictionary<Vector3, AtomScript>();
+    //************************** END  *****************************
 
 
-void Awake()
+    void Awake()
     {
         S = this;
 
@@ -148,7 +148,7 @@ void Awake()
             SetUIInteract(c, interactable);
         }
     }
-    public  void SetUIInteract(Selectable s, bool interactable)
+    public void SetUIInteract(Selectable s, bool interactable)
     {
         if (interactable == true)
         {
@@ -175,8 +175,8 @@ void Awake()
             mouseLastPos = Input.mousePosition;
         }
         //print(Input.mousePosition / Screen.height);
-        float mouse_x = (Input.mousePosition - mouseLastPos).x ;
-        float mouse_y = -(Input.mousePosition - mouseLastPos).y ;
+        float mouse_x = (Input.mousePosition - mouseLastPos).x;
+        float mouse_y = -(Input.mousePosition - mouseLastPos).y;
 
 
 
@@ -202,7 +202,7 @@ void Awake()
                     if (expandAtom != null)
                     {
                         // A -> null
-                        MainScr.S.CurrentStructure().ChangeAtomModel(new List<Atom> { expandAtom.GetComponent<Atom>() });
+                        MainScr.S.CurrentStructure().ChangeAtomModel(new List<AtomScript> { expandAtom.GetComponent<AtomScript>() });
 
                         expandAtom = null;
                     }
@@ -231,7 +231,7 @@ void Awake()
                     //    float radius = MainScr.S.CurrentStructure().strucModelPara["ball radius"];
                     //    expandAtom.transform.localScale = Vector3.one * radius;
                     //}
-                    MainScr.S.CurrentStructure().ChangeAtomModel(new List<Atom> { expandAtom.GetComponent<Atom>() });
+                    MainScr.S.CurrentStructure().ChangeAtomModel(new List<AtomScript> { expandAtom.GetComponent<AtomScript>() });
                     expandAtom = castGO;
                     castGO.transform.localScale += expandAtomScale;
                 }
@@ -256,7 +256,7 @@ void Awake()
                     RestoreBondList(changeBond);
 
                     Structure struc = MainScr.S.CurrentStructure();
-                    foreach (Atom at in pickAtomOrigin)
+                    foreach (AtomScript at in pickAtomOrigin)
                     {
                         struc.atomList.Remove(at);
                         UnityEngine.Object.Destroy(at.transform.parent.gameObject);
@@ -281,13 +281,13 @@ void Awake()
                     // pickGO.CopyTo(copyGO):Copy them to cdnt +copyBias
                     foreach (GameObject go in pickGO)
                     {
-                        Atom a = go.GetComponent<Atom>();
+                        AtomScript a = go.GetComponent<AtomScript>();
 
                         GameObject copyNode = Instantiate(nodePrefab);
                         copyNode.transform.position = copyBias; //node坐标位于(copyBias, 实体坐标)
                         copyNode.transform.SetParent(this.transform);
 
-                        Atom copyAtom = Instantiate(atomPrefab).GetComponent<Atom>();
+                        AtomScript copyAtom = Instantiate(atomPrefab).GetComponent<AtomScript>();
                         copyAtom.Init(a.cdnt, a.ele, copyNode.transform, a.charge); //Atom坐标为cdnt
                         copyAtom.transform.SetParent(copyNode.transform, true);
                         copyAtom.transform.localPosition = Vector3.zero;
@@ -300,15 +300,15 @@ void Awake()
                 {
                     DisSelectPickGO();
 
-                    List<Atom> pasteAtom = new List<Atom>();
+                    List<AtomScript> pasteAtom = new List<AtomScript>();
                     pasteGO.Clear();
                     //add pasteGO
                     Vector3 pasteBias = Camera.main.transform.right.normalized + Camera.main.transform.up.normalized * 3;
                     foreach (GameObject go in copyGO)
                     {
-                        Atom a = go.GetComponent<Atom>();
+                        AtomScript a = go.GetComponent<AtomScript>();
 
-                        Atom p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * pasteBias, a.charge);
+                        AtomScript p = MainScr.S.CurrentStructure().AddAtom(a.ele, a.cdnt + 0.5f * pasteBias, a.charge);
                         //print(p.gameObject.GetComponent<Renderer>().material.color);
                         p.transform.parent.gameObject.SetActive(true);
                         pasteAtom.Add(p);
@@ -335,13 +335,13 @@ void Awake()
                     // pickGO.CopyTo(copyGO):Copy them to copyBias
                     foreach (GameObject go in pickGO)
                     {
-                        Atom a = go.GetComponent<Atom>();
+                        AtomScript a = go.GetComponent<AtomScript>();
 
                         GameObject copyNode = Instantiate(nodePrefab);
                         copyNode.transform.position = copyBias; //node坐标位于(copyBias, 实体坐标)
                         copyNode.transform.SetParent(this.transform);
 
-                        Atom copyAtom = Instantiate(atomPrefab).GetComponent<Atom>();
+                        AtomScript copyAtom = Instantiate(atomPrefab).GetComponent<AtomScript>();
                         copyAtom.Init(a.cdnt, a.ele, copyNode.transform, a.charge); //Atom坐标为cdnt
                         copyAtom.transform.SetParent(copyNode.transform, true);
                         copyAtom.transform.localPosition = Vector3.zero;
@@ -359,7 +359,7 @@ void Awake()
             }
         }
         // 如果有鼠标操作
-        else if(onMove == false)
+        else if (onMove == false)
         {
             // 鼠标开始操作时 先判断是否在UI上
             if (Input.GetKeyDown(KeyCode.Mouse0) || Input.GetKeyDown(KeyCode.Mouse1) ||
@@ -394,10 +394,10 @@ void Awake()
             if (rayStartOnUI == true)
             {
                 //To move a Draggable Widget(GameObject that syfDragUI component poiting to)
-                if ((Input.GetKey(KeyCode.Mouse2) ||Input.GetKey(KeyCode.Mouse0))  && dragCom != null)
+                if ((Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.Mouse0)) && dragCom != null)
                 {
                     Vector3 screemScale = transform.localScale;
-                    Vector3 widgetPos = Input.mousePosition*screemScale.x + selectGOOffset;
+                    Vector3 widgetPos = Input.mousePosition * screemScale.x + selectGOOffset;
                     ////MakeSure Draggable widget is still in the frame
                     ////A east home-made rectangle position limiter. If need update, you can write a UICollider youself. Use para in RectTransform
                     widgetPos.y = Mathf.Max(widgetPos.y, dragCom.lowerBound);
@@ -541,7 +541,7 @@ void Awake()
                     else if (Time.time - mouse0PressedTime >= 0.05f && atomScreenPosTemp.Count() == 0)
                     {
                         atomScreenPosTemp.Clear();
-                        foreach (Atom at in MainScr.S.CurrentStructure().atomList)
+                        foreach (AtomScript at in MainScr.S.CurrentStructure().atomList)
                         {
                             atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
                         }
@@ -549,7 +549,7 @@ void Awake()
                         foreach (ExtendStructure ext in MainScr.S.CurrentStructure().extendStructs)
                         {
                             if (ext == null) continue;
-                            foreach (Atom at in ext.extendAtomList)
+                            foreach (AtomScript at in ext.extendAtomList)
                             {
                                 atomScreenPosTemp.Add(Camera.main.WorldToScreenPoint(at.transform.position), at);
                             }
@@ -557,7 +557,7 @@ void Awake()
                     }
                     else
                     {
-                        foreach (KeyValuePair<Vector3, Atom> kvpair in atomScreenPosTemp)
+                        foreach (KeyValuePair<Vector3, AtomScript> kvpair in atomScreenPosTemp)
                         {
                             Vector3 screenPos = kvpair.Key;
                             if ((screenPos.x - mouseStart.x) * (screenPos.x - Input.mousePosition.x) < 0)
@@ -617,7 +617,7 @@ void Awake()
                     else
                     {
                         //2D rotate
-                        Vector3 centerScreen = Camera.main.WorldToScreenPoint(offsetTemp/2);
+                        Vector3 centerScreen = Camera.main.WorldToScreenPoint(offsetTemp / 2);
                         Vector3 a = centerScreen - Input.mousePosition;
                         Vector3 b = centerScreen - mouseLastPos;
                         float degree;
@@ -702,7 +702,7 @@ void Awake()
                     PickControlUpdate();
                 }
                 //松开LC或鼠标右键：收尾
-                else if (!Input.GetKey(KeyCode.Mouse1)) 
+                else if (!Input.GetKey(KeyCode.Mouse1))
                 {
                     PickControlEnd();
                     EditSaveStruc(pickAtomOrigin);
@@ -831,7 +831,7 @@ void Awake()
             {
                 foreach (Renderer ren in go.transform.parent.GetComponentsInChildren<Renderer>())
                 {
-                    ren.material.color = go.GetComponent<Atom>().color;
+                    ren.material.color = go.GetComponent<AtomScript>().color;
                 }
             }
             pickGO.Clear();
@@ -842,25 +842,25 @@ void Awake()
     {
         if (pickGO.Count == 1)
         {
-            string st = string.Format("{0} position: {1:f4} {2:f4} {3:f4}",  pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[0].transform.position.x, pickGO[0].transform.position.y, pickGO[0].transform.position.z);
-            ConFun.printStatusInfo(st);
+            string st = string.Format("{0} position: {1:f4} {2:f4} {3:f4}", pickGO[0].GetComponent<AtomScript>().originAtom.ele, pickGO[0].transform.position.x, pickGO[0].transform.position.y, pickGO[0].transform.position.z);
+            ConFun.UpdateStatusLabel(st);
         }
-        else if (pickGO .Count == 2)
+        else if (pickGO.Count == 2)
         {
-            string st = string.Format("{0}-{1} distance:   {2:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, (pickGO[0].transform.position - pickGO[1].transform.position).magnitude);
-            ConFun.printStatusInfo(st);
+            string st = string.Format("{0}-{1} distance:   {2:f4} ", pickGO[0].GetComponent<AtomScript>().originAtom.ele, pickGO[1].GetComponent<AtomScript>().originAtom.ele, (pickGO[0].transform.position - pickGO[1].transform.position).magnitude);
+            ConFun.UpdateStatusLabel(st);
         }
         else if (pickGO.Count == 3)
         {
-            string st = string.Format("{0}-{1}-{2}  angle: {3:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, pickGO[2].GetComponent<Atom>().originAtom.ele,
+            string st = string.Format("{0}-{1}-{2}  angle: {3:f4} ", pickGO[0].GetComponent<AtomScript>().originAtom.ele, pickGO[1].GetComponent<AtomScript>().originAtom.ele, pickGO[2].GetComponent<AtomScript>().originAtom.ele,
                   Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[2].transform.position - pickGO[1].transform.position));
-            ConFun.printStatusInfo(st);       
+            ConFun.UpdateStatusLabel(st);
         }
         else if (pickGO.Count == 4)
         {
-            string st = string.Format("{0}-{1}-{2}-{3} torison: {4:f4} ", pickGO[0].GetComponent<Atom>().originAtom.ele, pickGO[1].GetComponent<Atom>().originAtom.ele, pickGO[2].GetComponent<Atom>().originAtom.ele, pickGO[3].GetComponent<Atom>().originAtom.ele,
+            string st = string.Format("{0}-{1}-{2}-{3} torison: {4:f4} ", pickGO[0].GetComponent<AtomScript>().originAtom.ele, pickGO[1].GetComponent<AtomScript>().originAtom.ele, pickGO[2].GetComponent<AtomScript>().originAtom.ele, pickGO[3].GetComponent<AtomScript>().originAtom.ele,
                   Vector3.Angle(pickGO[0].transform.position - pickGO[1].transform.position, pickGO[3].transform.position - pickGO[2].transform.position));
-            ConFun.printStatusInfo(st);
+            ConFun.UpdateStatusLabel(st);
         }
     }
 
@@ -887,30 +887,30 @@ void Awake()
         pickAtomOrigin.Clear();
         foreach (GameObject go in pickGO)
         {
-            pickAtomOrigin.Add(go.GetComponent<Atom>().originAtom);
+            pickAtomOrigin.Add(go.GetComponent<AtomScript>().originAtom);
         }
 
         pickAtomDerived.Clear();
         foreach (GameObject go in pickGO)
         {
-            pickAtomDerived = pickAtomDerived.Union(go.GetComponent<Atom>().originAtom.derivedAtom).ToList<Atom>();
+            pickAtomDerived = pickAtomDerived.Union(go.GetComponent<AtomScript>().originAtom.derivedAtom).ToList<AtomScript>();
         }
-        foreach(GameObject go in pickGO)
+        foreach (GameObject go in pickGO)
         {
-            pickAtomDerived.Remove(go.GetComponent<Atom>());
+            pickAtomDerived.Remove(go.GetComponent<AtomScript>());
         }
 
         changeBond.Clear();
-        foreach (Atom a in pickAtomOrigin)
+        foreach (AtomScript a in pickAtomOrigin)
         {
-            foreach (Bond b1 in a.transform.parent.GetComponentsInChildren<Bond>())
+            foreach (BondScript b1 in a.transform.parent.GetComponentsInChildren<BondScript>())
             {
                 if (pickAtomOrigin.Contains(b1.pointToAtom)) continue;
                 struc.bondList.Remove(b1);
                 changeBond.Add(b1);
 
                 //remove Bond who is from Unpick Atom to Pick Atom a
-                foreach (Bond b2 in b1.pointToAtom.gameObject.transform.parent.GetComponentsInChildren<Bond>())
+                foreach (BondScript b2 in b1.pointToAtom.gameObject.transform.parent.GetComponentsInChildren<BondScript>())
                 {
                     if (b2.pointToAtom == a)
                     {
@@ -923,7 +923,7 @@ void Awake()
         }
 
         changeBondDerived.Clear();
-        List<Bond> temp = new List<Bond>();
+        List<BondScript> temp = new List<BondScript>();
         for (int i = 0; i < 3; i++)
         {
             for (int j = 0; j < 3; j++)
@@ -934,7 +934,7 @@ void Awake()
                     else if (struc.extendStructs[i, j, k] != null)
                     {
                         temp.Clear();
-                        foreach (Bond bdExtend in struc.extendStructs[i, j, k].extendBondList)
+                        foreach (BondScript bdExtend in struc.extendStructs[i, j, k].extendBondList)
                         {
                             if (changeBond.Contains(bdExtend.originBond))
                             {
@@ -942,7 +942,7 @@ void Awake()
                                 changeBondDerived.Add(bdExtend);
                             }
                         }
-                        foreach (Bond bd in temp)
+                        foreach (BondScript bd in temp)
                         {
                             struc.extendStructs[i, j, k].extendBondList.Remove(bd);
                         }
@@ -950,7 +950,7 @@ void Awake()
                 }
             }
         }
-        
+
 
     }
 
@@ -961,7 +961,7 @@ void Awake()
         //make sure all origin Atom is moved
         foreach (GameObject go in pickGO)
         {
-            Atom at = go.GetComponent<Atom>();
+            AtomScript at = go.GetComponent<AtomScript>();
             if (at.extendParent != null)
             {
                 at.originAtom.transform.parent.position = go.transform.position - at.extendParent.bias;
@@ -970,7 +970,7 @@ void Awake()
 
         }
         // move pickAtomDerived if it is not an Origin Atom
-        foreach (Atom at in pickAtomDerived)
+        foreach (AtomScript at in pickAtomDerived)
         {
             if (at.originAtom != at)
             {
@@ -999,7 +999,7 @@ void Awake()
 
         if (struc.strucModelPara["display style"] != 1)
         {
-            foreach (Atom a1 in pickAtomOrigin)
+            foreach (AtomScript a1 in pickAtomOrigin)
             {
                 //print(a1.extendParent);
                 Vector3 p1 = a1.transform.position;
@@ -1013,7 +1013,7 @@ void Awake()
                     //print(vecs[i]);
                 }
 
-                foreach (Atom a2 in struc.atomList)
+                foreach (AtomScript a2 in struc.atomList)
                 {
                     Vector3 p2 = a2.transform.parent.position;
 
@@ -1065,15 +1065,15 @@ void Awake()
                         else if (struc.extendStructs[i, j, k] != null)
                         {
                             Vector3 bias = struc.GetCellTransfer(i, j, k);
-                            foreach (Bond bd in changeBond)
+                            foreach (BondScript bd in changeBond)
                             {
-                                Bond newBond = ObjectPool.S.RentBond();
+                                BondScript newBond = ObjectPool.S.RentBond();
 
                                 int index = bd.fromAtom.index;
                                 newBond.GetComponent<Renderer>().material.color = struc.extendStructs[i, j, k].extendAtomList[index].GetComponent<Renderer>().material.color;
                                 changeBondDerived.Add(newBond);
 
-      
+
                                 newBond.transform.position = bd.transform.position + bias;
                                 newBond.transform.rotation = bd.transform.rotation;
                                 newBond.transform.localScale = bd.transform.localScale;
@@ -1137,11 +1137,11 @@ void Awake()
 
 
 
-    private void RestoreBondList(List<Bond> bondList)
+    private void RestoreBondList(List<BondScript> bondList)
     {
         if (bondList.Count != 0)
         {
-            foreach (Bond bd in bondList)
+            foreach (BondScript bd in bondList)
             {
                 ObjectPool.S.RestoreBond(bd);
             }
@@ -1173,14 +1173,14 @@ void Awake()
     }
 #endif
 
-    public void EditSaveStruc(List<Atom> operatedAtom, char tag = 'm')
+    public void EditSaveStruc(List<AtomScript> operatedAtom, char tag = 'm')
     {
 
         Structure struc = MainScr.S.CurrentStructure();
         List<AtomOperation> atomsOperate = new List<AtomOperation>();
         if (tag == 'm')
         {
-            foreach (Atom at in operatedAtom)
+            foreach (AtomScript at in operatedAtom)
             {
                 AtomOperation oneAtomOpt = new AtomOperation();
                 oneAtomOpt.SetMove(struc.atomList.IndexOf(at), at.cdnt);
@@ -1190,7 +1190,7 @@ void Awake()
         }
         else if (tag == 'd')
         {
-            foreach (Atom at in operatedAtom)
+            foreach (AtomScript at in operatedAtom)
             {
                 AtomOperation oneAtomOpt = new AtomOperation();
                 oneAtomOpt.SetDel(struc.atomList.IndexOf(at), at.ele, at.cdnt);
@@ -1203,11 +1203,11 @@ void Awake()
             });
         }
         else if (tag == 'c')
-        {   
-            foreach(Atom at in operatedAtom)
+        {
+            foreach (AtomScript at in operatedAtom)
             {
                 AtomOperation oneAtomOpt = new AtomOperation();
-                
+
                 oneAtomOpt.SetAdd(at.index);
                 atomsOperate.Add(oneAtomOpt);
             }
@@ -1224,7 +1224,7 @@ void Awake()
             latOpt.abc4lat = MainScr.S.CurrentStructure().abc;
             atomsOperate.Add(latOpt);
 
-            foreach (Atom at in operatedAtom)
+            foreach (AtomScript at in operatedAtom)
             {
                 AtomOperation oneAtomOpt = new AtomOperation();
                 oneAtomOpt.SetMove(struc.atomList.IndexOf(at), at.cdnt);
@@ -1244,28 +1244,28 @@ void Awake()
         Structure struc = MainScr.S.CurrentStructure();
         //print(operationUndoList.Count);
         if (struc.operationUndoList.Count == 0) return;
-        List<AtomOperation> atomsOperate = struc.operationUndoList[struc.operationUndoList.Count-1];
+        List<AtomOperation> atomsOperate = struc.operationUndoList[struc.operationUndoList.Count - 1];
 
         //print(struc.atomList);
-        foreach(AtomOperation atOpt in atomsOperate)
+        foreach (AtomOperation atOpt in atomsOperate)
         {
             if (atOpt.tag == 'm')
             {
-                Atom at = struc.atomList[atOpt.movedAtomIndex];
+                AtomScript at = struc.atomList[atOpt.movedAtomIndex];
                 at.transform.parent.position = atOpt.fromPos;
                 at.cdnt = atOpt.fromPos;
             }
             else if (atOpt.tag == 'd')
-            {     
+            {
                 struc.AddAtom(atOpt.ele, atOpt.fromPos);
-                Atom at = struc.atomList[struc.atomList.Count - 1];
+                AtomScript at = struc.atomList[struc.atomList.Count - 1];
                 struc.atomList.RemoveAt(struc.atomList.Count - 1);
                 at.transform.parent.SetSiblingIndex(atOpt.movedAtomIndex);
                 struc.atomList.Insert(atOpt.movedAtomIndex, at);
             }
             else if (atOpt.tag == 'c')
             {
-                Atom at = struc.atomList[atOpt.movedAtomIndex];
+                AtomScript at = struc.atomList[atOpt.movedAtomIndex];
                 struc.atomList.RemoveAt(atOpt.movedAtomIndex);
                 UnityEngine.Object.Destroy(at.transform.parent.gameObject);
 
@@ -1291,7 +1291,7 @@ void Awake()
 
     public void EditClearUndoList()
     {
-        foreach(List<AtomOperation> atOpts in MainScr.S.CurrentStructure().operationUndoList)
+        foreach (List<AtomOperation> atOpts in MainScr.S.CurrentStructure().operationUndoList)
         {
             atOpts.Clear();
         }

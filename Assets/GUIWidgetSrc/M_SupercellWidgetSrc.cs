@@ -54,7 +54,7 @@ public class M_SupercellWidgetSrc : MonoBehaviour
                 for (int k = 0; k < c; k++)
                 {
                     Vector3 bias = struc.GetCellTransfer(i, j, k);
-                    foreach (Atom at in struc.atomList)
+                    foreach (AtomScript at in struc.atomList)
                     {
                         newStruc.AddAtom(at.ele, at.cdnt+bias);
                     }

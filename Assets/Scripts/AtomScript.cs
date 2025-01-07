@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-public class Atom : MonoBehaviour
+public class AtomScript : MonoBehaviour
 {
     public GameObject atomPrefabVar;
 
     //public Transform nodeTrans;
-    public Atom originAtom;
+    public AtomScript originAtom;
     public ExtendStructure extendParent; 
-    public List<Atom> derivedAtom = new List<Atom>();
+    public List<AtomScript> derivedAtom = new List<AtomScript>();
     public int index;
 
     public string ele;
@@ -29,8 +29,8 @@ public class Atom : MonoBehaviour
         this.ele = ele;
         this.cdnt = cdnt;
         this.charge = charge;
-        radius = 2 * ConFun.elements[ele].Radius;
-        color = ConFun.elements[ele].Color;
+        radius = 2 * ConFun.Elements[ele].Radius;
+        color = ConFun.Elements[ele].Color;
         Renderer render = this.GetComponent<Renderer>();
         render.material.color = this.color;
 
