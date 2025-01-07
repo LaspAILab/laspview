@@ -59,12 +59,10 @@ public class ConFun : MonoBehaviour
 #else
         necessaryGlobalPara = new List<string>();
 #endif
-        this.SetPeriodicTable();
-        this.readGlobalPara();
+        SetPeriodicTable();
+        readGlobalPara();
         globalPara.Add("model_type", "scale");
         bondBoundry = 0.63f;
-
-
     }
 
     public string[] PySplit(string line)

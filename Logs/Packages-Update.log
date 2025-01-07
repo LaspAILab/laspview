@@ -97,3 +97,22 @@ The following packages were removed:
   com.unity.analytics@3.3.5
   com.unity.ext.nunit@1.0.0
   com.unity.multiplayer-hlapi@1.0.4
+
+=== Tue Jan  7 14:08:20 2025
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were 已添加:
+  com.unity.ide.visualstudio@2.0.22
+  com.unity.ai.navigation@2.0.4
+  com.unity.modules.accessibility@1.0.0
+  com.unity.multiplayer.center@1.0.0
+The following packages were 已更新:
+  com.unity.collab-proxy 从版本 1.2.16 到 2.5.2
+  com.unity.ide.rider 从版本 1.1.4 到 3.0.31
+  com.unity.test-framework 从版本 1.1.13 到 1.4.5
+  com.unity.timeline 从版本 1.2.14 到 1.8.7
+  com.unity.ugui 从版本 1.0.0 到 2.0.0
+The following packages were 已移除:
+  com.unity.textmeshpro@2.0.1
