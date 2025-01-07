@@ -101,7 +101,7 @@ public class ArcStructures : MonoBehaviour
         //若文件行数大于(300个原子，100个结构，约等于30000行)，只执行25000个原子的结构
         if (lines.Length > 30000)
         {
-            ConFun.printStatusInfo(filename + "is too long. Only last several structures is loaded.");
+            ConFun.UpdateStatusLabel(filename + "is too long. Only last several structures is loaded.");
             startingPoint = lines.Length - 8000;
 
             for (; startingPoint < lines.Length - 1; startingPoint++)
@@ -195,7 +195,7 @@ public class ArcStructures : MonoBehaviour
         }
         catch (Exception ex)
         {
-            ConFun.printStatusInfo("Error: Read arc error. Maybe file is too long." + ex.GetType() + ex.StackTrace + ex.Message);
+            ConFun.UpdateStatusLabel("Error: Read arc error. Maybe file is too long." + ex.GetType() + ex.StackTrace + ex.Message);
             //print(currentStr);
             //GameObject.Destroy(structureList[currentStr].gameObject);
         }
@@ -221,7 +221,7 @@ public class ArcStructures : MonoBehaviour
                                         struc.abc[0], struc.abc[1], struc.abc[2], struc.abc[3], struc.abc[4], struc.abc[5]));
             for (int h = 0; h < struc.atomList.Count; h++)
             {
-                Atom at = struc.atomList[h];
+                AtomScript at = struc.atomList[h];
                 lines.Append(string.Format("{0,-2}{1,15:f9}{2,15:f9}{3,15:f9}", at.ele, at.cdnt[0], at.cdnt[1], at.cdnt[2]));
                 lines.Append(string.Format(" CORE{0,5:d} {1,-3}{2,-3}{3,8:f4}{4,5:d}\n", h + 1, at.ele, at.ele, 0.0f, h + 1));
             }
@@ -260,7 +260,7 @@ public class ArcStructures : MonoBehaviour
                     }
                 }
             }
-            foreach(Bond bd in struc.bondList)
+            foreach(BondScript bd in struc.bondList)
             {
                 ObjectPool.S.RestoreBond(bd);
             }

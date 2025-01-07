@@ -81,12 +81,13 @@ end
         try
         {
             //print(lines.Length);
+            var arcFile = ArcIO.ReadArc(File.ReadLines(filename));
             newArc.ArcRead(filename, lines);
         }
-        catch (Exception)
+        catch (Exception e)
         {
             GameObject.Destroy(newArc.gameObject);
-            ConFun.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
+            ConFun.UpdateStatusLabel($"Err: Error in read file {filename}.Please check file.");
         }
         arcList.Add(newArc);
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
