@@ -26,7 +26,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
     void Awake()
     {
         S = this;
-        
+
         //Set toolbar 
         this.transform.SetParent(GuiMain.S.statusPanel.transform);
         this.transform.localScale = Vector3.one;
@@ -53,23 +53,26 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(0));
     }
 
-    public void OnPlayeTailBtnClicked()
+    public void OnPlayerTailBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        ArcStructures arc = MainScr.S.CurrentArc();
-        PlayerBtnChecked(arc.DrawStructure(arc.lenStructures - 1));
+        // ArcStructures arc = MainScr.S.CurrentArc();
+        MainScr.S.SwitchArc(MainScr.S.currentFile.Structures.Count - 1);
+        // PlayerBtnChecked(arc.DrawStructure(MainScr.S.currentFile.Structures.Count - 1));
     }
 
-    public void OnPlayeForwardBtnClicked()
+    public void OnPlayerForwardBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure('+'));
+        MainScr.S.SwitchArc(MainScr.S.currentArcIndex + 1);
+        // PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure('+'));
     }
 
-    public void OnPlayeBackBtnClicked()
+    public void OnPlayerBackBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure('-'));
+        MainScr.S.SwitchArc(MainScr.S.currentArcIndex - 1);
+        // PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure('-'));
     }
 
     public void OnPlayerPlayBtnClicked()
@@ -130,7 +133,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             if (timer >= L_DisplayPanelSrc.displayPanelPara.paraDict["play interval"].GetComponent<Slider>().value)
             {
                 //print("HelloWorld")/*;*/
-                if(MainScr.S.CurrentArc().currentStr == MainScr.S.CurrentArc().structureList.Count - 1)
+                if (MainScr.S.CurrentArc().currentStr == MainScr.S.CurrentArc().structureList.Count - 1)
                 {
                     MainScr.S.CurrentArc().DrawStructure(0);
                 }
