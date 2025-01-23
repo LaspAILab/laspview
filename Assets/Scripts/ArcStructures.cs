@@ -88,10 +88,7 @@ public class ArcStructures : MonoBehaviour
         newStru.parent = this;
         lenStructures += 1;
         return newStru;
-
     }
-
-
 
     public void ArcRead(string filename, string[] lines, bool noE = false, string fname = null)
     {   //Initilization function outside Unity3d frame. Need to be call soon after Instantiation.
@@ -101,7 +98,7 @@ public class ArcStructures : MonoBehaviour
         //若文件行数大于(300个原子，100个结构，约等于30000行)，只执行25000个原子的结构
         if (lines.Length > 30000)
         {
-            ConFun.UpdateStatusLabel(filename + "is too long. Only last several structures is loaded.");
+            // ConFun.UpdateStatusLabel(filename + "is too long. Only last several structures is loaded.");
             startingPoint = lines.Length - 8000;
 
             for (; startingPoint < lines.Length - 1; startingPoint++)
@@ -189,7 +186,7 @@ public class ArcStructures : MonoBehaviour
                 }
                 else if (lines[i].Contains("CORE"))
                 {
-                    structureList[currentStr].AddAtom(lines[i]);
+                    // structureList[currentStr].AddAtom(lines[i]);
                 }
             }
         }

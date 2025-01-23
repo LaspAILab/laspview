@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ArcStructure
 {
@@ -27,7 +29,7 @@ public class ArcStructure
 
     public int NumStr
     {
-        get; 
+        get;
         set;
     }
 
@@ -49,6 +51,12 @@ public class ArcStructure
         set;
     }
 
+    public Matrix4x4 InvLatticeMatrix
+    {
+        get;
+        set;
+    }
+
     // Lattice parameters: (a, b, c, α, β, γ)
     public float[] LatticeParams
     {
@@ -62,6 +70,12 @@ public class ArcStructure
         set;
     }
 
+    public int AtomIndex
+    {
+        get;
+        set;
+    } = 0;
+
     public ArcStructure()
     {
         Energy = 0;
@@ -70,7 +84,7 @@ public class ArcStructure
         NumStr = 0;
         NumMinimum = 0;
         NoPathway = 0;
-        LatticeMatrix = Matrix4x4.identity;
+        LatticeMatrix = InvLatticeMatrix = Matrix4x4.identity;
         LatticeParams = new float[6];
         Atoms = new();
     }
@@ -84,6 +98,7 @@ public class ArcStructure
 
         Atoms.Add(new Atom
         {
+            Index = AtomIndex++,
             Symbol = elemSymbol,
             Coordinates = coords,
             Charge = charge
@@ -111,12 +126,20 @@ public class ArcStructure
         // [h2, h3, 0 ]
         // [h4, h5, h6]
         LatticeMatrix = new Matrix4x4(new Vector4(h1, 0, 0, 0), new Vector4(h2, h3, 0, 0), new Vector4(h4, h5, h6, 0), new Vector4(0, 0, 0, 1));
+        InvLatticeMatrix = LatticeMatrix.inverse;
     }
 
     public Vector3 FractionalToCartesian(Vector3 posFractional)
     {
         Vector4 tmp = posFractional;
         tmp = LatticeMatrix * tmp;
+        return (Vector3)tmp;
+    }
+
+    public Vector3 CartesianToFractional(Vector3 posCartesian)
+    {
+        Vector4 tmp = posCartesian;
+        tmp = InvLatticeMatrix * tmp;
         return (Vector3)tmp;
     }
 }
@@ -132,5 +155,112 @@ public class ArcFile
     public ArcFile()
     {
         Structures = new List<ArcStructure>();
+    }
+}
+
+// The view model of an ARC structure
+public class ArcStructureView
+{
+    // Vectors to translate the lattice, used to check cross-lattice bonds
+    public static readonly Vector3[] TranslationVectors = new Vector3[]
+    {
+        new(1, 0, 0),
+        new(0, 1, 0),
+        new(0, 0, 1),
+    };
+
+    public ArcStructure Structure;
+
+    public List<AtomView> Atoms = new();
+
+    public List<BondView> Bonds = new();
+
+    public ArcStructureView(ArcStructure structure)
+    {
+        Structure = structure;
+
+        Atoms.Capacity = structure.Atoms.Count;
+        foreach (var item in structure.Atoms)
+        {
+            Atoms.Add(new AtomView(item, structure));
+        }
+
+        GenerateBonds(1.26f);
+        SortLists();
+    }
+
+    private void AddBond(AtomView fromAtom, AtomView toAtom, Vector3 theta, float rate)
+    {
+        Bonds.Add(new BondView
+        {
+            FromAtom = fromAtom,
+            ToAtom = toAtom,
+            Origin = fromAtom.Position,
+            Theta = theta,
+            Rate = rate
+        });
+
+        Bonds.Add(new BondView
+        {
+            FromAtom = toAtom,
+            ToAtom = fromAtom,
+            Origin = toAtom.Position,
+            Theta = -theta,
+            Rate = 1 - rate
+        });
+    }
+
+    private void GenerateBonds(float tolerance)
+    {
+        var latticeTranslations = TranslationVectors.Select(v => Structure.FractionalToCartesian(v)).ToList();
+
+        for (int i = 0; i < Atoms.Count; i++)
+        {
+            for (int j = 0; j < Atoms.Count; j++)
+            {
+                if (j == i)
+                {
+                    continue;
+                }
+
+                float radiusA = ConFun.Elements[Atoms[i].Symbol].Radius;
+                float radiusB = ConFun.Elements[Atoms[j].Symbol].Radius;
+                float sumRadius = radiusA + radiusB;
+
+                if (j > i)
+                {
+                    // Check bond within lattice
+                    float distance = Vector3.Distance(Atoms[i].Position, Atoms[j].Position);
+                    if (distance < tolerance * sumRadius)
+                    {
+                        Vector3 theta = Atoms[j].Position - Atoms[i].Position;
+                        float len = radiusA / sumRadius;
+                        AddBond(Atoms[i], Atoms[j], theta, len);
+                    }
+                }
+
+                // Check bond across lattice
+                foreach (var item in latticeTranslations)
+                {
+                    var coordB = Atoms[j].Position + item;
+                    float distance = Vector3.Distance(Atoms[i].Position, coordB);
+                    if (distance < tolerance * sumRadius)
+                    {
+                        Vector3 theta = coordB - Atoms[i].Position;
+                        float len = radiusA / sumRadius;
+                        AddBond(Atoms[i], Atoms[j], theta, len);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Sort atom and bond list for more efficient draw cell batching
+    /// </summary>
+    private void SortLists()
+    {
+        Atoms.Sort((a, b) => a.RenderMat.CompareTo(b.RenderMat));
+        Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
     }
 }

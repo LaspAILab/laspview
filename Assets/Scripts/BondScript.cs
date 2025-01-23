@@ -17,5 +17,4 @@ public class BondScript : MonoBehaviour
         originBond = this;
         extendParent = null;
     }
-
 }

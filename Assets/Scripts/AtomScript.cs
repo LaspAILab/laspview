@@ -8,6 +8,7 @@ using UnityEngine;
 
 public class AtomScript : MonoBehaviour
 {
+    const float RADIUS_SCALE = 2f;
     public GameObject atomPrefabVar;
 
     //public Transform nodeTrans;
@@ -21,7 +22,7 @@ public class AtomScript : MonoBehaviour
     public Vector3 cdnt;
     public int charge;
     public float radius;
-    
+
 
     // Start is called before the first frame update
     public void Init(Vector3 cdnt, string ele, Transform node, int charge = 0)
@@ -29,7 +30,7 @@ public class AtomScript : MonoBehaviour
         this.ele = ele;
         this.cdnt = cdnt;
         this.charge = charge;
-        radius = 2 * ConFun.Elements[ele].Radius;
+        radius = RADIUS_SCALE * ConFun.Elements[ele].Radius;
         color = ConFun.Elements[ele].Color;
         Renderer render = this.GetComponent<Renderer>();
         render.material.color = this.color;
