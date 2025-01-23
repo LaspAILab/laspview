@@ -10,6 +10,8 @@ using System;
 using ViewerNetwork;
 using Lasp4Win;
 using JetBrains.Annotations;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 public class MainScr : MonoBehaviour
 {
@@ -30,6 +32,11 @@ public class MainScr : MonoBehaviour
     //private bool m_bMouseRightKeyDown = false;
     public float rotateSpeed = 0.2f;
 
+    ConcurrentQueue<Action> callbackQueue = new();
+
+    public ArcFile currentFile;
+    public int currentArcIndex = -1;
+
     void Awake()
     {
         S = this;
@@ -43,7 +50,7 @@ public class MainScr : MonoBehaviour
     {
 #if !UNITY_WEBGL
         string filename = ConFun.GlobalConfig["arc_default"];
-        AddArc(Application.dataPath+ "/"+  filename);
+        AddArc(Application.dataPath + "/" + filename);
 #else
         string lines = 
 @"!BIOSYM archive 2 
@@ -81,8 +88,23 @@ end
         try
         {
             //print(lines.Length);
-            var arcFile = ArcIO.ReadArc(File.ReadLines(filename));
             newArc.ArcRead(filename, lines);
+            Task.Run(() =>
+            {
+                currentFile = ArcIO.ReadArc(File.ReadLines(filename), count => callbackQueue.Enqueue(() =>
+                {
+                    ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
+                }));
+
+                ArcStructureView structureView = new(currentFile.Structures[0]);
+                callbackQueue.Enqueue(() =>
+                {
+                    currentArcIndex = 0;
+                    var renderer = Camera.main.GetComponent<StructureRenderer>();
+                    renderer.LoadStructure(structureView);
+                    ConFun.printStructureInfo(0, currentFile.Structures.Count, currentFile.Structures[0].Energy);
+                });
+            });
         }
         catch (Exception e)
         {
@@ -94,23 +116,26 @@ end
         DrawArc(arcList.Count - 1);
     }
 
-    //public void AddArc_Corou(string filename, string[] lines)
-    //{
-    //    ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
-    //    MainScr.S.arcList.Add(newArc);
-    //    try
-    //    {
-    //        //print(lines.Length);
-    //        StartCoroutine(newArc.ArcRead_2(filename, lines));
-    //    }
-    //    catch (Exception)
-    //    {
-    //        GameObject.Destroy(newArc.gameObject);
-    //        ConFun.printStatusInfo($"Err: Error in read file {filename}.Please check file.");
-    //    }
+    public void SwitchArc(int index)
+    {
+        index = Mathf.Clamp(index, 0, currentFile.Structures.Count - 1);
+        if(index == currentArcIndex)
+        {
+            return;
+        }
+        currentArcIndex = index;
 
-    //}
-
+        Task.Run(() =>
+        {
+            ArcStructureView structureView = new(currentFile.Structures[index]);
+            callbackQueue.Enqueue(() =>
+            {
+                var renderer = Camera.main.GetComponent<StructureRenderer>();
+                renderer.LoadStructure(structureView);
+                ConFun.printStructureInfo(index, currentFile.Structures.Count, currentFile.Structures[index].Energy);
+            });
+        });
+    }
     public void AddArc(string filename, string msg)
     {
         string[] lines = msg.Split("\r\n".ToCharArray());
@@ -120,7 +145,7 @@ end
 
     public void AddArcByCorouWaiting(string fileName, string msg)
     {
-        StartCoroutine(AddArcWaiting( fileName, msg));
+        StartCoroutine(AddArcWaiting(fileName, msg));
     }
 
     IEnumerator AddArcWaiting(string fileName, string msg)
@@ -151,7 +176,7 @@ end
         //print(arcList[currentArc].filename);
         (bool, bool) playerStatus = targetArc.DrawStructure(targetArc.currentStr);
         GuiMain.S.FocusCameraCenter();
-        B_ToolbarPanelSrc.S.PlayerBtnChecked(playerStatus);
+        B_ToolbarPanelSrc.S.PlayerBtnChecked((true, true));
     }
 
     public ArcStructures CurrentArc()
@@ -162,6 +187,15 @@ end
     public Structure CurrentStructure()
     {
         return arcList[currentArc].CurrentStructure();
+    }
+
+    private void Update()
+    {
+        // Run queued actions
+        if (callbackQueue.TryDequeue(out var action))
+        {
+            action();
+        }
     }
 
 #if !UNITY_WEBGL

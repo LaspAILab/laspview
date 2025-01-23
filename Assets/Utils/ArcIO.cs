@@ -18,9 +18,9 @@ public static class ArcIO
         return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
     }
 
-    public static ArcFile ReadArc(IEnumerable<string> lines)
+    public static ArcFile ReadArc(IEnumerable<string> lines, Action<int> progressCallback = null)
     {
-        ArcFile arcFile = new ArcFile();
+        ArcFile arcFile = new();
         ArcStructure currentStructure = null;
 
         foreach (var line in lines)
@@ -36,6 +36,7 @@ public static class ArcIO
                 if (currentStructure != null)
                 {
                     arcFile.Structures.Add(currentStructure);
+                    progressCallback?.Invoke(arcFile.Structures.Count);
                 }
 
                 currentStructure = new ArcStructure();
@@ -111,6 +112,7 @@ public static class ArcIO
         if (currentStructure != null)
         {
             arcFile.Structures.Add(currentStructure);
+            progressCallback?.Invoke(arcFile.Structures.Count);
         }
 
         return arcFile;

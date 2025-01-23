@@ -14,7 +14,7 @@ using System.Linq;
 
 // Unity cannot serialize raw json arrays, so we wrap it with a class as a workaround
 [Serializable]
-public struct ElementContainer
+public struct SerializedElementContainer
 {
     public SerializableElement[] Elements;
 
@@ -34,7 +34,7 @@ public struct ElementData
     public float Radius;
     public Color Color;
 
-    public ElementData(ElementContainer.SerializableElement serializableElement)
+    public ElementData(SerializedElementContainer.SerializableElement serializableElement)
     {
         Number = serializableElement.Number;
         Radius = serializableElement.Radius;
@@ -101,7 +101,7 @@ public class ConFun : MonoBehaviour
     private void ReadPeriodicTable()
     {
         var periodicTableJson = Resources.Load<TextAsset>("Elements");
-        var rawElements = JsonUtility.FromJson<ElementContainer>(periodicTableJson.text).Elements;
+        var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson.text).Elements;
         Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
     }
 
@@ -134,7 +134,7 @@ public class ConFun : MonoBehaviour
     {
         int index = int.Parse(structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().text) - 1;
         index = Mathf.Min(MainScr.S.CurrentArc().structureList.Count - 1, index);
-        B_ToolbarPanelSrc.S.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(index));
+        B_ToolbarPanelSrc.S.PlayerBtnChecked((true, true));
     }
 
     public static void printStructureInfo(int currentStruc, int totalStrucs, float energy)
