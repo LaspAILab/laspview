@@ -32,7 +32,7 @@ public class MainScr : MonoBehaviour
     //private bool m_bMouseRightKeyDown = false;
     public float rotateSpeed = 0.2f;
 
-    ConcurrentQueue<Action> callbackQueue = new();
+    public static ConcurrentQueue<Action> callbackQueue = new();
 
     public ArcFile currentFile;
     public int currentArcIndex = -1;
