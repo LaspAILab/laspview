@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 // Batch of atoms and bonds that belong to the same element, so that they could be rendered in batch
 class DrawBatch
@@ -18,12 +21,172 @@ public class StructureRenderer : MonoBehaviour
     public Mesh AtomMesh;
     public Mesh BondMesh;
 
-    public ArcStructureView CurrentStructureView;
+    public ArcStructureView CurrentStructureView
+    {
+        get;
+        private set;
+    }
+
+    private int repeatA = 1, repeatB = 1, repeatC = 1;
+    private float bondTolerance = 1.26f, stickRadius = 0.35f, radiusScale = 1f;
+    private bool bondRecalculationRunning = false, bondToleranceDirtyFlag = false;
+    private Matrix4x4[,,] latticeTransforms = null;
+
+    public float BondTolerance
+    {
+        get => bondTolerance;
+        set
+        {
+            if (bondTolerance == value)
+            {
+                return;
+            }
+
+            bondTolerance = value;
+            RecalculateBonds();
+        }
+    }
+
+    private void RecalculateBonds()
+    {
+        if (bondRecalculationRunning)
+        {
+            // Hint background task to rerun
+            bondToleranceDirtyFlag = true;
+        }
+        else
+        {
+            bondRecalculationRunning = true;
+            bondToleranceDirtyFlag = false;
+            Task.Run(() =>
+            {
+                CurrentStructureView.GenerateBonds(bondTolerance);
+                CurrentStructureView.SortLists();
+
+                MainScr.callbackQueue.Enqueue(() =>
+                {
+                    CollectDrawBatches();
+                    bondRecalculationRunning = false;
+                    if (bondToleranceDirtyFlag)
+                    {
+                        RecalculateBonds();
+                    }
+                });
+            });
+        }
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
 
+    }
+
+    public void SetBondStyle(float stickRadius)
+    {
+        if (this.stickRadius == stickRadius)
+        {
+            return;
+        }
+        this.stickRadius = stickRadius;
+
+        foreach (var item in CurrentStructureView.Bonds)
+        {
+            item.CreateTransformCache(stickRadius);
+        }
+
+        CollectDrawBatches();
+    }
+
+    public void SetAtomStyle(float radiusScale)
+    {
+        if (this.radiusScale == radiusScale)
+        {
+            return;
+        }
+        this.radiusScale = radiusScale;
+
+        foreach (var item in CurrentStructureView.Atoms)
+        {
+            item.CreateTransformCache(radiusScale);
+        }
+
+        CollectDrawBatches();
+    }
+
+    public void SetLatticeRepeat(int? repeatA = null, int? repeatB = null, int? repeatC = null)
+    {
+        Debug.Log($"Setting lattice repeat {repeatA}, {repeatB}, {repeatC}");
+        bool modified = false;
+        if (repeatA != null)
+        {
+            modified = modified || this.repeatA != repeatA.Value;
+            this.repeatA = repeatA.Value;
+        }
+
+        if (repeatB != null)
+        {
+            modified = modified || this.repeatB != repeatB.Value;
+            this.repeatB = repeatB.Value;
+        }
+
+        if (repeatC != null)
+        {
+            modified = modified || this.repeatC != repeatC.Value;
+            this.repeatC = repeatC.Value;
+        }
+
+        if (!modified)
+        {
+            return;
+        }
+
+        latticeTransforms = new Matrix4x4[this.repeatA, this.repeatB, this.repeatC];
+        for (int i = 0; i < repeatA; i++)
+        {
+            for (int j = 0; j < repeatB; j++)
+            {
+                for (int k = 0; k < repeatC; k++)
+                {
+                    latticeTransforms[i, j, k] = CurrentStructureView.GetLatticeTransform(i, j, k);
+                }
+            }
+        }
+
+        CollectDrawBatches();
+    }
+
+    // Duplicate render items, to render multiple lattices
+    private void ReplicateBuffer(ref List<Matrix4x4> buffer)
+    {
+        if (latticeTransforms == null || latticeTransforms.Length == 1)
+        {
+            return;
+        }
+
+        int length = buffer.Count;
+        buffer.Capacity = length * repeatA * repeatB * repeatC;
+
+        for (int i = 0; i < repeatA; i++)
+        {
+            for (int j = 0; j < repeatB; j++)
+            {
+                for (int k = 0; k < repeatC; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0)
+                    {
+                        continue;
+                    }
+
+                    for (int count = 0; count < length; count++)
+                    {
+                        buffer.Add(latticeTransforms[i, j, k] * buffer[count]);
+                    }
+                }
+            }
+        }
+
+        Assert.AreEqual(buffer.Count, length * repeatA * repeatB * repeatC);
     }
 
     private void SubmitAtomBuffer(string atomSymbol, List<Matrix4x4> buffer)
@@ -32,6 +195,7 @@ public class StructureRenderer : MonoBehaviour
         {
             ElementDrawBatches[atomSymbol] = new();
         }
+        ReplicateBuffer(ref buffer);
         ElementDrawBatches[atomSymbol].AtomTransforms = buffer;
 
         if (!ElementMaterials.ContainsKey(atomSymbol))
@@ -44,12 +208,15 @@ public class StructureRenderer : MonoBehaviour
 
     private void SubmitBondBuffer(string atomSymbol, List<Matrix4x4> buffer)
     {
+        ReplicateBuffer(ref buffer);
         ElementDrawBatches[atomSymbol].BondTransforms = buffer;
     }
 
     public void LoadStructure(ArcStructureView structureView)
     {
         CurrentStructureView = structureView;
+        CurrentStructureView.GenerateBonds(bondTolerance);
+        CurrentStructureView.SortLists();
 
         // Recollect the draw batches
         CollectDrawBatches();

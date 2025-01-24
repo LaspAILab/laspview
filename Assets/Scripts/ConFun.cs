@@ -148,9 +148,7 @@ public class ConFun : MonoBehaviour
     public static void UpdateStatusLabel(string str)
     {
         statusLabel.text = str;
-#if UNITY_EDITOR
         Debug.Log(str);
-#endif
     }
 
     public static void printNoteInfo()
