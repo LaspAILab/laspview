@@ -18,9 +18,6 @@ public class Atom
 interface ITransform
 {
     public Matrix4x4 Transform { get; }
-
-    public abstract void CreateTransformCache();
-    public abstract void InvalidateTransformCache();
 }
 
 public class AtomView : ITransform
@@ -48,14 +45,9 @@ public class AtomView : ITransform
         transformCache = null;
     }
 
-    public void CreateTransformCache()
+    public void CreateTransformCache(float radiusScale = 1f)
     {
-        transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Vector3.one * Radius);
-    }
-
-    public void InvalidateTransformCache()
-    {
-        transformCache = null;
+        transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Vector3.one * Radius * radiusScale);
     }
 
     public Atom SourceAtom
@@ -98,17 +90,12 @@ public class BondView : ITransform
     // Fraction of the whole bond length taken by `fromAtom`
     public float Rate;
 
-    public void CreateTransformCache()
+    public void CreateTransformCache(float stickRadius = 0.35f)
     {
         Vector3 bondCenter = Origin + 0.5f * Rate * Theta;
         Quaternion rotation = Quaternion.AngleAxis(-Vector3.Angle(Vector3.up, Theta), new Vector3(-Theta.z, 0, Theta.x));
-        Vector3 scale = new(0.35f, Theta.magnitude * Rate * 0.5f, 0.35f);
+        Vector3 scale = new(stickRadius, Theta.magnitude * Rate * 0.5f, stickRadius);
         transformCache = Matrix4x4.TRS(bondCenter, rotation, scale);
-    }
-
-    public void InvalidateTransformCache()
-    {
-        transformCache = null;
     }
 
     private Matrix4x4? transformCache;

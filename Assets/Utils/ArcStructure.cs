@@ -184,9 +184,6 @@ public class ArcStructureView
         {
             Atoms.Add(new AtomView(item, structure));
         }
-
-        GenerateBonds(1.26f);
-        SortLists();
     }
 
     private void AddBond(AtomView fromAtom, AtomView toAtom, Vector3 theta, float rate)
@@ -210,10 +207,11 @@ public class ArcStructureView
         });
     }
 
-    private void GenerateBonds(float tolerance)
+    public void GenerateBonds(float tolerance)
     {
         var latticeTranslations = TranslationVectors.Select(v => Structure.FractionalToCartesian(v)).ToList();
 
+        Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
             for (int j = 0; j < Atoms.Count; j++)
@@ -255,10 +253,16 @@ public class ArcStructureView
         }
     }
 
+    public Matrix4x4 GetLatticeTransform(int aIndex, int bIndex, int cIndex)
+    {
+        Vector3 translateCart = Structure.FractionalToCartesian(new Vector3(aIndex, bIndex, cIndex));
+        return Matrix4x4.Translate(translateCart);
+    }
+
     /// <summary>
     /// Sort atom and bond list for more efficient draw cell batching
     /// </summary>
-    private void SortLists()
+    public void SortLists()
     {
         Atoms.Sort((a, b) => a.RenderMat.CompareTo(b.RenderMat));
         Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
