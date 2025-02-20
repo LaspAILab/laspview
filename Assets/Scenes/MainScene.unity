@@ -883,6 +883,7 @@ GameObject:
   - component: {fileID: 534669906}
   - component: {fileID: 534669908}
   - component: {fileID: 534669909}
+  - component: {fileID: 534669911}
   - component: {fileID: 534669910}
   m_Layer: 0
   m_Name: Main Camera
@@ -1080,6 +1081,20 @@ MonoBehaviour:
   ColliderPrefab: {fileID: 2774672834428288584, guid: 664ad0f6b1dd9954daea76aea5778a19,
     type: 3}
   ColliderParent: {fileID: 1033523878}
+--- !u!114 &534669911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 534669902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acbecc8da85dc6b4f80b643e1b401c2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  StructureRenderer: {fileID: 0}
+  ActiveCamera: {fileID: 0}
 --- !u!1001 &560058983
 PrefabInstance:
   m_ObjectHideFlags: 0
