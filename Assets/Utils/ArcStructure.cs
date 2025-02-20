@@ -1,11 +1,14 @@
-﻿using System;
+﻿using NUnit.Framework.Constraints;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Rendering;
+using UnityEngine.UIElements;
 
 public class ArcStructure
 {
@@ -161,13 +164,16 @@ public class ArcFile
 // The view model of an ARC structure
 public class ArcStructureView
 {
-    // Vectors to translate the lattice, used to check cross-lattice bonds
-    public static readonly Vector3[] TranslationVectors = new Vector3[]
+    // Vectors to translate the lattice, in fractional coords, used to check cross-lattice bonds
+    public static readonly Vector3[] TranslationVectorsFractional = new Vector3[]
     {
         new(1, 0, 0),
         new(0, 1, 0),
         new(0, 0, 1),
     };
+
+    // Translation vectors, converted to cartesian space
+    public Vector3[] TranslationVectorsCartesian;
 
     public ArcStructure Structure;
 
@@ -184,6 +190,26 @@ public class ArcStructureView
         {
             Atoms.Add(new AtomView(item, structure));
         }
+
+        TranslationVectorsCartesian = TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
+    }
+
+    public void EditAtom(int atomIndex, Vector3? newCoord = null, string newSymbol = null)
+    {
+        var targetAtom = Atoms[atomIndex].SourceAtom;
+
+        if (newCoord != null)
+        {
+            targetAtom.Coordinates = newCoord.Value;
+        }
+
+        if (newSymbol != null)
+        {
+            Assert.IsTrue(ConFun.Elements.ContainsKey(newSymbol));
+            targetAtom.Symbol = newSymbol;
+        }
+
+        Atoms[atomIndex] = new(targetAtom, Structure);
     }
 
     private void AddBond(AtomView fromAtom, AtomView toAtom, Vector3 theta, float rate)
@@ -209,45 +235,63 @@ public class ArcStructureView
 
     public void GenerateBonds(float tolerance)
     {
-        var latticeTranslations = TranslationVectors.Select(v => Structure.FractionalToCartesian(v)).ToList();
+        var latticeTranslations = TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToList();
 
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
-            for (int j = 0; j < Atoms.Count; j++)
+            UpdateAtomBonds(i, tolerance, false);
+        }
+    }
+
+    public void UpdateAtomBonds(int atomIndex, float tolerance, bool cleanExisting = false)
+    {
+        var targetAtom = Atoms[atomIndex];
+
+        if (cleanExisting)
+        {
+            Bonds.RemoveAll(bond => bond.FromAtom == targetAtom || bond.ToAtom == targetAtom);
+        }
+
+        for (int i = 0; i < Atoms.Count; i++)
+        {
+            if (i == atomIndex)
             {
-                if (j == i)
+                continue;
+            }
+
+            float radiusA = ConFun.Elements[targetAtom.Symbol].Radius;
+            float radiusB = ConFun.Elements[Atoms[i].Symbol].Radius;
+            float sumRadius = radiusA + radiusB;
+
+            // Check bond within lattice
+            float distance = Vector3.Distance(targetAtom.Position, Atoms[i].Position);
+            if (distance < tolerance * sumRadius)
+            {
+                Vector3 theta = Atoms[i].Position - targetAtom.Position;
+                float len = radiusA / sumRadius;
+                AddBond(targetAtom, Atoms[i], theta, len);
+            }
+
+            // Check bond across lattice
+            foreach (var item in TranslationVectorsCartesian)
+            {
+                var translatedCoord = Atoms[i].Position + item;
+                distance = Vector3.Distance(targetAtom.Position, translatedCoord);
+                if (distance < tolerance * sumRadius)
                 {
-                    continue;
+                    Vector3 theta = translatedCoord - targetAtom.Position;
+                    float len = radiusA / sumRadius;
+                    AddBond(targetAtom, Atoms[i], theta, len);
                 }
 
-                float radiusA = ConFun.Elements[Atoms[i].Symbol].Radius;
-                float radiusB = ConFun.Elements[Atoms[j].Symbol].Radius;
-                float sumRadius = radiusA + radiusB;
-
-                if (j > i)
+                translatedCoord = targetAtom.Position + item;
+                distance = Vector3.Distance(Atoms[i].Position, translatedCoord);
+                if (distance < tolerance * sumRadius)
                 {
-                    // Check bond within lattice
-                    float distance = Vector3.Distance(Atoms[i].Position, Atoms[j].Position);
-                    if (distance < tolerance * sumRadius)
-                    {
-                        Vector3 theta = Atoms[j].Position - Atoms[i].Position;
-                        float len = radiusA / sumRadius;
-                        AddBond(Atoms[i], Atoms[j], theta, len);
-                    }
-                }
-
-                // Check bond across lattice
-                foreach (var item in latticeTranslations)
-                {
-                    var coordB = Atoms[j].Position + item;
-                    float distance = Vector3.Distance(Atoms[i].Position, coordB);
-                    if (distance < tolerance * sumRadius)
-                    {
-                        Vector3 theta = coordB - Atoms[i].Position;
-                        float len = radiusA / sumRadius;
-                        AddBond(Atoms[i], Atoms[j], theta, len);
-                    }
+                    Vector3 theta = translatedCoord - Atoms[i].Position;
+                    float len = radiusA / sumRadius;
+                    AddBond(Atoms[i], targetAtom, theta, len);
                 }
             }
         }
@@ -266,5 +310,31 @@ public class ArcStructureView
     {
         Atoms.Sort((a, b) => a.RenderMat.CompareTo(b.RenderMat));
         Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
+    }
+
+    public void CreateColliders()
+    {
+        for (int i = 0; i < Atoms.Count; i++)
+        {
+            Atoms[i].Collider = ColliderPool.GlobalPool.BorrowCollider();
+            Atoms[i].Collider.SetAtom(i, Atoms[i].Position, Atoms[i].Radius);
+        }
+    }
+
+    public void ReleaseColliders()
+    {
+        for (int i = 0; i < Atoms.Count; i++)
+        {
+            if (Atoms[i].Collider != null)
+            {
+                ColliderPool.GlobalPool.DropCollider(Atoms[i].Collider);
+                Atoms[i].Collider = null;
+            }
+        }
+    }
+
+    ~ArcStructureView()
+    {
+        ReleaseColliders();
     }
 }
