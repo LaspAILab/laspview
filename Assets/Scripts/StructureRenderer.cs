@@ -14,6 +14,8 @@ class DrawBatch
 
 public class StructureRenderer : MonoBehaviour
 {
+    const string RENDERMAT_SELECTION = "select";
+
     static Dictionary<string, Material> ElementMaterials = new();
     Dictionary<string, DrawBatch> ElementDrawBatches = new();
 
@@ -21,11 +23,14 @@ public class StructureRenderer : MonoBehaviour
     public Mesh AtomMesh;
     public Mesh BondMesh;
 
+    public GameObject ColliderPrefab;
+    public GameObject ColliderParent;
+
     public ArcStructureView CurrentStructureView
     {
         get;
         private set;
-    }
+    } = null;
 
     private int repeatA = 1, repeatB = 1, repeatC = 1;
     private float bondTolerance = 1.26f, stickRadius = 0.35f, radiusScale = 1f;
@@ -79,7 +84,7 @@ public class StructureRenderer : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-
+        ColliderPool.GlobalPool = new(ColliderPrefab, ColliderParent);
     }
 
     public void SetBondStyle(float stickRadius)
@@ -189,34 +194,45 @@ public class StructureRenderer : MonoBehaviour
         Assert.AreEqual(buffer.Count, length * repeatA * repeatB * repeatC);
     }
 
-    private void SubmitAtomBuffer(string atomSymbol, List<Matrix4x4> buffer)
+    private void SubmitAtomBuffer(string renderMat, List<Matrix4x4> buffer)
     {
-        if (!ElementDrawBatches.ContainsKey(atomSymbol))
+        if (!ElementDrawBatches.ContainsKey(renderMat))
         {
-            ElementDrawBatches[atomSymbol] = new();
+            ElementDrawBatches[renderMat] = new();
         }
         ReplicateBuffer(ref buffer);
-        ElementDrawBatches[atomSymbol].AtomTransforms = buffer;
+        ElementDrawBatches[renderMat].AtomTransforms = buffer;
 
-        if (!ElementMaterials.ContainsKey(atomSymbol))
+        if (!ElementMaterials.ContainsKey(renderMat))
         {
             Material material = new(RenderMaterial);
-            material.SetColor("_BaseColor", ConFun.Elements[atomSymbol].Color);
-            ElementMaterials[atomSymbol] = material;
+            if(renderMat == RENDERMAT_SELECTION)
+            {
+                material.SetColor("_BaseColor", new Color());
+            }
+            else
+            {
+                material.SetColor("_BaseColor", ConFun.Elements[renderMat].Color);
+            }
+                
+            ElementMaterials[renderMat] = material;
         }
     }
 
-    private void SubmitBondBuffer(string atomSymbol, List<Matrix4x4> buffer)
+    private void SubmitBondBuffer(string renderMat, List<Matrix4x4> buffer)
     {
         ReplicateBuffer(ref buffer);
-        ElementDrawBatches[atomSymbol].BondTransforms = buffer;
+        ElementDrawBatches[renderMat].BondTransforms = buffer;
     }
 
     public void LoadStructure(ArcStructureView structureView)
     {
+        CurrentStructureView?.ReleaseColliders();
+
         CurrentStructureView = structureView;
         CurrentStructureView.GenerateBonds(bondTolerance);
         CurrentStructureView.SortLists();
+        CurrentStructureView.CreateColliders();
 
         // Recollect the draw batches
         CollectDrawBatches();
@@ -285,6 +301,17 @@ public class StructureRenderer : MonoBehaviour
             if (item.Value.BondTransforms.Count > 0)
             {
                 Graphics.RenderMeshInstanced(renderParams, BondMesh, 0, item.Value.BondTransforms);
+            }
+        }
+
+        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo))
+        {
+            if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
+            {
+                var atomView = CurrentStructureView.Atoms[colliderScript.AtomIndex];
+                RenderParams renderParams = new(ElementMaterials[atomView.RenderMat]);
+                var transformMat = Matrix4x4.TRS(atomView.Position, Quaternion.identity, (0.5f + atomView.Radius) * radiusScale * Vector3.one);
+                Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
             }
         }
     }

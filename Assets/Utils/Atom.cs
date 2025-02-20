@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 
 public class Atom
@@ -43,11 +42,12 @@ public class AtomView : ITransform
         Position = ClipAtomCoords(atom.Coordinates, structure);
         Radius = ConFun.Elements[atom.Symbol].Radius;
         transformCache = null;
+        Collider = null;
     }
 
     public void CreateTransformCache(float radiusScale = 1f)
     {
-        transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Vector3.one * Radius * radiusScale);
+        transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
 
     public Atom SourceAtom
@@ -56,6 +56,7 @@ public class AtomView : ITransform
         private set;
     }
 
+    public int Index;
     public string Symbol;
     // A string that marks which material the atom is rendered with, 
     // this is used to batch render atoms with the same material
@@ -63,6 +64,7 @@ public class AtomView : ITransform
     public Vector3 Position;
     public float Charge;
     public float Radius;
+    public ColliderScript Collider;
 
     private Matrix4x4? transformCache;
 
