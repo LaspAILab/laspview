@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Profiling;
 
 // Batch of atoms and bonds that belong to the same element, so that they could be rendered in batch
 class DrawBatch
@@ -14,7 +15,7 @@ class DrawBatch
 
 public class StructureRenderer : MonoBehaviour
 {
-    const string RENDERMAT_SELECTION = "select";
+    public const string RENDERMAT_SELECTION = "select";
 
     static Dictionary<string, Material> ElementMaterials = new();
     Dictionary<string, DrawBatch> ElementDrawBatches = new();
@@ -141,7 +142,7 @@ public class StructureRenderer : MonoBehaviour
             Material material = new(RenderMaterial);
             if(renderMat == RENDERMAT_SELECTION)
             {
-                material.SetColor("_BaseColor", new Color());
+                material.SetColor("_BaseColor", Color.yellow);
             }
             else
             {
@@ -161,22 +162,27 @@ public class StructureRenderer : MonoBehaviour
     internal void SetStructureView(ArcStructureView structureView)
     {
         CurrentStructureView = structureView;
-        CurrentStructureView.SortLists();
         
         // Recollect the draw batches
-        RecollectDrawBatches();
+        RecollectDrawBatches(true);
     }
 
-    internal void RecollectDrawBatches()
+    internal void RecollectDrawBatches(bool doSort=false)
     {
+        Profiler.BeginSample("Collect draw batch");
+        if (doSort)
+        {
+            CurrentStructureView.SortLists();
+        }
+
         ElementDrawBatches = new();
-        GC.Collect();
+        // GC.Collect();
 
         string currentRenderMat = "";
         List<Matrix4x4> buffer = new();
         foreach (var item in CurrentStructureView.Atoms)
         {
-            if (item.Symbol != currentRenderMat)
+            if (item.RenderMat != currentRenderMat)
             {
                 if (buffer.Count > 0)
                 {
@@ -218,6 +224,8 @@ public class StructureRenderer : MonoBehaviour
         {
             SubmitBondBuffer(currentRenderMat, buffer);
         }
+
+        Profiler.EndSample();
     }
 
     internal void RenderSingleAtom(string renderMat, Vector3 pos, float radius)
