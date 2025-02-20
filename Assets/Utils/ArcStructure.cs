@@ -314,10 +314,10 @@ public class ArcStructureView
 
     public void CreateColliders()
     {
-        for (int i = 0; i < Atoms.Count; i++)
+        foreach (var item in Atoms)
         {
-            Atoms[i].Collider = ColliderPool.GlobalPool.BorrowCollider();
-            Atoms[i].Collider.SetAtom(i, Atoms[i].Position, Atoms[i].Radius);
+            item.Collider = ColliderPool.GlobalPool.BorrowCollider();
+            item.Collider.SetAtom(item, item.Position, item.Radius);
         }
     }
 

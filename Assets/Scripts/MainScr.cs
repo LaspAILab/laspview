@@ -100,8 +100,8 @@ end
                 callbackQueue.Enqueue(() =>
                 {
                     currentArcIndex = 0;
-                    var renderer = Camera.main.GetComponent<StructureRenderer>();
-                    renderer.LoadStructure(structureView);
+                    var viewport = Camera.main.GetComponent<ViewportController>();
+                    viewport.OpenStructureView(structureView);
                     ConFun.printStructureInfo(0, currentFile.Structures.Count, currentFile.Structures[0].Energy);
                 });
             });
@@ -130,8 +130,8 @@ end
             ArcStructureView structureView = new(currentFile.Structures[index]);
             callbackQueue.Enqueue(() =>
             {
-                var renderer = Camera.main.GetComponent<StructureRenderer>();
-                renderer.LoadStructure(structureView);
+                var viewport = Camera.main.GetComponent<ViewportController>();
+                viewport.OpenStructureView(structureView);
                 ConFun.printStructureInfo(index, currentFile.Structures.Count, currentFile.Structures[index].Energy);
             });
         });

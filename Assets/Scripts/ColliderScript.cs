@@ -3,7 +3,7 @@ using UnityEngine;
 public class ColliderScript : MonoBehaviour
 {
     public bool IsUsed = false;
-    public int AtomIndex = -1;
+    public AtomView Atom = null;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -17,9 +17,9 @@ public class ColliderScript : MonoBehaviour
         
     }
 
-    public void SetAtom(int atomIndex, Vector3 coords, float radius)
+    public void SetAtom(AtomView atom, Vector3 coords, float radius)
     {
-        AtomIndex = atomIndex;
+        Atom = atom;
 
         var colliderComponent = GetComponent<SphereCollider>();
         colliderComponent.center = coords;

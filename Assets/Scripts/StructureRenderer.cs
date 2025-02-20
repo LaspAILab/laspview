@@ -32,54 +32,8 @@ public class StructureRenderer : MonoBehaviour
         private set;
     } = null;
 
-    private int repeatA = 1, repeatB = 1, repeatC = 1;
-    private float bondTolerance = 1.26f, stickRadius = 0.35f, radiusScale = 1f;
-    private bool bondRecalculationRunning = false, bondToleranceDirtyFlag = false;
+    private float stickRadius = 0.35f, radiusScale = 1f;
     private Matrix4x4[,,] latticeTransforms = null;
-
-    public float BondTolerance
-    {
-        get => bondTolerance;
-        set
-        {
-            if (bondTolerance == value)
-            {
-                return;
-            }
-
-            bondTolerance = value;
-            RecalculateBonds();
-        }
-    }
-
-    private void RecalculateBonds()
-    {
-        if (bondRecalculationRunning)
-        {
-            // Hint background task to rerun
-            bondToleranceDirtyFlag = true;
-        }
-        else
-        {
-            bondRecalculationRunning = true;
-            bondToleranceDirtyFlag = false;
-            Task.Run(() =>
-            {
-                CurrentStructureView.GenerateBonds(bondTolerance);
-                CurrentStructureView.SortLists();
-
-                MainScr.callbackQueue.Enqueue(() =>
-                {
-                    CollectDrawBatches();
-                    bondRecalculationRunning = false;
-                    if (bondToleranceDirtyFlag)
-                    {
-                        RecalculateBonds();
-                    }
-                });
-            });
-        }
-    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -100,7 +54,7 @@ public class StructureRenderer : MonoBehaviour
             item.CreateTransformCache(stickRadius);
         }
 
-        CollectDrawBatches();
+        RecollectDrawBatches();
     }
 
     public void SetAtomStyle(float radiusScale)
@@ -116,37 +70,14 @@ public class StructureRenderer : MonoBehaviour
             item.CreateTransformCache(radiusScale);
         }
 
-        CollectDrawBatches();
+        RecollectDrawBatches();
     }
 
-    public void SetLatticeRepeat(int? repeatA = null, int? repeatB = null, int? repeatC = null)
+    public bool SetLatticeRepeat(int repeatA, int repeatB, int repeatC)
     {
         Debug.Log($"Setting lattice repeat {repeatA}, {repeatB}, {repeatC}");
-        bool modified = false;
-        if (repeatA != null)
-        {
-            modified = modified || this.repeatA != repeatA.Value;
-            this.repeatA = repeatA.Value;
-        }
 
-        if (repeatB != null)
-        {
-            modified = modified || this.repeatB != repeatB.Value;
-            this.repeatB = repeatB.Value;
-        }
-
-        if (repeatC != null)
-        {
-            modified = modified || this.repeatC != repeatC.Value;
-            this.repeatC = repeatC.Value;
-        }
-
-        if (!modified)
-        {
-            return;
-        }
-
-        latticeTransforms = new Matrix4x4[this.repeatA, this.repeatB, this.repeatC];
+        latticeTransforms = new Matrix4x4[repeatA, repeatB, repeatC];
         for (int i = 0; i < repeatA; i++)
         {
             for (int j = 0; j < repeatB; j++)
@@ -158,7 +89,8 @@ public class StructureRenderer : MonoBehaviour
             }
         }
 
-        CollectDrawBatches();
+        RecollectDrawBatches();
+        return true;
     }
 
     // Duplicate render items, to render multiple lattices
@@ -170,6 +102,7 @@ public class StructureRenderer : MonoBehaviour
         }
 
         int length = buffer.Count;
+        int repeatA = latticeTransforms.GetLength(0), repeatB = latticeTransforms.GetLength(1), repeatC = latticeTransforms.GetLength(2);
         buffer.Capacity = length * repeatA * repeatB * repeatC;
 
         for (int i = 0; i < repeatA; i++)
@@ -225,20 +158,16 @@ public class StructureRenderer : MonoBehaviour
         ElementDrawBatches[renderMat].BondTransforms = buffer;
     }
 
-    public void LoadStructure(ArcStructureView structureView)
+    internal void SetStructureView(ArcStructureView structureView)
     {
-        CurrentStructureView?.ReleaseColliders();
-
         CurrentStructureView = structureView;
-        CurrentStructureView.GenerateBonds(bondTolerance);
         CurrentStructureView.SortLists();
-        CurrentStructureView.CreateColliders();
-
+        
         // Recollect the draw batches
-        CollectDrawBatches();
+        RecollectDrawBatches();
     }
 
-    void CollectDrawBatches()
+    internal void RecollectDrawBatches()
     {
         ElementDrawBatches = new();
         GC.Collect();
@@ -291,6 +220,13 @@ public class StructureRenderer : MonoBehaviour
         }
     }
 
+    internal void RenderSingleAtom(string renderMat, Vector3 pos, float radius)
+    {
+        RenderParams renderParams = new(ElementMaterials[renderMat]);
+        var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * radiusScale * Vector3.one);
+        Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -301,17 +237,6 @@ public class StructureRenderer : MonoBehaviour
             if (item.Value.BondTransforms.Count > 0)
             {
                 Graphics.RenderMeshInstanced(renderParams, BondMesh, 0, item.Value.BondTransforms);
-            }
-        }
-
-        if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hitInfo))
-        {
-            if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
-            {
-                var atomView = CurrentStructureView.Atoms[colliderScript.AtomIndex];
-                RenderParams renderParams = new(ElementMaterials[atomView.RenderMat]);
-                var transformMat = Matrix4x4.TRS(atomView.Position, Quaternion.identity, (0.5f + atomView.Radius) * radiusScale * Vector3.one);
-                Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
             }
         }
     }
