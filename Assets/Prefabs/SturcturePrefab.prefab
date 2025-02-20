@@ -25,12 +25,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3806524585600746675}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &1165819541521810079
 SphereCollider:
@@ -40,9 +41,17 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3806524585600746675}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
+  m_ProvidesContacts: 0
+  m_Enabled: 0
+  serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &7220937725510119355
@@ -60,8 +69,6 @@ MonoBehaviour:
   atomPrefabVar: {fileID: 4997048308515125665, guid: 9ff28f77f9b680440800ab9355d3f927,
     type: 3}
   latPrefabVar: {fileID: 8116349078610132731, guid: 8681358b040432943a66e4a219a0479f,
-    type: 3}
-  bondPrefabVar: {fileID: 1074463570723431492, guid: 1d6ce2f0cb1998e42bacc1c267d1f7b1,
     type: 3}
   nodePrefabVar: {fileID: 1582054456059128272, guid: db51956a9e00175468cfc6b591f9a299,
     type: 3}

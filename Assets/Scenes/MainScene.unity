@@ -984,6 +984,7 @@ MonoBehaviour:
   arcList: []
   currentArc: 0
   rotateSpeed: 0.2
+  currentArcIndex: -1
 --- !u!114 &534669907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1076,6 +1077,9 @@ MonoBehaviour:
   RenderMaterial: {fileID: 2100000, guid: d52663c9ccb3aca479168493a931ac87, type: 2}
   AtomMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   BondMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  ColliderPrefab: {fileID: 2774672834428288584, guid: 664ad0f6b1dd9954daea76aea5778a19,
+    type: 3}
+  ColliderParent: {fileID: 1033523878}
 --- !u!1001 &560058983
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2288,6 +2292,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0aec73c7d48ab9148b1798c94cfaf048, type: 3}
+--- !u!1 &1033523878
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1033523879}
+  m_Layer: 0
+  m_Name: ColliderParent
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1033523879
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1033523878}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1048500968
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4001,3 +4036,4 @@ SceneRoots:
   - {fileID: 534669905}
   - {fileID: 422507620}
   - {fileID: 703629821}
+  - {fileID: 1033523879}
