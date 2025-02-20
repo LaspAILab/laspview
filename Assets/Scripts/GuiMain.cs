@@ -465,12 +465,12 @@ public class GuiMain : MonoBehaviour
                     else if (Input.GetAxis("Mouse ScrollWheel") > 0)
                     {
                         //cameraTransform.Translate(Vector3.forward * 0.5f);
-                        Camera.main.orthographicSize += 0.5F;
+                        // Camera.main.orthographicSize += 0.5F;
                     }
                     else if (Input.GetAxis("Mouse ScrollWheel") < 0)
                     {
-                        if (Camera.main.orthographicSize >= 1)
-                            Camera.main.orthographicSize -= 0.5F;
+                        // if (Camera.main.orthographicSize >= 1)
+                            // Camera.main.orthographicSize -= 0.5F;
                         //cameraTransform.Translate(Vector3.forward * -0.5f);
                     }
                 }
@@ -611,8 +611,8 @@ public class GuiMain : MonoBehaviour
                 {
                     if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("Default")))
                     {
-                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.up, mouse_x * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude); //我也不知道为啥是360，调出来就是(>.<)
-                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.right, mouse_y * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude);
+                        //cameraTransform.RotateAround(cameraCenter.position, cameraTransform.up, mouse_x * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude); //我也不知道为啥是360，调出来就是(>.<)
+                        //cameraTransform.RotateAround(cameraCenter.position, cameraTransform.right, mouse_y * 360 / Screen.height * Camera.main.orthographicSize / offsetTemp.magnitude);
                     }
                     else
                     {
@@ -629,7 +629,7 @@ public class GuiMain : MonoBehaviour
                         {
                             degree = -Vector3.Angle(a, b);
                         }
-                        cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
+                        //cameraTransform.RotateAround(cameraCenter.position, cameraTransform.forward, degree);
                     }
                 }
                 else if (!Input.GetKey(KeyCode.Mouse1))
@@ -643,7 +643,7 @@ public class GuiMain : MonoBehaviour
             {
                 if (Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.LeftShift))
                 {
-                    cameraTransform.position += (offsetTemp - Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                    //cameraTransform.position += (offsetTemp - Camera.main.ScreenToWorldPoint(Input.mousePosition));
                 }
                 else
                 {
@@ -736,7 +736,7 @@ public class GuiMain : MonoBehaviour
 
             if (Time.time - onMoveCollectTime > 0.2f)
             {
-                GC.Collect();
+                // GC.Collect();
                 onMoveCollectTime = Time.time;
             }
 
@@ -871,9 +871,9 @@ public class GuiMain : MonoBehaviour
         int c = MainScr.S.CurrentStructure().currentExtendC;
         Vector3 vec = MainScr.S.CurrentStructure().GetCellTransfer(a, b, c) / 2;
         cameraCenter.position = vec;
-        cameraTransform.position = vec;
-        cameraTransform.Translate(Vector3.back.normalized * vec.magnitude * 4);
-        Camera.main.orthographicSize = vec.magnitude + 3.5f;
+        //cameraTransform.position = vec;
+        //cameraTransform.Translate(Vector3.back.normalized * vec.magnitude * 4);
+        //Camera.main.orthographicSize = vec.magnitude + 3.5f;
     }
 
     //****************** CAMERA CONTROL & MOUSE INTERACTION ***********************
@@ -1295,7 +1295,7 @@ public class GuiMain : MonoBehaviour
         {
             atOpts.Clear();
         }
-        GC.Collect();
+        // GC.Collect();
     }
 
 }
