@@ -10,10 +10,6 @@ using static System.Windows.Forms.LinkLabel;
 
 public static class ArcIO
 {
-    // Tokens that mark a new structure begins
-    private static readonly string[] NewStructureTokens = new string[]
-    { "Energy", "IS", "TS"};
-
     private static string[] SplitWhiteSpace(string line)
     {
         return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
