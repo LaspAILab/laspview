@@ -52,7 +52,7 @@ public class MainScr : MonoBehaviour
     {
 #if !UNITY_WEBGL
         string filename = ConFun.GlobalConfig["arc_default"];
-        AddArc(Application.dataPath + "/" + filename);
+        OpenArcFile(Application.dataPath + "/" + filename);
 #else
         string lines = 
 @"!BIOSYM archive 2 
@@ -75,61 +75,28 @@ end
 #endif
     }
 
-    public void AddArc(string wholeFilename)
+    public void OpenArcFile(string filename)
     {
-#if !UNITY_WEBGL
-        string[] lines = File.ReadAllLines(wholeFilename);
-        string filename = Path.GetFileName(wholeFilename);
-        this.AddArc(filename, lines);
-#endif
-    }
-
-    public void AddArc(string filename, string[] lines)
-    {
-        ArcStructures newArc = Instantiate(ArcStructuresPrefabVar).GetComponent<ArcStructures>();
-        try
+        bool firstStructureLoaded = false;
+        Task.Run(() =>
         {
-            //print(lines.Length);
-            // newArc.ArcRead(filename, lines);
-
-            bool firstStructureLoaded = false;
-            Task.Run(() =>
+            currentFile = new();
+            currentFile.ReadArc(File.ReadLines(filename), count => callbackQueue.Enqueue(() =>
             {
-                currentFile = new();
-                currentFile.ReadArc(File.ReadLines(filename), count => callbackQueue.Enqueue(() =>
-                {
-                    ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
+                ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
 
-                    if (!firstStructureLoaded)
-                    {
-                        currentArcIndex = 0;
-                        ArcStructureView structureView = new(currentFile.Structures[currentArcIndex]);
-                        var viewport = Camera.main.GetComponent<ViewportController>();
-                        viewport.OpenStructureView(structureView);
-                        firstStructureLoaded = true;
-                    }
-
-                    ConFun.printStructureInfo(currentArcIndex, count, currentFile.Structures[currentArcIndex].Energy);
-                }));
-
-                /*
-                callbackQueue.Enqueue(() =>
+                if (!firstStructureLoaded)
                 {
                     currentArcIndex = 0;
+                    ArcStructureView structureView = new(currentFile.Structures[currentArcIndex]);
+                    var viewport = Camera.main.GetComponent<ViewportController>();
                     viewport.OpenStructureView(structureView);
-                    ConFun.printStructureInfo(0, currentFile.Structures.Count, currentFile.Structures[0].Energy);
-                });
-                */
-            });
-        }
-        catch (Exception e)
-        {
-            GameObject.Destroy(newArc.gameObject);
-            ConFun.UpdateStatusLabel($"Err: Error in read file {filename}.Please check file.");
-        }
-        // arcList.Add(newArc);
-        L_ProjectPanelSrc.S.ProjectListAddCell(filename);
-        // DrawArc(arcList.Count - 1);
+                    firstStructureLoaded = true;
+                }
+
+                ConFun.printStructureInfo(currentArcIndex, count, currentFile.Structures[currentArcIndex].Energy);
+            }));
+        });
     }
 
     public void SwitchArc(int index)
@@ -151,33 +118,6 @@ end
                 ConFun.printStructureInfo(index, currentFile.Structures.Count, currentFile.Structures[index].Energy);
             });
         });
-    }
-    public void AddArc(string filename, string msg)
-    {
-        string[] lines = msg.Split("\r\n".ToCharArray());
-        AddArc(filename, lines);
-    }
-
-
-    public void AddArcByCorouWaiting(string fileName, string msg)
-    {
-        StartCoroutine(AddArcWaiting(fileName, msg));
-    }
-
-    IEnumerator AddArcWaiting(string fileName, string msg)
-    {
-        while (true)
-        {
-            if (GuiMain.S.onMove || B_ToolbarPanelSrc.S.onPlay)
-            {
-                yield return null;
-            }
-            else
-            {
-                AddArc(fileName, msg);
-                break;
-            }
-        }
     }
 
     public void DrawArc(int arcIndex = -1)
