@@ -128,14 +128,14 @@ public class StructureRenderer : MonoBehaviour
         Assert.AreEqual(buffer.Count, length * repeatA * repeatB * repeatC);
     }
 
-    private void SubmitAtomBuffer(string renderMat, List<Matrix4x4> buffer)
+    private void SubmitAtomBuffer(Dictionary<string, DrawBatch> drawBatches, string renderMat, List<Matrix4x4> buffer)
     {
-        if (!ElementDrawBatches.ContainsKey(renderMat))
+        if (!drawBatches.ContainsKey(renderMat))
         {
-            ElementDrawBatches[renderMat] = new();
+            drawBatches[renderMat] = new();
         }
         ReplicateBuffer(ref buffer);
-        ElementDrawBatches[renderMat].AtomTransforms = buffer;
+        drawBatches[renderMat].AtomTransforms = buffer;
 
         if (!ElementMaterials.ContainsKey(renderMat))
         {
@@ -153,10 +153,10 @@ public class StructureRenderer : MonoBehaviour
         }
     }
 
-    private void SubmitBondBuffer(string renderMat, List<Matrix4x4> buffer)
+    private void SubmitBondBuffer(Dictionary<string, DrawBatch> drawBatches, string renderMat, List<Matrix4x4> buffer)
     {
         ReplicateBuffer(ref buffer);
-        ElementDrawBatches[renderMat].BondTransforms = buffer;
+        drawBatches[renderMat].BondTransforms = buffer;
     }
 
     internal void SetStructureView(ArcStructureView structureView)
@@ -175,7 +175,7 @@ public class StructureRenderer : MonoBehaviour
             CurrentStructureView.SortLists();
         }
 
-        ElementDrawBatches = new();
+        Dictionary<string, DrawBatch> drawBatches = new();
         // GC.Collect();
 
         string currentRenderMat = "";
@@ -186,7 +186,7 @@ public class StructureRenderer : MonoBehaviour
             {
                 if (buffer.Count > 0)
                 {
-                    SubmitAtomBuffer(currentRenderMat, buffer);
+                    SubmitAtomBuffer(drawBatches, currentRenderMat, buffer);
                     buffer = new();
                 }
 
@@ -198,19 +198,20 @@ public class StructureRenderer : MonoBehaviour
 
         if (buffer.Count > 0)
         {
-            SubmitAtomBuffer(currentRenderMat, buffer);
+            SubmitAtomBuffer(drawBatches, currentRenderMat, buffer);
         }
 
         buffer = new();
         currentRenderMat = "";
 
+        CurrentStructureView.BondMutex.WaitOne();
         foreach (var item in CurrentStructureView.Bonds)
         {
             if (item.FromAtom.RenderMat != currentRenderMat)
             {
                 if (buffer.Count > 0)
                 {
-                    SubmitBondBuffer(currentRenderMat, buffer);
+                    SubmitBondBuffer(drawBatches, currentRenderMat, buffer);
                     buffer = new();
                 }
 
@@ -219,12 +220,14 @@ public class StructureRenderer : MonoBehaviour
 
             buffer.Add(item.Transform);
         }
+        CurrentStructureView.BondMutex.ReleaseMutex();
 
         if (buffer.Count > 0)
         {
-            SubmitBondBuffer(currentRenderMat, buffer);
+            SubmitBondBuffer(drawBatches, currentRenderMat, buffer);
         }
 
+        ElementDrawBatches = drawBatches;
         Profiler.EndSample();
     }
 
