@@ -10,23 +10,24 @@ class ColliderPool
 {
     public static ColliderPool GlobalPool;
 
-    public GameObject colliderPrefab;
+    public GameObject ColliderPrefab;
 
-    public GameObject colliderParent;
+    public GameObject ColliderParent;
 
-    List<GameObject> colliders;
-    int numFree = 0;
+    private List<GameObject> colliders;
+    private int numFree;
 
     public ColliderPool(GameObject colliderPrefab, GameObject colliderParent)
     {
         colliders = new();
-        this.colliderPrefab = colliderPrefab;
-        this.colliderParent = colliderParent;
+        numFree = 0;
+        ColliderPrefab = colliderPrefab;
+        ColliderParent = colliderParent;
     }
 
     private GameObject CreateColliderObject()
     {
-        return GameObject.Instantiate(colliderPrefab, colliderParent.transform);
+        return GameObject.Instantiate(ColliderPrefab, ColliderParent.transform);
     }
 
     public ColliderScript BorrowCollider()
@@ -35,23 +36,25 @@ class ColliderPool
         {
             var newCollider = CreateColliderObject();
             colliders.Add(newCollider);
-            return newCollider.GetComponent<ColliderScript>();
+            var colliderScript = newCollider.GetComponent<ColliderScript>();
+            colliderScript.Init();
+            return colliderScript;
         }
-        else
+
+        foreach (var item in colliders)
         {
-            foreach (var item in colliders)
+            var colliderScript = item.GetComponent<ColliderScript>();
+            if (colliderScript.isUsed)
             {
-                var colliderScript = item.GetComponent<ColliderScript>();
-                if (!colliderScript.IsUsed)
-                {
-                    numFree--;
-                    colliderScript.Activate();
-                    return colliderScript;
-                }
+                continue;
             }
 
-            throw new IndexOutOfRangeException("Should be at least one free colliders, but cannot find one");
+            numFree--;
+            colliderScript.Activate();
+            return colliderScript;
         }
+
+        throw new IndexOutOfRangeException("Should be at least one free colliders, but cannot find one");
     }
 
     public void DropCollider(ColliderScript collider, bool forceRecycle = false)
@@ -66,7 +69,7 @@ class ColliderPool
 
         if (forceRecycle)
         {
-            colliders.RemoveAll(x => !x.GetComponent<ColliderScript>().IsUsed);
+            colliders.RemoveAll(x => !x.GetComponent<ColliderScript>().isUsed);
             numFree = 0;
         }
     }

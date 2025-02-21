@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
@@ -11,50 +12,57 @@ enum ToolType
     SELECT,
     MOVE_VIEW,
     ROTATE_VIEW,
-    MOVE_ATOM
+    MOVE_ATOM,
+    RENAME_ATOM
 }
 
 public class ViewportController : MonoBehaviour
 {
-    public StructureRenderer Renderer;
-    public Camera ActiveCamera;
+    const float DOUBLE_CLICK_THRESHOLD = 0.2f;
+    
+    public GameObject ColliderPrefab;
+    public GameObject ColliderParent;
+    
+    [NonSerialized] public StructureRenderer structureRenderer;
+    [NonSerialized] public LatticeRenderer latticeRenderer;
+    [NonSerialized] private Camera activeCamera;
 
     private float bondTolerance = 1.26f;
+
     private bool bondRecalculationRunning = false, bondToleranceDirtyFlag = false;
+
     // Whether to update bonds in realtime when moving atoms
     private bool updateBondsRealtime = true;
     private int repeatA = 1, repeatB = 1, repeatC = 1;
     private List<AtomView> selection = new();
 
     private Vector3 cameraCenter;
+
     // Angles in sphere coordinates, in radians!
     private float cameraAltitude = 0f, cameraAzimuth = 0f;
+
     // How far the camera is from the focal center
     private float cameraViewportSize = 0f;
     private Vector3 prevMousePos;
     private ToolType currentTool = ToolType.SELECT;
 
-    private GUIStyle labelStyle = new();
+    public GUIStyle labelStyle = new(), textboxStyle = new();
+
     private bool isDraggingAtom = false;
+
     // Trace last clicked atom and click time to detect double clicks
     private AtomView lastClickedAtom = null;
     private float lastClickTime = 0f;
 
-    public ArcStructureView CurrentStructureView
-    {
-        get;
-        private set;
-    } = null;
+    public ArcStructureView CurrentStructureView { get; private set; }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Renderer = GetComponent<StructureRenderer>();
-        ActiveCamera = Camera.main;
-
-        labelStyle.fontSize = 24;
-        labelStyle.fontStyle = FontStyle.Bold;
-        labelStyle.normal.textColor = Color.black;
+        structureRenderer = GetComponent<StructureRenderer>();
+        latticeRenderer = GetComponent<LatticeRenderer>();
+        activeCamera = Camera.main;
+        ColliderPool.GlobalPool = new(ColliderPrefab, ColliderParent);
     }
 
     public float BondTolerance
@@ -97,7 +105,7 @@ public class ViewportController : MonoBehaviour
                     }
                     else
                     {
-                        Renderer.RecollectDrawBatches();
+                        structureRenderer.RecollectDrawBatches();
                     }
                 });
             });
@@ -112,11 +120,12 @@ public class ViewportController : MonoBehaviour
         CurrentStructureView.GenerateBonds(bondTolerance);
         CurrentStructureView.CreateColliders();
 
-        Renderer.SetStructureView(structureView);
+        structureRenderer.SetStructureView(structureView);
+        latticeRenderer.RenderLattice(structureView.Structure, repeatA, repeatB, repeatC);
         RefocusCamera();
     }
 
-    void RefocusCamera()
+    private void RefocusCamera()
     {
         cameraCenter = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)) / 2;
         cameraViewportSize = cameraCenter.magnitude + 3.5f;
@@ -124,16 +133,17 @@ public class ViewportController : MonoBehaviour
         UpdateCameraTransform();
     }
 
-    public void UpdateCameraTransform()
+    private void UpdateCameraTransform()
     {
         float cosAltitude = Mathf.Cos(cameraAltitude);
-        var pos = new Vector3(cosAltitude * Mathf.Sin(cameraAzimuth), Mathf.Sin(cameraAltitude), -cosAltitude * Mathf.Cos(cameraAzimuth));
+        var pos = new Vector3(cosAltitude * Mathf.Sin(cameraAzimuth), Mathf.Sin(cameraAltitude),
+            -cosAltitude * Mathf.Cos(cameraAzimuth));
         pos *= (4 * cameraCenter.magnitude);
         pos += cameraCenter;
 
         var rot = Quaternion.Euler(cameraAltitude * Mathf.Rad2Deg, -cameraAzimuth * Mathf.Rad2Deg, 0);
-        ActiveCamera.transform.SetPositionAndRotation(pos, rot);
-        ActiveCamera.orthographicSize = cameraViewportSize;
+        activeCamera.transform.SetPositionAndRotation(pos, rot);
+        activeCamera.orthographicSize = cameraViewportSize;
     }
 
     /// <summary>
@@ -168,7 +178,7 @@ public class ViewportController : MonoBehaviour
             return;
         }
 
-        Renderer.SetLatticeRepeat(this.repeatA, this.repeatB, this.repeatC);
+        structureRenderer.SetLatticeRepeat(this.repeatA, this.repeatB, this.repeatC);
         RefocusCamera();
     }
 
@@ -213,13 +223,14 @@ public class ViewportController : MonoBehaviour
     {
         List<AtomView> atomsHovered = new();
 
-        var raycasts = Physics.RaycastAll(Camera.main.ScreenPointToRay(Input.mousePosition));
+        var raycasts = Physics.RaycastAll(activeCamera.ScreenPointToRay(Input.mousePosition));
         foreach (var hitInfo in raycasts)
         {
             if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
             {
                 atomsHovered.Add(colliderScript.Atom);
-                Renderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.Atom.Position, colliderScript.Atom.Radius + 0.5f);
+                structureRenderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.Atom.Position,
+                    colliderScript.Atom.Radius + 0.5f);
             }
         }
 
@@ -253,10 +264,10 @@ public class ViewportController : MonoBehaviour
 
     void HandleMouseEvents(List<AtomView> raycastAtom)
     {
+        AtomView clickedAtom = raycastAtom.Count > 0 ? raycastAtom[0] : null;
         bool cameraRotated = false, cameraZoomed = Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5, cameraMoved = false;
-        bool shallMoveAtom = false;
-        bool rendererShallUpdate = false;
-        var mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        bool shallMoveAtom = false, rendererShallUpdate = false;
+        var mouseWorldPos = activeCamera.ScreenToWorldPoint(Input.mousePosition);
 
         bool shiftDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool altDown = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
@@ -265,11 +276,11 @@ public class ViewportController : MonoBehaviour
         {
             if (raycastAtom.Count > 0)
             {
-                if (selection.Contains(raycastAtom.First()))
+                if (selection.Contains(clickedAtom))
                 {
                     if (shiftDown)
                     {
-                        DeselectAtom(raycastAtom.First());
+                        DeselectAtom(clickedAtom);
                     }
                     // Do nothing if the same atom is selected again without Shift pressed
                 }
@@ -281,8 +292,9 @@ public class ViewportController : MonoBehaviour
                         DeselectAll();
                     }
 
-                    SelectAtom(raycastAtom.First());
+                    SelectAtom(clickedAtom);
                 }
+
                 rendererShallUpdate = true;
             }
             else if (!shiftDown && !altDown)
@@ -300,6 +312,7 @@ public class ViewportController : MonoBehaviour
             {
                 switch (currentTool)
                 {
+                    case ToolType.RENAME_ATOM:
                     case ToolType.ROTATE_VIEW:
                     case ToolType.MOVE_VIEW:
                     case ToolType.SELECT:
@@ -326,6 +339,7 @@ public class ViewportController : MonoBehaviour
             {
                 switch (currentTool)
                 {
+                    case ToolType.RENAME_ATOM:
                     case ToolType.MOVE_ATOM:
                     case ToolType.MOVE_VIEW:
                     case ToolType.SELECT:
@@ -349,6 +363,7 @@ public class ViewportController : MonoBehaviour
             {
                 switch (currentTool)
                 {
+                    case ToolType.RENAME_ATOM:
                     case ToolType.MOVE_ATOM:
                     case ToolType.ROTATE_VIEW:
                     case ToolType.SELECT:
@@ -374,21 +389,36 @@ public class ViewportController : MonoBehaviour
                 float? deltaAzi = cameraRotated ? Input.mousePositionDelta.x * -0.01f : null;
                 float? deltaViewportSize = cameraZoomed ? Input.mouseScrollDelta.y * -5 : null;
 
-                Vector3? deltaCenter = cameraMoved ? (ActiveCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos) : null;
+                Vector3? deltaCenter =
+                    cameraMoved ? (activeCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos) : null;
                 UpdateCamera(deltaAlt, deltaAzi, deltaViewportSize, deltaCenter);
             }
         }
 
+        if (Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            var time = Time.time;
+            if (clickedAtom != null && clickedAtom == lastClickedAtom && time - lastClickTime < DOUBLE_CLICK_THRESHOLD)
+            {
+                // Handle double click
+                Debug.Log($"Double click on {clickedAtom.Symbol}");
+                currentTool = ToolType.RENAME_ATOM;
+            }
+
+            lastClickTime = time;
+            lastClickedAtom = clickedAtom;
+        }
+
         if (shallMoveAtom)
         {
-            Vector3 translation = mouseWorldPos - ActiveCamera.ScreenToWorldPoint(prevMousePos);
+            var translation = mouseWorldPos - activeCamera.ScreenToWorldPoint(prevMousePos);
 
             // If we are dragging one atom, then we don't want to switch to another one when hovering on another atom
             if (raycastAtom.Count > 0 && (selection.Count == 0 || (selection.Count == 1 && !isDraggingAtom)))
             {
                 // If one or none atoms are selected, then the atom at cursor is moved
                 DeselectAll();
-                SelectAtom(raycastAtom.First());
+                SelectAtom(clickedAtom);
             }
 
             MoveAtoms(selection, translation);
@@ -399,6 +429,7 @@ public class ViewportController : MonoBehaviour
                 {
                     CurrentStructureView.UpdateAtomBonds(item, bondTolerance, true);
                 }
+
                 CurrentStructureView.BondMutex.ReleaseMutex();
             }
 
@@ -415,37 +446,50 @@ public class ViewportController : MonoBehaviour
                 {
                     CurrentStructureView.UpdateAtomBonds(item, bondTolerance, true);
                 }
+
                 CurrentStructureView.BondMutex.ReleaseMutex();
                 rendererShallUpdate = true;
             }
+
             isDraggingAtom = false;
         }
 
         if (rendererShallUpdate)
         {
-            Renderer.RecollectDrawBatches(true);
+            structureRenderer.RecollectDrawBatches(true);
         }
 
         prevMousePos = Input.mousePosition;
     }
 
-    void OnGUI()
+    private void OnGUI()
     {
         if (CurrentStructureView == null)
         {
             return;
         }
 
-        for (int i = 0; i < selection.Count; i++)
+        if (currentTool != ToolType.RENAME_ATOM)
         {
-            Vector3 posScreen = Camera.main.WorldToScreenPoint(selection[i].Position);
-            posScreen.y = Screen.height - posScreen.y;
-            if (!Screen.safeArea.Contains(new Vector2(posScreen.x, posScreen.y)))
+            for (int i = 0; i < selection.Count; i++)
             {
-                continue;
-            }
+                var posScreen = activeCamera.WorldToScreenPoint(selection[i].Position);
+                posScreen.y = Screen.height - posScreen.y;
+                if (!Screen.safeArea.Contains(new Vector2(posScreen.x, posScreen.y)))
+                {
+                    continue;
+                }
 
-            GUI.Label(new Rect(posScreen.x - 10, posScreen.y - 10, 100, 100), $"[{i}]", labelStyle);
+                GUI.Label(new Rect(posScreen.x - 10, posScreen.y - 10, 100, 100), $"[{i}]", labelStyle);
+            }
+        }
+
+        if (currentTool == ToolType.RENAME_ATOM && lastClickedAtom != null)
+        {
+            var posScreen = activeCamera.WorldToScreenPoint(lastClickedAtom.Position);
+            posScreen.y = Screen.height - posScreen.y;
+
+            GUI.TextField(new Rect(posScreen.x - 40, posScreen.y - 15, 80, 30), lastClickedAtom.Symbol);
         }
     }
 }

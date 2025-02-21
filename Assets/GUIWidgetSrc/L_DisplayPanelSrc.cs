@@ -38,8 +38,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
         MainScr.S.CurrentArc().arcModelPara = modelPara;
         var viewport = Camera.main.GetComponent<ViewportController>();
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"], (int)modelPara["lat range c"]);
-        viewport.Renderer.SetAtomStyle(modelPara["ball scale"]);
-        viewport.Renderer.SetBondStyle(modelPara["stick radius"]);
+        viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
+        viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
         viewport.BondTolerance = modelPara["tolerance"];
         MainScr.S.CurrentStructure().DrawModel();
         GuiMain.S.FocusCameraCenter();
