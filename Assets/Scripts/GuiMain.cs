@@ -1171,13 +1171,7 @@ public class GuiMain : MonoBehaviour
 
     void OnFiles(List<string> aFiles, POINT aPos)
     {
-        // do something with the dropped file names. aPos will contain the 
-        // mouse position within the window where the files has been dropped.
-        // ConFun.printStatusInfo("Dropped " + string.Join(" ", aFiles) + " files");
-        foreach (string file in aFiles)
-        {
-            MainScr.S.AddArc(file);
-        }
+        // Handle drop file
     }
 #endif
 
