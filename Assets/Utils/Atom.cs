@@ -21,15 +21,34 @@ interface ITransform
 
 public class AtomView : ITransform
 {
-    public static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure)
+    /// <summary>
+    /// Clip the position of the atom
+    /// </summary>
+    /// <param name="posCartesian">The cartesian position of the atom</param>
+    /// <param name="structure">The parent structure of the atom</param>
+    /// <param name="repeat">If true, then use repeat, else use clamp</param>
+    /// <returns></returns>
+    public static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure, bool repeat = true)
     {
         // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
         Vector3 fract = structure.CartesianToFractional(posCartesian);
-        fract = new Vector3(
-            fract.x - Mathf.Floor(fract.x),
-            fract.y - Mathf.Floor(fract.y),
-            fract.z - Mathf.Floor(fract.z)
-        );
+        if (repeat)
+        {
+            fract = new Vector3(
+                fract.x - Mathf.Floor(fract.x),
+                fract.y - Mathf.Floor(fract.y),
+                fract.z - Mathf.Floor(fract.z)
+            );
+        }
+        else
+        {
+            fract = new Vector3(
+                Mathf.Clamp01(fract.x),
+                Mathf.Clamp01(fract.y),
+                Mathf.Clamp01(fract.z)
+            );
+        }
+
         return structure.FractionalToCartesian(fract);
     }
 
@@ -45,9 +64,57 @@ public class AtomView : ITransform
         Collider = null;
     }
 
+    public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure)
+    {
+        SourceAtom.Coordinates = posCartesian;
+        Position = ClipAtomCoords(SourceAtom.Coordinates, parentStructure, false);
+        transformCache = null;
+
+        // Move collider
+        if (Collider != null)
+        {
+            Collider.SetAtom(this, Position, Radius);
+        }
+    }
+
+    public void SetElement(string newSymbol)
+    {
+        SourceAtom.Symbol = newSymbol;
+        Radius = ConFun.Elements[SourceAtom.Symbol].Radius;
+
+        if (RenderMat == Symbol)
+        {
+            RenderMat = Symbol = newSymbol;
+        }
+        else
+        {
+            Symbol = newSymbol;
+        }
+    }
+
     public void CreateTransformCache(float radiusScale = 1f)
     {
         transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
+    }
+
+    public void CreateCollider()
+    {
+        Collider = ColliderPool.GlobalPool.BorrowCollider();
+        Collider.SetAtom(this, Position, Radius);
+    }
+
+    public void DestroyCollider()
+    {
+        if (Collider != null)
+        {
+            ColliderPool.GlobalPool.DropCollider(Collider);
+            Collider = null;
+        }
+    }
+
+    ~AtomView()
+    {
+        DestroyCollider();
     }
 
     public Atom SourceAtom
@@ -56,12 +123,16 @@ public class AtomView : ITransform
         private set;
     }
 
-    public int Index;
+    public Vector3 Position
+    {
+        get;
+        private set;
+    }
+
     public string Symbol;
     // A string that marks which material the atom is rendered with, 
     // this is used to batch render atoms with the same material
     public string RenderMat;
-    public Vector3 Position;
     public float Charge;
     public float Radius;
     public ColliderScript Collider;

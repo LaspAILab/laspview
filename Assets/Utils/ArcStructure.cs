@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -157,7 +158,7 @@ public class ArcFile
 
     public ArcFile()
     {
-        Structures = new List<ArcStructure>();
+        Structures = new();
     }
 }
 
@@ -181,9 +182,12 @@ public class ArcStructureView
 
     public List<BondView> Bonds = new();
 
+    public Mutex BondMutex;
+
     public ArcStructureView(ArcStructure structure)
     {
         Structure = structure;
+        BondMutex = new();
 
         Atoms.Capacity = structure.Atoms.Count;
         foreach (var item in structure.Atoms)
@@ -237,17 +241,17 @@ public class ArcStructureView
     {
         var latticeTranslations = TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToList();
 
+        BondMutex.WaitOne();
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
-            UpdateAtomBonds(i, tolerance, false);
+            UpdateAtomBonds(Atoms[i], tolerance, false);
         }
+        BondMutex.ReleaseMutex();
     }
 
-    public void UpdateAtomBonds(int atomIndex, float tolerance, bool cleanExisting = false)
+    public void UpdateAtomBonds(AtomView targetAtom, float tolerance, bool cleanExisting = false)
     {
-        var targetAtom = Atoms[atomIndex];
-
         if (cleanExisting)
         {
             Bonds.RemoveAll(bond => bond.FromAtom == targetAtom || bond.ToAtom == targetAtom);
@@ -255,7 +259,7 @@ public class ArcStructureView
 
         for (int i = 0; i < Atoms.Count; i++)
         {
-            if (i == atomIndex)
+            if (Atoms[i] == targetAtom)
             {
                 continue;
             }
@@ -316,25 +320,21 @@ public class ArcStructureView
     {
         foreach (var item in Atoms)
         {
-            item.Collider = ColliderPool.GlobalPool.BorrowCollider();
-            item.Collider.SetAtom(item, item.Position, item.Radius);
+            item.CreateCollider();
         }
     }
 
     public void ReleaseColliders()
     {
-        for (int i = 0; i < Atoms.Count; i++)
+        foreach (var item in Atoms)
         {
-            if (Atoms[i].Collider != null)
-            {
-                ColliderPool.GlobalPool.DropCollider(Atoms[i].Collider);
-                Atoms[i].Collider = null;
-            }
+            item.DestroyCollider();
         }
     }
 
     ~ArcStructureView()
     {
+        BondMutex.Dispose();
         ReleaseColliders();
     }
 }
