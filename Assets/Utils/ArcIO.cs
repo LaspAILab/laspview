@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
+using static System.Windows.Forms.LinkLabel;
 
 
 public static class ArcIO
@@ -18,9 +19,8 @@ public static class ArcIO
         return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
     }
 
-    public static ArcFile ReadArc(IEnumerable<string> lines, Action<int> progressCallback = null)
+    public static void ReadArc(this ArcFile arcFile, IEnumerable<string> lines, Action<int> progressCallback = null)
     {
-        ArcFile arcFile = new();
         ArcStructure currentStructure = null;
 
         foreach (var line in lines)
@@ -114,7 +114,12 @@ public static class ArcIO
             arcFile.Structures.Add(currentStructure);
             progressCallback?.Invoke(arcFile.Structures.Count);
         }
+    }
 
+    public static ArcFile ReadArc(IEnumerable<string> lines, Action<int> progressCallback = null)
+    {
+        ArcFile arcFile = new();
+        arcFile.ReadArc(lines, progressCallback);
         return arcFile;
     }
 }

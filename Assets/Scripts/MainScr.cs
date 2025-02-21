@@ -12,6 +12,8 @@ using Lasp4Win;
 using JetBrains.Annotations;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using UnityEditor;
+using System.Runtime.ConstrainedExecution;
 
 public class MainScr : MonoBehaviour
 {
@@ -89,21 +91,35 @@ end
         {
             //print(lines.Length);
             newArc.ArcRead(filename, lines);
+
+            bool firstStructureLoaded = false;
             Task.Run(() =>
             {
-                currentFile = ArcIO.ReadArc(File.ReadLines(filename), count => callbackQueue.Enqueue(() =>
+                currentFile = new();
+                currentFile.ReadArc(File.ReadLines(filename), count => callbackQueue.Enqueue(() =>
                 {
                     ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
+
+                    if (!firstStructureLoaded)
+                    {
+                        currentArcIndex = 0;
+                        ArcStructureView structureView = new(currentFile.Structures[currentArcIndex]);
+                        var viewport = Camera.main.GetComponent<ViewportController>();
+                        viewport.OpenStructureView(structureView);
+                        firstStructureLoaded = true;
+                    }
+
+                    ConFun.printStructureInfo(currentArcIndex, count, currentFile.Structures[currentArcIndex].Energy);
                 }));
 
-                ArcStructureView structureView = new(currentFile.Structures[0]);
+                /*
                 callbackQueue.Enqueue(() =>
                 {
                     currentArcIndex = 0;
-                    var viewport = Camera.main.GetComponent<ViewportController>();
                     viewport.OpenStructureView(structureView);
                     ConFun.printStructureInfo(0, currentFile.Structures.Count, currentFile.Structures[0].Energy);
                 });
+                */
             });
         }
         catch (Exception e)
@@ -119,7 +135,7 @@ end
     public void SwitchArc(int index)
     {
         index = Mathf.Clamp(index, 0, currentFile.Structures.Count - 1);
-        if(index == currentArcIndex)
+        if (index == currentArcIndex)
         {
             return;
         }
