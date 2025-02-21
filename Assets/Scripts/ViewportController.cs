@@ -121,6 +121,8 @@ public class ViewportController : MonoBehaviour
         CurrentStructureView.CreateColliders();
 
         structureRenderer.SetStructureView(structureView);
+        // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
+        structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
         latticeRenderer.RenderLattice(structureView.Structure, repeatA, repeatB, repeatC);
         RefocusCamera();
     }

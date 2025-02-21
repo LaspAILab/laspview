@@ -7,7 +7,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
 {
     static public L_DisplayPanelSrc S;
     static public syfPanelPara displayPanelPara;
-    static public Dictionary<string, float> defaultModelPara;
+    public static Dictionary<string, float> defaultModelPara;
 
     void Awake()
     {
@@ -19,7 +19,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
         defaultModelPara = new Dictionary<string, float> { { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
                                                             { "display style", 0.0f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
                                                              { "ball radius type", 0.0f },{ "ball scale", 1f },{ "ball radius", 1.0f },{"background", 0.0f  } };
-
+        DisplayLoadModelPara();
+        
         //Set DisplayPanel
         this.transform.SetParent(GuiMain.S.leftCanvas.transform);
         this.transform.SetAsFirstSibling();
@@ -35,19 +36,18 @@ public class L_DisplayPanelSrc : MonoBehaviour
     public void DisplayOnParaChange()
     {
         var modelPara = DisplayModelPara();
-        MainScr.S.CurrentArc().arcModelPara = modelPara;
         var viewport = Camera.main.GetComponent<ViewportController>();
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"], (int)modelPara["lat range c"]);
         viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
         viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
         viewport.BondTolerance = modelPara["tolerance"];
-        MainScr.S.CurrentStructure().DrawModel();
-        GuiMain.S.FocusCameraCenter();
+        // MainScr.S.CurrentStructure().DrawModel();
+        // GuiMain.S.FocusCameraCenter();
     }
 
     public void DisplayLoadModelPara()
     {
-        Dictionary<string, float> arcPara = MainScr.S.CurrentArc().arcModelPara;
+        Dictionary<string, float> arcPara = defaultModelPara;
         foreach (KeyValuePair<string, GameObject> kvp in displayPanelPara.paraDict)
         {
             if (kvp.Value.GetComponent<Dropdown>())
@@ -69,8 +69,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
                 //print(kvp.Value.transform.parent.GetComponent<syfSliderValueText>());
                 //kvp.Value.transform.parent.GetComponent<syfSliderValueText>().ChangeText("N0");
                 kvp.Value.GetComponent<Slider>().onValueChanged.SetPersistentListenerState(1, UnityEngine.Events.UnityEventCallState.EditorAndRuntime);
-
-
+                
             }
         }
         DisplayOnSytleChange();
