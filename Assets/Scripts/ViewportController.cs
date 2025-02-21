@@ -179,6 +179,7 @@ public class ViewportController : MonoBehaviour
         }
 
         structureRenderer.SetLatticeRepeat(this.repeatA, this.repeatB, this.repeatC);
+        latticeRenderer.RenderLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
         RefocusCamera();
     }
 

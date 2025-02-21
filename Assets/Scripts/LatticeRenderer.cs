@@ -4,11 +4,10 @@ public class LatticeRenderer : MonoBehaviour
 {
     public GameObject LatticeLinePrefab;
     public GameObject LatticeLineParent;
-    
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
     }
 
     private void AddLine(Vector3 from, Vector3 to, float thickness = 0.2f)
@@ -24,9 +23,9 @@ public class LatticeRenderer : MonoBehaviour
     public void RenderLattice(ArcStructure structure, int repeatA, int repeatB, int repeatC)
     {
         // Remove existing children
-        for (int i = 0; i < transform.childCount; i++)
+        for (int i = LatticeLineParent.transform.childCount - 1; i >= 0; i--)
         {
-            Destroy(transform.GetChild(i).gameObject);
+            Destroy(LatticeLineParent.transform.GetChild(i).gameObject);
         }
 
         for (int i = 0; i <= repeatA; i++)
