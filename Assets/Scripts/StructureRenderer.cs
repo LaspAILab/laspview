@@ -24,9 +24,6 @@ public class StructureRenderer : MonoBehaviour
     public Mesh AtomMesh;
     public Mesh BondMesh;
 
-    public GameObject ColliderPrefab;
-    public GameObject ColliderParent;
-
     public ArcStructureView CurrentStructureView
     {
         get;
@@ -39,7 +36,7 @@ public class StructureRenderer : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        ColliderPool.GlobalPool = new(ColliderPrefab, ColliderParent);
+        
     }
 
     public void SetBondStyle(float stickRadius)

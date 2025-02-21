@@ -61,7 +61,7 @@ public class AtomView : ITransform
         Position = ClipAtomCoords(atom.Coordinates, structure);
         Radius = ConFun.Elements[atom.Symbol].Radius;
         transformCache = null;
-        Collider = null;
+        collider = null;
     }
 
     public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure)
@@ -70,10 +70,11 @@ public class AtomView : ITransform
         Position = ClipAtomCoords(SourceAtom.Coordinates, parentStructure, false);
         transformCache = null;
 
-        // Move collider
-        if (Collider != null)
+        // A faster way for null check since Unity uses a slow overload for ==
+        if (collider is not null)
         {
-            Collider.SetAtom(this, Position, Radius);
+            // Move collider
+            collider.SetAtom(this, Position, Radius);
         }
     }
 
@@ -99,16 +100,16 @@ public class AtomView : ITransform
 
     public void CreateCollider()
     {
-        Collider = ColliderPool.GlobalPool.BorrowCollider();
-        Collider.SetAtom(this, Position, Radius);
+        collider = ColliderPool.GlobalPool.BorrowCollider();
+        collider.SetAtom(this, Position, Radius);
     }
 
     public void DestroyCollider()
     {
-        if (Collider != null)
+        if (collider is not null)
         {
-            ColliderPool.GlobalPool.DropCollider(Collider);
-            Collider = null;
+            ColliderPool.GlobalPool.DropCollider(collider);
+            collider = null;
         }
     }
 
@@ -135,8 +136,8 @@ public class AtomView : ITransform
     public string RenderMat;
     public float Charge;
     public float Radius;
-    public ColliderScript Collider;
-
+    
+    private ColliderScript collider;
     private Matrix4x4? transformCache;
 
     public Matrix4x4 Transform
