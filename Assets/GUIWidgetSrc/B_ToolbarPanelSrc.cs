@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class B_ToolbarPanelSrc : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -39,7 +40,6 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         btnPlay = this.transform.GetChild(3).gameObject.GetComponent<Button>();
         btnNext = this.transform.GetChild(4).gameObject.GetComponent<Button>();
         btnTail = this.transform.GetChild(5).gameObject.GetComponent<Button>();
-
     }
 
     public void OnPlayerFocusBtnClicked()
@@ -96,7 +96,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 #if !UNITY_WEBGL
         //GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !onPlay);
 #endif
-        if (onPlay == true)
+        if (onPlay)
         {
             this.PlayerBtnChecked((false, false));
 #if !UNITY_WEBGL
@@ -121,7 +121,6 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 #endif
             this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
         }
-
     }
 
     IEnumerator PlayStructure()
@@ -133,24 +132,24 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             if (timer >= L_DisplayPanelSrc.displayPanelPara.paraDict["play interval"].GetComponent<Slider>().value)
             {
                 //print("HelloWorld")/*;*/
-                if (MainScr.S.CurrentArc().currentStr == MainScr.S.CurrentArc().structureList.Count - 1)
+                if (MainScr.S.currentArcIndex == MainScr.S.currentFile.Structures.Count - 1)
                 {
-                    MainScr.S.CurrentArc().DrawStructure(0);
+                    MainScr.S.SwitchArc(0);
                 }
                 else
                 {
-                    MainScr.S.CurrentArc().DrawStructure('+');
+                    MainScr.S.SwitchArc(MainScr.S.currentArcIndex + 1);
                 }
+
                 timer = 0;
             }
         }
-
     }
 
     public void PlayerBtnChecked((bool lower, bool upper) playStatus)
     {
         //check if the player Button should be de-activate or re-activate
-        if (playStatus.lower == true)
+        if (playStatus.lower)
         {
             btnHead.interactable = true;
             btnFoward.interactable = true;
@@ -160,7 +159,8 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             btnHead.interactable = false;
             btnFoward.interactable = false;
         }
-        if (playStatus.upper == true)
+
+        if (playStatus.upper)
         {
             //print(toolbarPaenl.transform.GetChild(1));
             btnTail.interactable = true;
