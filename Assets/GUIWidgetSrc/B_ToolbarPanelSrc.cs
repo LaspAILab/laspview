@@ -119,7 +119,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
             R_ServerPanelSrc.S.NetLocalBtnChange();
 #endif
-            this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
+            // this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
         }
     }
 

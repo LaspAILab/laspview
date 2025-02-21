@@ -88,10 +88,12 @@ public class L_FilePanelSrc : MonoBehaviour
 #endif
     private void FileRead(string[] paths)
     {
-        foreach (string str in paths)
+        if (paths.Length == 0)
         {
-            MainScr.S.AddArc(str);
+            return;
         }
+        
+        MainScr.S.OpenArcFile(paths[0]);
     }
 
     public void FileSaveSingle()
