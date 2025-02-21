@@ -71,9 +71,14 @@ public class StructureRenderer : MonoBehaviour
         RecollectDrawBatches();
     }
 
-    public bool SetLatticeRepeat(int repeatA, int repeatB, int repeatC)
+    public void SetLatticeRepeat(int repeatA, int repeatB, int repeatC)
     {
-        Debug.Log($"Setting lattice repeat {repeatA}, {repeatB}, {repeatC}");
+        if (repeatA == 1 && repeatB == 1 && repeatC == 1)
+        {
+            latticeTransforms = null;
+            RecollectDrawBatches();
+            return;
+        }
 
         latticeTransforms = new Matrix4x4[repeatA, repeatB, repeatC];
         for (int i = 0; i < repeatA; i++)
@@ -88,13 +93,12 @@ public class StructureRenderer : MonoBehaviour
         }
 
         RecollectDrawBatches();
-        return true;
     }
 
     // Duplicate render items, to render multiple lattices
     private void ReplicateBuffer(ref List<Matrix4x4> buffer)
     {
-        if (latticeTransforms == null || latticeTransforms.Length == 1)
+        if (latticeTransforms == null)
         {
             return;
         }

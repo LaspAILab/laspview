@@ -183,6 +183,7 @@ public class GuiMain : MonoBehaviour
         //Vector3 mouse_world = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         castGO = null;
         mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        /*
         if (mouseLastPos != Vector3.zero)
         {
             if (Physics.Raycast(mouseRay, out hitInfo, 500f, 1 << LayerMask.NameToLayer("TransparentFX")))
@@ -237,6 +238,7 @@ public class GuiMain : MonoBehaviour
                 }
             }
         }
+        */
 
         // 如果没有鼠标操作(纯键盘操作)
         if (!(Input.GetKey(KeyCode.Mouse0) || Input.GetKeyUp(KeyCode.Mouse0) ||
@@ -246,6 +248,7 @@ public class GuiMain : MonoBehaviour
             Input.GetAxis("Mouse ScrollWheel") != 0))
         {
             //Ctrl C V delete Z
+            /*
             if (true)
             {
                 //DELETE/Backspace删除原子
@@ -357,6 +360,7 @@ public class GuiMain : MonoBehaviour
                     EditUndoStruc();
                 }
             }
+            */
         }
         // 如果有鼠标操作
         else if (onMove == false)
@@ -391,7 +395,7 @@ public class GuiMain : MonoBehaviour
                 }
             }
 
-            if (rayStartOnUI == true)
+            if (rayStartOnUI)
             {
                 //To move a Draggable Widget(GameObject that syfDragUI component poiting to)
                 if ((Input.GetKey(KeyCode.Mouse2) || Input.GetKey(KeyCode.Mouse0)) && dragCom != null)
@@ -409,8 +413,9 @@ public class GuiMain : MonoBehaviour
                     dragCom.draggedGameObject.transform.SetAsLastSibling();
                 }
             }
-            else if (rayStartOnUI == false)
+            else
             {
+                /*
                 //鼠标左键按下，无LeftCronl: 准备开始选中原子：取消所有选中的原子，开始计时
                 if (Input.GetKeyDown(KeyCode.Mouse0) && !Input.GetKey(KeyCode.LeftControl))
                 {
@@ -515,9 +520,11 @@ public class GuiMain : MonoBehaviour
 
                     }
                 }
+                */
             }
             onMoveCollectTime = Time.time;
         }
+        /*
         else if (onMove)
         {
             //选中原子
@@ -741,6 +748,7 @@ public class GuiMain : MonoBehaviour
             }
 
         }
+        */
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         bool getkey = (Input.GetKey(KeyCode.Delete) || Input.GetKey(KeyCode.Backspace) || Input.GetKey(KeyCode.LeftControl));

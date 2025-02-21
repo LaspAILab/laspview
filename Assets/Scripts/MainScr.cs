@@ -90,7 +90,7 @@ end
         try
         {
             //print(lines.Length);
-            newArc.ArcRead(filename, lines);
+            // newArc.ArcRead(filename, lines);
 
             bool firstStructureLoaded = false;
             Task.Run(() =>
@@ -127,9 +127,9 @@ end
             GameObject.Destroy(newArc.gameObject);
             ConFun.UpdateStatusLabel($"Err: Error in read file {filename}.Please check file.");
         }
-        arcList.Add(newArc);
+        // arcList.Add(newArc);
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
-        DrawArc(arcList.Count - 1);
+        // DrawArc(arcList.Count - 1);
     }
 
     public void SwitchArc(int index)
