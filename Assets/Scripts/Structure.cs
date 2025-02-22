@@ -41,9 +41,6 @@ public class Structure : MonoBehaviour
     public float nopathway = 0.0F;
     public bool ts = false;
 
-    public List<List<AtomOperation>> operationUndoList = new List<List<AtomOperation>>();
-
-
     void Awake()
     {
         this.transform.position = Vector3.zero;
@@ -526,7 +523,6 @@ public class Structure : MonoBehaviour
 
     public void ChangeLatPara(float[] abc, bool keepFractionalPos)
     {
-        GuiMain.S.EditSaveStruc(atomList, 'l');
         Matrix4x4 oldInverse = this.lat.inverse;
         this.abc = abc;
         ChangeLat();

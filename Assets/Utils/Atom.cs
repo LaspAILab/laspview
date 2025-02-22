@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -28,7 +29,7 @@ public class AtomView : ITransform
     /// <param name="structure">The parent structure of the atom</param>
     /// <param name="repeat">If true, then use repeat, else use clamp</param>
     /// <returns></returns>
-    public static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure, bool repeat = true)
+    private static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure, bool repeat = true)
     {
         // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
         Vector3 fract = structure.CartesianToFractional(posCartesian);
@@ -64,6 +65,7 @@ public class AtomView : ITransform
         collider = null;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure)
     {
         SourceAtom.Coordinates = posCartesian;
@@ -78,6 +80,7 @@ public class AtomView : ITransform
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetElement(string newSymbol)
     {
         SourceAtom.Symbol = newSymbol;
@@ -98,12 +101,14 @@ public class AtomView : ITransform
         transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CreateCollider()
     {
         collider = ColliderPool.GlobalPool.BorrowCollider();
         collider.SetAtom(this, Position, Radius);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DestroyCollider()
     {
         if (collider is not null)

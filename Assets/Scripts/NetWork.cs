@@ -340,7 +340,7 @@ namespace ViewerNetwork
         {
             Loom.QueueOnMainThread((param) =>
             {
-                //MainScr.S.AddArc(fileName, msg);
+                // MainScr.S.AddArc(fileName, msg);
                 // MainScr.S.AddArcByCorouWaiting(fileName, msg);
                 File.Delete(fileName);
             }, null);
