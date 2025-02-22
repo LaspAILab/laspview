@@ -12,36 +12,9 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 
-// Unity cannot serialize raw json arrays, so we wrap it with a class as a workaround
-[Serializable]
-public struct SerializedElementContainer
-{
-    public SerializableElement[] Elements;
 
-    [Serializable]
-    public struct SerializableElement
-    {
-        public int Number;
-        public string Symbol;
-        public float Radius;
-        public int[] Color;
-    }
-}
 
-public struct ElementData
-{
-    public int Number;
-    public float Radius;
-    public Color Color;
 
-    public ElementData(SerializedElementContainer.SerializableElement serializableElement)
-    {
-        Number = serializableElement.Number;
-        Radius = serializableElement.Radius;
-        Color = new Color(serializableElement.Color[0] / 255.0f, serializableElement.Color[1] / 255.0f,
-            serializableElement.Color[2] / 255.0f, serializableElement.Color[3] / 255.0f);
-    }
-}
 
 public class ConFun : MonoBehaviour
 {
@@ -87,7 +60,7 @@ public class ConFun : MonoBehaviour
 #else
         NecessaryConfigKeys = new List<string>();
 #endif
-        ReadPeriodicTable();
+        
         ReadGlobalConfig();
         GlobalConfig.Add("model_type", "scale");
         bondBoundry = 0.63f;
@@ -96,13 +69,6 @@ public class ConFun : MonoBehaviour
     public static string[] PySplit(string line)
     {
         return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
-    }
-
-    private void ReadPeriodicTable()
-    {
-        var periodicTableJson = Resources.Load<TextAsset>("Elements");
-        var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson.text).Elements;
-        Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
     }
 
     public void ReadGlobalConfig()
@@ -130,15 +96,6 @@ public class ConFun : MonoBehaviour
         }
     }
 
-    public void OnStructureIndexChange()
-    {
-        /*
-        int index = int.Parse(structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().text) - 1;
-        index = Mathf.Min(MainScr.S.CurrentArc().structureList.Count - 1, index);
-        B_ToolbarPanelSrc.S.PlayerBtnChecked((true, true));
-        */
-    }
-
     public static void printStructureInfo(int currentStruc, int totalStrucs, float energy)
     {
         //print(structureText);
@@ -151,17 +108,6 @@ public class ConFun : MonoBehaviour
     {
         statusLabel.text = str;
         Debug.Log(str);
-    }
-
-    public static void printNoteInfo()
-    {
-        //string str = noteInfoText[Random.Range(0, noteInfoText.Length)];
-        //statusText.text = str;
-    }
-
-    public static void printErrorInfo()
-    {
-        //print to File
     }
 
 

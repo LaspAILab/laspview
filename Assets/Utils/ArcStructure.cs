@@ -153,8 +153,10 @@ public class ArcFile
     public List<ArcStructure> Structures
     {
         get;
-        set;
+        private set;
     }
+    
+    public int StructureCount => Structures.Count;
 
     public ArcFile()
     {
