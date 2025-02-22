@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 enum ToolType
 {
@@ -20,11 +20,12 @@ public class ViewportController : MonoBehaviour
 {
     const float DOUBLE_CLICK_THRESHOLD = 0.2f;
     
-    public GameObject ColliderPrefab;
-    public GameObject ColliderParent;
+    public GameObject colliderPrefab;
+    public GameObject colliderParent;
     
     [NonSerialized] public StructureRenderer structureRenderer;
     [NonSerialized] public LatticeRenderer latticeRenderer;
+    [NonSerialized] public SelectionManager selectionManager;
     [NonSerialized] private Camera activeCamera;
 
     private float bondTolerance = 1.26f;
@@ -34,7 +35,6 @@ public class ViewportController : MonoBehaviour
     // Whether to update bonds in realtime when moving atoms
     private bool updateBondsRealtime = true;
     private int repeatA = 1, repeatB = 1, repeatC = 1;
-    private List<AtomView> selection = new();
 
     private Vector3 cameraCenter;
 
@@ -59,10 +59,11 @@ public class ViewportController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        selectionManager = new();
         structureRenderer = GetComponent<StructureRenderer>();
         latticeRenderer = GetComponent<LatticeRenderer>();
         activeCamera = Camera.main;
-        ColliderPool.GlobalPool = new(ColliderPrefab, ColliderParent);
+        ColliderPool.GlobalPool = new(colliderPrefab, colliderParent);
     }
 
     public float BondTolerance
@@ -70,7 +71,7 @@ public class ViewportController : MonoBehaviour
         get => bondTolerance;
         set
         {
-            if (bondTolerance == value)
+            if (Mathf.Approximately(bondTolerance, value))
             {
                 return;
             }
@@ -159,7 +160,7 @@ public class ViewportController : MonoBehaviour
         bool modified = false;
         if (repeatA != null)
         {
-            modified = modified || this.repeatA != repeatA.Value;
+            modified = this.repeatA != repeatA.Value;
             this.repeatA = repeatA.Value;
         }
 
@@ -183,34 +184,6 @@ public class ViewportController : MonoBehaviour
         structureRenderer.SetLatticeRepeat(this.repeatA, this.repeatB, this.repeatC);
         latticeRenderer.RenderLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
         RefocusCamera();
-    }
-
-    void SelectAtom(AtomView atomView)
-    {
-        atomView.RenderMat = StructureRenderer.RENDERMAT_SELECTION;
-        selection.Add(atomView);
-    }
-
-    void DeselectAtom(AtomView atomView)
-    {
-        atomView.RenderMat = atomView.Symbol;
-        selection.Remove(atomView);
-    }
-
-    bool DeselectAll()
-    {
-        if (selection.Count == 0)
-        {
-            return false;
-        }
-
-        foreach (var item in selection)
-        {
-            item.RenderMat = item.Symbol;
-        }
-
-        selection.Clear();
-        return true;
     }
 
     void MoveAtoms(IEnumerable<AtomView> atoms, Vector3 translation)
@@ -279,11 +252,11 @@ public class ViewportController : MonoBehaviour
         {
             if (raycastAtom.Count > 0)
             {
-                if (selection.Contains(clickedAtom))
+                if (selectionManager.IsSelected(clickedAtom))
                 {
                     if (shiftDown)
                     {
-                        DeselectAtom(clickedAtom);
+                        selectionManager.Deselect(clickedAtom);
                     }
                     // Do nothing if the same atom is selected again without Shift pressed
                 }
@@ -292,17 +265,17 @@ public class ViewportController : MonoBehaviour
                     // Replace selection if Shift not pressed
                     if (!shiftDown)
                     {
-                        DeselectAll();
+                        selectionManager.ClearSelection();
                     }
 
-                    SelectAtom(clickedAtom);
+                    selectionManager.Select(clickedAtom);
                 }
 
                 rendererShallUpdate = true;
             }
             else if (!shiftDown && !altDown)
             {
-                if (DeselectAll())
+                if (selectionManager.ClearSelection())
                 {
                     rendererShallUpdate = true;
                 }
@@ -417,18 +390,17 @@ public class ViewportController : MonoBehaviour
             var translation = mouseWorldPos - activeCamera.ScreenToWorldPoint(prevMousePos);
 
             // If we are dragging one atom, then we don't want to switch to another one when hovering on another atom
-            if (raycastAtom.Count > 0 && (selection.Count == 0 || (selection.Count == 1 && !isDraggingAtom)))
+            if (raycastAtom.Count > 0 && (selectionManager.IsEmpty || (selectionManager.Count == 1 && !isDraggingAtom)))
             {
                 // If one or none atoms are selected, then the atom at cursor is moved
-                DeselectAll();
-                SelectAtom(clickedAtom);
+                selectionManager.ReplaceSelection(clickedAtom);
             }
 
-            MoveAtoms(selection, translation);
+            MoveAtoms(selectionManager.Selection, translation);
             if (updateBondsRealtime)
             {
                 CurrentStructureView.BondMutex.WaitOne();
-                foreach (var item in selection)
+                foreach (var item in selectionManager.Selection)
                 {
                     CurrentStructureView.UpdateAtomBonds(item, bondTolerance, true);
                 }
@@ -445,7 +417,7 @@ public class ViewportController : MonoBehaviour
             if (isDraggingAtom && !updateBondsRealtime)
             {
                 CurrentStructureView.BondMutex.WaitOne();
-                foreach (var item in selection)
+                foreach (var item in selectionManager.Selection)
                 {
                     CurrentStructureView.UpdateAtomBonds(item, bondTolerance, true);
                 }
@@ -474,9 +446,9 @@ public class ViewportController : MonoBehaviour
 
         if (currentTool != ToolType.RENAME_ATOM)
         {
-            for (int i = 0; i < selection.Count; i++)
+            for (int i = 0; i < selectionManager.Count; i++)
             {
-                var posScreen = activeCamera.WorldToScreenPoint(selection[i].Position);
+                var posScreen = activeCamera.WorldToScreenPoint(selectionManager.Selection[i].Position);
                 posScreen.y = Screen.height - posScreen.y;
                 if (!Screen.safeArea.Contains(new Vector2(posScreen.x, posScreen.y)))
                 {
