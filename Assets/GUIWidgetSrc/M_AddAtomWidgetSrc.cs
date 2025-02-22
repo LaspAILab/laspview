@@ -43,7 +43,8 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
             ConFun.UpdateStatusLabel("Err: " + ele + "is not an available element.");
             return;
         }
-
+        
+        /*
         AtomScript p = MainScr.S.CurrentStructure().AddAtom(ele, pos);
         //Cancel pickGO
         GuiMain.S.DisSelectPickGO();
@@ -54,7 +55,6 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         {
             ren.material.color = Color.yellow;
         }
+        */
     }
-
-
 }

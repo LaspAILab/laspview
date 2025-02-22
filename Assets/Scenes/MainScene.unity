@@ -983,7 +983,6 @@ MonoBehaviour:
   ArcStructuresPrefabVar: {fileID: 9043245066549477404, guid: e1df26a645eed964ba6ad36d04df10df,
     type: 3}
   arcList: []
-  currentArc: 0
   rotateSpeed: 0.2
   currentArcIndex: -1
 --- !u!114 &534669907
@@ -1090,9 +1089,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acbecc8da85dc6b4f80b643e1b401c2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ColliderPrefab: {fileID: 2774672834428288584, guid: 664ad0f6b1dd9954daea76aea5778a19,
+  colliderPrefab: {fileID: 2774672834428288584, guid: 664ad0f6b1dd9954daea76aea5778a19,
     type: 3}
-  ColliderParent: {fileID: 1033523878}
+  colliderParent: {fileID: 1033523878}
   labelStyle:
     m_Name: 
     m_Normal:
@@ -2294,13 +2293,13 @@ MonoBehaviour:
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 1
-  m_CharacterLimit: 3
+  m_CharacterLimit: 5
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 534669907}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: OnStructureIndexChange
+      - m_Target: {fileID: 534669906}
+        m_TargetAssemblyTypeName: MainScr, Assembly-CSharp
+        m_MethodName: OnChangeArc
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

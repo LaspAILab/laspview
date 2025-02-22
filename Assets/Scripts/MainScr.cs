@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using UnityEditor;
 using System.Runtime.ConstrainedExecution;
+using UnityEngine.UI;
 
 public class MainScr : MonoBehaviour
 {
@@ -21,12 +22,12 @@ public class MainScr : MonoBehaviour
     //static public MainScr camera;
 
     static public MainScr S;
+    public static GameObject structureText;
 #if !UNITY_WEBGL
     public LocalServer localServer;
 #endif
     public GameObject ArcStructuresPrefabVar;
     public List<ArcStructures> arcList;
-    public int currentArc = -1;
 
     //Camera parameters;
     //private float m_fLastMousePosX = 0.0f;
@@ -38,10 +39,12 @@ public class MainScr : MonoBehaviour
 
     public ArcFile currentFile;
     public int currentArcIndex = -1;
+    public float bondTolerance = 1.35f;
 
     void Awake()
     {
         S = this;
+        structureText = GameObject.Find("StructureText");
 #if !UNITY_WEBGL
         localServer = this.gameObject.AddComponent<LocalServer>();
 #endif
@@ -99,6 +102,13 @@ end
         });
     }
 
+    public void OnChangeArc()
+    {
+        int index = int.Parse(structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().text) - 1;
+        index = Mathf.Min(currentFile.Structures.Count - 1, index);
+        SwitchArc(index);
+    }
+
     public void SwitchArc(int index)
     {
         index = Mathf.Clamp(index, 0, currentFile.Structures.Count - 1);
@@ -118,31 +128,6 @@ end
                 ConFun.printStructureInfo(index, currentFile.Structures.Count, currentFile.Structures[index].Energy);
             });
         });
-    }
-
-    public void DrawArc(int arcIndex = -1)
-    {
-        if (arcIndex == -1) arcIndex = arcList.Count - 1;
-        arcList[currentArc].DeDrawArc();
-        arcList[currentArc].gameObject.SetActive(false);
-        ArcStructures targetArc = arcList[arcIndex];
-        targetArc.gameObject.SetActive(true);
-        currentArc = arcIndex;
-        L_DisplayPanelSrc.S.DisplayLoadModelPara();
-        //print(arcList[currentArc].filename);
-        (bool, bool) playerStatus = targetArc.DrawStructure(targetArc.currentStr);
-        GuiMain.S.FocusCameraCenter();
-        B_ToolbarPanelSrc.S.PlayerBtnChecked((true, true));
-    }
-
-    public ArcStructures CurrentArc()
-    {
-        return arcList[currentArc];
-    }
-
-    public Structure CurrentStructure()
-    {
-        return arcList[currentArc].CurrentStructure();
     }
 
     private void Update()

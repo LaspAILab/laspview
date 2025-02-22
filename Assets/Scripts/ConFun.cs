@@ -132,9 +132,11 @@ public class ConFun : MonoBehaviour
 
     public void OnStructureIndexChange()
     {
+        /*
         int index = int.Parse(structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().text) - 1;
         index = Mathf.Min(MainScr.S.CurrentArc().structureList.Count - 1, index);
         B_ToolbarPanelSrc.S.PlayerBtnChecked((true, true));
+        */
     }
 
     public static void printStructureInfo(int currentStruc, int totalStrucs, float energy)

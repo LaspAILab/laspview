@@ -107,7 +107,7 @@ public class L_EditPanelSrc : MonoBehaviour
         GuiMain.S.SetUIInteract(btn, false);
 
         M_EditLatticeWidgetSrc.S.gameObject.SetActive(true);
-        M_EditLatticeWidgetSrc.S.SetLatPara(MainScr.S.CurrentStructure().abc);
+        // M_EditLatticeWidgetSrc.S.SetLatPara(MainScr.S.CurrentStructure().abc);
         M_EditLatticeWidgetSrc.S.closeBtn.onClick.AddListener(() =>
         {
             GuiMain.S.SetUIInteract(btn, true);

@@ -521,26 +521,6 @@ public class Structure : MonoBehaviour
 
     }
 
-    public void ChangeLatPara(float[] abc, bool keepFractionalPos)
-    {
-        Matrix4x4 oldInverse = this.lat.inverse;
-        this.abc = abc;
-        ChangeLat();
-        Matrix4x4 newLattice = this.lat;
-
-        if (keepFractionalPos)
-        {
-            foreach (AtomScript at in atomList)
-            {
-                Transform nodeTransform = at.transform.parent;
-                nodeTransform.position = newLattice * (oldInverse * nodeTransform.position);
-            }
-        }
-        GuiMain.S.FocusCameraCenter();
-        ReDrawModel();
-
-    }
-
     public void ChangeExtendAtomPos()
     {
         foreach (AtomScript at1 in this.atomList)

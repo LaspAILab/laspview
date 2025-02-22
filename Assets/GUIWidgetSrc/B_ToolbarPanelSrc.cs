@@ -44,35 +44,31 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 
     public void OnPlayerFocusBtnClicked()
     {
-        GuiMain.S.FocusCameraCenter();
+        Camera.main.GetComponent<ViewportController>().RefocusCamera();
     }
 
     public void OnPlayerHeadBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(0));
+        MainScr.S.SwitchArc(0);
     }
 
     public void OnPlayerTailBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        // ArcStructures arc = MainScr.S.CurrentArc();
         MainScr.S.SwitchArc(MainScr.S.currentFile.Structures.Count - 1);
-        // PlayerBtnChecked(arc.DrawStructure(MainScr.S.currentFile.Structures.Count - 1));
     }
 
     public void OnPlayerForwardBtnClicked()
     {
         //draw the first sturcture, then check the player button status
         MainScr.S.SwitchArc(MainScr.S.currentArcIndex + 1);
-        // PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure('+'));
     }
 
     public void OnPlayerBackBtnClicked()
     {
         //draw the first sturcture, then check the player button status
         MainScr.S.SwitchArc(MainScr.S.currentArcIndex - 1);
-        // PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure('-'));
     }
 
     public void OnPlayerPlayBtnClicked()
