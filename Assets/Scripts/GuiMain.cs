@@ -29,8 +29,6 @@ public class GuiMain : MonoBehaviour
     public GameObject R_ServerPanelPrefab;
 #endif
 
-    public GameObject nodePrefab;
-    public GameObject atomPrefab;
     public GameObject mouseBoxLinePrefab;
 
     GameObject menuPanel;
@@ -46,51 +44,19 @@ public class GuiMain : MonoBehaviour
     //********************* VAR for MOUSE CONTROL*********************
     syfDragUI dragCom = null;
     Vector3 selectGOOffset;
-    public bool rayStartOnUI = false;
 
     public Transform cameraTransform;
     private Transform cameraCenter;
     private Vector3 mouseLastPos;
-    private float noOperationTimeSince;
-
-    GameObject castGO = null;
-    Ray mouseRay;
-    RaycastHit hitInfo;
-
-    //public bool editEnable;          //Pick Enalble
-    public bool onMove = false;
-    public bool onCameraRotate = false;
-    public bool onCameraTranslate = false;
-    public bool onAtomSelect = false;
-    public bool onAtomRotate = false;
-    public bool onAtonTranslate = false;
-    public float onMoveCollectTime;
 
     //Local Var used for Camera Control
     private Vector3 pickAtomAvgPos;         //for pick rotate
     private Vector3 pickAtomAvgPosScreen;
     private Vector3 offsetTemp;             //for tranlate    
-
-
-
-    public List<GameObject> pickGO = new List<GameObject>();         //for Pick
-    public List<GameObject> copyGO = new List<GameObject>();         //for Pick
-    private List<GameObject> pasteGO = new List<GameObject>();
-    public GameObject expandAtom;           //for RayCastPick, expand Atom
-    private Vector3 expandAtomScale = new Vector3(0.3f, 0.3f, 0.3f);//for RayCastPick, expand Atom
+    
     private float mouse0PressedTime;        //for Pick
     private Vector3 mouseStart;             //for Pick
     public LineRenderer[] mouseBox;         //for Pick
-    static Vector3 copyBias = new Vector3(2500f, 0, 0);
-    private List<AtomScript> pickAtomOrigin = new List<AtomScript>(); //for pick Atom
-    private List<AtomScript> pickAtomDerived = new List<AtomScript>();
-    //private List<>
-    private List<BondScript> changeBond = new List<BondScript>();
-    private List<BondScript> changeBondDerived = new List<BondScript>();
-
-
-    private Dictionary<Vector3, AtomScript> atomScreenPosTemp = new Dictionary<Vector3, AtomScript>();
-    //************************** END  *****************************
 
 
     void Awake()
@@ -103,9 +69,6 @@ public class GuiMain : MonoBehaviour
         rightCanvas = GameObject.Find("RightCanvas");
         cameraTransform = Camera.main.transform;
         SetMenuBtn();
-
-        cameraCenter = Instantiate(nodePrefab).GetComponent<Transform>();
-        cameraCenter.gameObject.name = "NodePrefab(CameraCenter)";
     }
 
     //relate Button with GameObjects, mainly panels, that can be hidden.
@@ -160,13 +123,6 @@ public class GuiMain : MonoBehaviour
             s.image.color = UiPressedColor;
             s.interactable = false;
         }
-    }
-
-    public void CameraActicate()
-    {
-#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        noOperationTimeSince = Time.time;
-#endif
     }
 
     private LineRenderer mouseBoxLine(Vector3 v1, Vector3 v2)

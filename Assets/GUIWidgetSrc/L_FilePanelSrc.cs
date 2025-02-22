@@ -93,7 +93,7 @@ public class L_FilePanelSrc : MonoBehaviour
             return;
         }
         
-        MainScr.S.OpenArcFile(paths[0]);
+        App.Instance.OpenArcFile(paths[0]);
     }
 
     public void FileSaveSingle()

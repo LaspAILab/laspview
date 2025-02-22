@@ -50,25 +50,25 @@ public class B_ToolbarPanelSrc : MonoBehaviour
     public void OnPlayerHeadBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        MainScr.S.SwitchArc(0);
+        App.Instance.SwitchStructure(0);
     }
 
     public void OnPlayerTailBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        MainScr.S.SwitchArc(MainScr.S.currentFile.Structures.Count - 1);
+        App.Instance.SwitchStructure(App.Instance.CurrentFile.StructureCount - 1);
     }
 
     public void OnPlayerForwardBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        MainScr.S.SwitchArc(MainScr.S.currentArcIndex + 1);
+        App.Instance.SwitchStructure(App.Instance.CurrentStructureIndex + 1);
     }
 
     public void OnPlayerBackBtnClicked()
     {
         //draw the first sturcture, then check the player button status
-        MainScr.S.SwitchArc(MainScr.S.currentArcIndex - 1);
+        App.Instance.SwitchStructure(App.Instance.CurrentStructureIndex - 1);
     }
 
     public void OnPlayerPlayBtnClicked()
@@ -128,13 +128,13 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             if (timer >= L_DisplayPanelSrc.displayPanelPara.paraDict["play interval"].GetComponent<Slider>().value)
             {
                 //print("HelloWorld")/*;*/
-                if (MainScr.S.currentArcIndex == MainScr.S.currentFile.Structures.Count - 1)
+                if (App.Instance.CurrentStructureIndex == App.Instance.CurrentFile.StructureCount - 1)
                 {
-                    MainScr.S.SwitchArc(0);
+                    App.Instance.SwitchStructure(0);
                 }
                 else
                 {
-                    MainScr.S.SwitchArc(MainScr.S.currentArcIndex + 1);
+                    App.Instance.SwitchStructure(App.Instance.CurrentStructureIndex + 1);
                 }
 
                 timer = 0;
