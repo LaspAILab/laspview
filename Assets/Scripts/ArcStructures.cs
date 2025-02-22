@@ -45,7 +45,6 @@ public class ArcStructures : MonoBehaviour
 
     public (bool, bool) DrawStructure(int i)
     {
-        GuiMain.S.DisSelectPickGO();
         if (i != currentStr)
         {
             //structureList[currentStr].DeDrawModel();

@@ -103,9 +103,9 @@ public class L_FilePanelSrc : MonoBehaviour
         {
             if (path != null && path != "")
             {
-                string str = MainScr.S.CurrentArc().ArcWrite();
+                // string str = MainScr.S.CurrentArc().ArcWrite();
 #if !UNITY_WEBGL
-                File.WriteAllText(path, str);
+                // File.WriteAllText(path, str);
 #endif
             }
         });

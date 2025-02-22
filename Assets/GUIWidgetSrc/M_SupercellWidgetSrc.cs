@@ -32,6 +32,7 @@ public class M_SupercellWidgetSrc : MonoBehaviour
 
     public void Supercell()
     {
+        /*
         int a = (int)paraDict["a"].GetComponent<Slider>().value;
         int b = (int)paraDict["b"].GetComponent<Slider>().value;
         int c = (int)paraDict["c"].GetComponent<Slider>().value;
@@ -71,7 +72,7 @@ public class M_SupercellWidgetSrc : MonoBehaviour
         paraDict["a"].GetComponent<Slider>().value = 1;
         paraDict["b"].GetComponent<Slider>().value = 1;
         paraDict["c"].GetComponent<Slider>().value = 1;
-
+        */
     }
 
 }
