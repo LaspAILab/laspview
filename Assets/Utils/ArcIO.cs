@@ -32,7 +32,7 @@ public static class ArcIO
                 if (currentStructure != null)
                 {
                     arcFile.Structures.Add(currentStructure);
-                    progressCallback?.Invoke(arcFile.Structures.Count);
+                    progressCallback?.Invoke(arcFile.StructureCount);
                 }
 
                 currentStructure = new ArcStructure();
@@ -108,7 +108,7 @@ public static class ArcIO
         if (currentStructure != null)
         {
             arcFile.Structures.Add(currentStructure);
-            progressCallback?.Invoke(arcFile.Structures.Count);
+            progressCallback?.Invoke(arcFile.StructureCount);
         }
     }
 

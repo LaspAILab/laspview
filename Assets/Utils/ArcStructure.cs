@@ -95,7 +95,7 @@ public class ArcStructure
 
     public void AddAtom(string elemSymbol, Vector3 coords, float charge)
     {
-        if (!ConFun.Elements.ContainsKey(elemSymbol))
+        if (!App.Elements.ContainsKey(elemSymbol))
         {
             throw new ArgumentException("Element symbol not found in the element data dictionary.");
         }
@@ -200,24 +200,6 @@ public class ArcStructureView
         TranslationVectorsCartesian = TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
-    public void EditAtom(int atomIndex, Vector3? newCoord = null, string newSymbol = null)
-    {
-        var targetAtom = Atoms[atomIndex].SourceAtom;
-
-        if (newCoord != null)
-        {
-            targetAtom.Coordinates = newCoord.Value;
-        }
-
-        if (newSymbol != null)
-        {
-            Assert.IsTrue(ConFun.Elements.ContainsKey(newSymbol));
-            targetAtom.Symbol = newSymbol;
-        }
-
-        Atoms[atomIndex] = new(targetAtom, Structure);
-    }
-
     private void AddBond(AtomView fromAtom, AtomView toAtom, Vector3 theta, float rate)
     {
         Bonds.Add(new BondView
@@ -266,8 +248,8 @@ public class ArcStructureView
                 continue;
             }
 
-            float radiusA = ConFun.Elements[targetAtom.Symbol].Radius;
-            float radiusB = ConFun.Elements[Atoms[i].Symbol].Radius;
+            float radiusA = App.Elements[targetAtom.Symbol].Radius;
+            float radiusB = App.Elements[Atoms[i].Symbol].Radius;
             float sumRadius = radiusA + radiusB;
 
             // Check bond within lattice

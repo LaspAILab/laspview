@@ -43,10 +43,12 @@ public class App : MonoBehaviour
 {
     public static App Instance;
     
-    public Dictionary<string, ElementData> Elements;
+    public static Dictionary<string, ElementData> Elements;
     // Queue for scheduling tasks on main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
     private ViewportController viewport;
+    
+    public float bondTolerance = 1.35f;
 
     public ArcFile CurrentFile
     {
@@ -71,7 +73,7 @@ public class App : MonoBehaviour
     {
 #if !UNITY_WEBGL
         string filename = ConFun.GlobalConfig["arc_default"];
-        OpenArcFile(Application.dataPath + "/" + filename);
+        OpenArcFile(Path.Join(Application.dataPath, filename));
 #else
         string lines = 
 @"!BIOSYM archive 2 
@@ -123,7 +125,7 @@ end
         Task.Run(() =>
         {
             ArcStructureView structureView = new(CurrentFile.Structures[index]);
-            callbackQueue.Enqueue(() =>
+            ScheduleTask(() =>
             {
                 viewport.OpenStructureView(structureView);
                 ConFun.printStructureInfo(index, CurrentFile.StructureCount, CurrentFile.Structures[index].Energy);
@@ -137,7 +139,7 @@ end
         Task.Run(() =>
         {
             CurrentFile = new();
-            CurrentFile.ReadArc(content, count => callbackQueue.Enqueue(() =>
+            CurrentFile.ReadArc(content, count => ScheduleTask(() =>
             {
                 ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
 

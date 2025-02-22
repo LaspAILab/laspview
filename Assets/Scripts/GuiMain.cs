@@ -42,8 +42,6 @@ public class GuiMain : MonoBehaviour
     private Color UiUnPressedColor = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
 
     //********************* VAR for MOUSE CONTROL*********************
-    syfDragUI dragCom = null;
-    Vector3 selectGOOffset;
 
     public Transform cameraTransform;
     private Transform cameraCenter;

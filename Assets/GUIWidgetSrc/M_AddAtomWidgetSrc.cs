@@ -38,7 +38,7 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
             ConFun.UpdateStatusLabel("Err: No Element");
             return;
         }
-        if (!ConFun.Elements.ContainsKey(ele))
+        if (!App.Elements.ContainsKey(ele))
         {
             ConFun.UpdateStatusLabel("Err: " + ele + "is not an available element.");
             return;

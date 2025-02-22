@@ -26,8 +26,6 @@ public class MainScr : MonoBehaviour
 #if !UNITY_WEBGL
     public LocalServer localServer;
 #endif
-    
-    public float bondTolerance = 1.35f;
 
     void Awake()
     {
@@ -48,7 +46,7 @@ public class MainScr : MonoBehaviour
 #if !UNITY_WEBGL
     void OnApplicationQuit()
     {
-        localServer.Quit1();
+        // localServer.Quit1();
     }
 #endif
 }
