@@ -45,7 +45,6 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         }
 
         AtomScript p = MainScr.S.CurrentStructure().AddAtom(ele, pos);
-        GuiMain.S.EditSaveStruc(new List<AtomScript> { p }, 'c');
         //Cancel pickGO
         GuiMain.S.DisSelectPickGO();
         MainScr.S.CurrentStructure().ReDrawModel();
@@ -55,7 +54,6 @@ public class M_AddAtomWidgetSrc : MonoBehaviour
         {
             ren.material.color = Color.yellow;
         }
-        GuiMain.S.EditSaveStruc(new List<AtomScript> { p });
     }
 
 

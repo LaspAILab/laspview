@@ -71,7 +71,6 @@ public class M_SupercellWidgetSrc : MonoBehaviour
         paraDict["a"].GetComponent<Slider>().value = 1;
         paraDict["b"].GetComponent<Slider>().value = 1;
         paraDict["c"].GetComponent<Slider>().value = 1;
-        GuiMain.S.EditClearUndoList();
 
     }
 
