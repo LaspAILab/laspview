@@ -12,19 +12,11 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 
-
-
-
-
 public class ConFun : MonoBehaviour
 {
-    public static Dictionary<string, ElementData> Elements;
     public static Dictionary<string, string> GlobalConfig;
     public List<string> NecessaryConfigKeys;
-    public static readonly Vector3[] LatticeCorners = { new(0,0,0), new(1,1,0), new(1,0,1), new(0,1,1),
-                                        new(1,1,1), new(0,0,1), new(0,1,0), new(1,0,0) };
-    public float bondBoundry;
-
+    
     string[] noteInfoText = new string[]
     {
         "Drag Right Mouse: rotate camera",
@@ -63,7 +55,6 @@ public class ConFun : MonoBehaviour
         
         ReadGlobalConfig();
         GlobalConfig.Add("model_type", "scale");
-        bondBoundry = 0.63f;
     }
 
     public static string[] PySplit(string line)

@@ -147,7 +147,7 @@ public class StructureRenderer : MonoBehaviour
             }
             else
             {
-                material.SetColor("_BaseColor", ConFun.Elements[renderMat].Color);
+                material.SetColor("_BaseColor", App.Elements[renderMat].Color);
             }
                 
             ElementMaterials[renderMat] = material;

@@ -24,7 +24,7 @@ public class TranslateOperation : IOperation
         structureView.BondMutex.WaitOne();
         foreach (var item in targetAtoms)
         {
-            structureView.UpdateAtomBonds(item, MainScr.S.bondTolerance, true);
+            structureView.UpdateAtomBonds(item, App.Instance.bondTolerance, true);
         }
 
         structureView.BondMutex.ReleaseMutex();
@@ -42,7 +42,7 @@ public class TranslateOperation : IOperation
         structureView.BondMutex.WaitOne();
         foreach (var item in targetAtoms)
         {
-            structureView.UpdateAtomBonds(item, MainScr.S.bondTolerance, true);
+            structureView.UpdateAtomBonds(item, App.Instance.bondTolerance, true);
         }
 
         structureView.BondMutex.ReleaseMutex();
