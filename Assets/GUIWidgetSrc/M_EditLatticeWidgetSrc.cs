@@ -33,7 +33,7 @@ public class M_EditLatticeWidgetSrc : MonoBehaviour
         float alpha = float.Parse(paraDict["alpha"].GetComponent<InputField>().textComponent.text);
         float betta = float.Parse(paraDict["betta"].GetComponent<InputField>().textComponent.text);
         float gamma = float.Parse(paraDict["gamma"].GetComponent<InputField>().textComponent.text);
-        MainScr.S.CurrentStructure().ChangeLatPara( new float[6] { a, b, c, alpha, betta, gamma }, paraDict["keep fractional position"].GetComponent<Toggle>().isOn);
+        // MainScr.S.CurrentStructure().ChangeLatPara( new float[6] { a, b, c, alpha, betta, gamma }, paraDict["keep fractional position"].GetComponent<Toggle>().isOn);
     }
 
 

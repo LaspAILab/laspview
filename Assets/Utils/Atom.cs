@@ -66,14 +66,18 @@ public class AtomView : ITransform
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure)
+    public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure, bool isTemporary)
     {
-        SourceAtom.Coordinates = posCartesian;
-        Position = ClipAtomCoords(SourceAtom.Coordinates, parentStructure, false);
+        if (!isTemporary)
+        {
+            SourceAtom.Coordinates = posCartesian;
+        }
+        
+        Position = ClipAtomCoords(posCartesian, parentStructure, false);
         transformCache = null;
 
         // A faster way for null check since Unity uses a slow overload for ==
-        if (collider is not null)
+        if (!isTemporary && collider is not null)
         {
             // Move collider
             collider.SetAtom(this, Position, Radius);

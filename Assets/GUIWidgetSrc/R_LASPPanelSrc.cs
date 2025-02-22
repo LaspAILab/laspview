@@ -322,8 +322,8 @@ public class R_LASPPanelSrc : MonoBehaviour
         wholeWorkDir = Path.Combine(lasp_run_dir, workDirName);
         Directory.CreateDirectory(wholeWorkDir);
 
-        //Write current arc
-        string arc = MainScr.S.CurrentArc().ArcWrite();
+        // TODO: Write current arc
+        string arc = "";
         File.WriteAllText(Path.Combine(wholeWorkDir, "input.arc"), arc);
 
         //Copy prefab except lasp.in

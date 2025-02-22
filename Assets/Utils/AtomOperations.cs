@@ -1,64 +1,33 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class IAtomOperation
-{
-    private bool isDone = false;
 
-    public void Do(ArcStructureView structureView)
-    {
-        if (isDone)
-        {
-            throw new InvalidOperationException("The operation has already been completed.");
-        }
-
-        if (DoImpl(structureView))
-        {
-            isDone = true;
-        }
-    }
-    
-    public void Undo(ArcStructureView structureView)
-    {
-        if (!isDone)
-        {
-            throw new InvalidOperationException("Cannot undo undone operations.");
-        }
-        
-        if (!UndoImpl(structureView))
-        {
-            isDone = false;
-        }
-    }
-    
-    protected abstract bool DoImpl(ArcStructureView structureView);
-
-    protected abstract bool UndoImpl(ArcStructureView structureView);
-    
-    public abstract bool RequireRerender { get; }
-    
-    public abstract bool RequireResort { get; }
-}
-
-public class TranslateAtomsOperation : IAtomOperation
+public class TranslateOperation : IOperation
 {
     private List<AtomView> targetAtoms;
     private Vector3 translation;
-    
-    public TranslateAtomsOperation(List<AtomView> targetAtoms, Vector3 translation)
+
+    public TranslateOperation(List<AtomView> targetAtoms, Vector3 translation)
     {
         this.targetAtoms = targetAtoms;
         this.translation = translation;
     }
-    
+
     protected override bool DoImpl(ArcStructureView structureView)
     {
         foreach (var item in targetAtoms)
         {
-            item.SetPosition(item.Position + translation, structureView.Structure);
+            item.SetPosition(item.SourceAtom.Coordinates + translation, structureView.Structure, false);
         }
+
+        structureView.BondMutex.WaitOne();
+        foreach (var item in targetAtoms)
+        {
+            structureView.UpdateAtomBonds(item, MainScr.S.bondTolerance, true);
+        }
+
+        structureView.BondMutex.ReleaseMutex();
 
         return true;
     }
@@ -67,22 +36,29 @@ public class TranslateAtomsOperation : IAtomOperation
     {
         foreach (var item in targetAtoms)
         {
-            item.SetPosition(item.Position - translation, structureView.Structure);
+            item.SetPosition(item.SourceAtom.Coordinates - translation, structureView.Structure, false);
         }
+
+        structureView.BondMutex.WaitOne();
+        foreach (var item in targetAtoms)
+        {
+            structureView.UpdateAtomBonds(item, MainScr.S.bondTolerance, true);
+        }
+
+        structureView.BondMutex.ReleaseMutex();
 
         return true;
     }
 
-    public override bool RequireRerender => true;
-    public override bool RequireResort => false;
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
-public class ChangeAtomSymbolOperation : IAtomOperation
+public class ChangeSymbolOperation : IOperation
 {
     private AtomView targetAtom;
     private string newSymbol, oldSymbol;
 
-    public ChangeAtomSymbolOperation(AtomView targetAtom, string newSymbol)
+    public ChangeSymbolOperation(AtomView targetAtom, string newSymbol)
     {
         this.targetAtom = targetAtom;
         this.newSymbol = newSymbol;
@@ -101,6 +77,5 @@ public class ChangeAtomSymbolOperation : IAtomOperation
         return true;
     }
 
-    public override bool RequireRerender => true;
-    public override bool RequireResort => true;
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }

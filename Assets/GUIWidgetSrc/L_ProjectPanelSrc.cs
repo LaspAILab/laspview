@@ -44,7 +44,7 @@ public class L_ProjectPanelSrc : MonoBehaviour
     {
         //called by 
         int index = obj.transform.GetSiblingIndex();
-        MainScr.S.DrawArc(index);
+        // MainScr.S.DrawArc(index);
 
     }
 

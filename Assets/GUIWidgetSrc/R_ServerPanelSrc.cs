@@ -190,7 +190,7 @@ public class R_ServerPanelSrc : MonoBehaviour
 
     async public void NetSendStructure()
     {
-        string text = MainScr.S.CurrentArc().ArcWrite();
+        // string text = MainScr.S.CurrentArc().ArcWrite();
 
         //Btn of "Send Structures"
         Button serverBtn = this.transform.GetChild(3).GetChild(1).gameObject.GetComponent<Button>();
@@ -205,7 +205,7 @@ public class R_ServerPanelSrc : MonoBehaviour
 
             if (client.StartClient(ip) == true)
             {
-                StringBuilder msgList = new StringBuilder(text);
+                StringBuilder msgList = new StringBuilder(/*text*/);
                 msgList = client.AddTag(msgList, "file", attr);
                 msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.GlobalConfig["user"]);
 
