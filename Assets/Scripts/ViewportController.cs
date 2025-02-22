@@ -10,6 +10,7 @@ using UnityEngine.Serialization;
 internal enum ToolType
 {
     Select,
+    BoxSelect,
     MoveView,
     RotateView,
     MoveAtom,
@@ -19,6 +20,7 @@ internal enum ToolType
 public class ViewportController : MonoBehaviour
 {
     const float DOUBLE_CLICK_THRESHOLD = 0.2f;
+    const float BOX_SELECT_THRESHOLD = 0.2f;
     const float PAN_SPEED = 1f;
 
     public GameObject colliderPrefab;
@@ -29,6 +31,7 @@ public class ViewportController : MonoBehaviour
     [NonSerialized] public SelectionManager selectionManager = null;
     [NonSerialized] public UndoManager undoManager = null;
     [NonSerialized] private Camera activeCamera;
+    [NonSerialized] private SelectionBoxDrawer selectionBoxDrawer;
 
     public GUIStyle labelStyle = new(), textboxStyle = new();
 
@@ -39,10 +42,10 @@ public class ViewportController : MonoBehaviour
     private bool updateBondsRealtime = true;
     private int repeatA = 1, repeatB = 1, repeatC = 1;
 
-    private Vector3 cameraCenter;
-
     // Angles in sphere coordinates, in radians!
     private float cameraAltitude = 0f, cameraAzimuth = 0f;
+
+    private Vector3 cameraCenter;
 
     // How far the camera is from the focal center
     private float cameraViewportSize = 0f;
@@ -58,6 +61,10 @@ public class ViewportController : MonoBehaviour
     private AtomView lastClickedAtom = null;
     private float lastClickTime = 0f;
 
+    // Record mouse down point to draw selection box
+    private Vector3 mouseDownPos;
+    private float mouseDownTime = 0f;
+
     public ArcStructureView CurrentStructureView { get; private set; } = null;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -66,6 +73,7 @@ public class ViewportController : MonoBehaviour
         structureRenderer = GetComponent<StructureRenderer>();
         latticeRenderer = GetComponent<LatticeRenderer>();
         activeCamera = Camera.main;
+        selectionBoxDrawer = GameObject.Find("SelectionBoxContainer").GetComponent<SelectionBoxDrawer>();
         ColliderPool.GlobalPool = new(colliderPrefab, colliderParent);
     }
 
@@ -200,7 +208,7 @@ public class ViewportController : MonoBehaviour
             item.SetPosition(item.Position + translation, CurrentStructureView.Structure, true);
         }
     }
-    
+
     void UpdateCamera(float? deltaAltitude, float? deltaAzimuth, float? deltaViewportSize, Vector3? deltaCenterPos)
     {
         if (deltaAltitude.HasValue)
@@ -268,7 +276,6 @@ public class ViewportController : MonoBehaviour
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-
         if (ctrlDown)
         {
             IOperation op = null;
@@ -311,6 +318,12 @@ public class ViewportController : MonoBehaviour
 
         bool shiftDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool altDown = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            mouseDownTime = Time.time;
+            mouseDownPos = Input.mousePosition;
+        }
 
         if (Input.GetKeyUp(KeyCode.Mouse0) && currentTool == ToolType.Select)
         {
@@ -435,6 +448,35 @@ public class ViewportController : MonoBehaviour
             }
         }
 
+        if (currentTool == ToolType.BoxSelect)
+        {
+            if (Input.GetKey(KeyCode.Mouse0))
+            {
+                var mousePos = Input.mousePosition;
+                // Handle box select
+                var (minX, maxX) = mousePos.x > mouseDownPos.x
+                    ? (mouseDownPos.x, mousePos.x)
+                    : (mousePos.x, mouseDownPos.x);
+                var (minY, maxY) = mousePos.y > mouseDownPos.y
+                    ? (mouseDownPos.y, mousePos.y)
+                    : (mousePos.y, mouseDownPos.y);
+                Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
+                selectionBoxDrawer.DrawBox(activeCamera, boxRect);
+            }
+            else
+            {
+                selectionBoxDrawer.Hide();
+                currentTool = ToolType.Select;
+            }
+        }
+        else if (Input.GetKey(KeyCode.Mouse0) && !isDraggingAtom && Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
+        {
+            selectionBoxDrawer.Display();
+            Rect boxRect = Rect.MinMaxRect(mouseDownPos.x, mouseDownPos.y, mouseDownPos.x, mouseDownPos.y);
+            selectionBoxDrawer.DrawBox(activeCamera, boxRect);
+            currentTool = ToolType.BoxSelect;
+        }
+
         if (Input.GetKeyUp(KeyCode.Mouse0))
         {
             var time = Time.time;
@@ -487,7 +529,9 @@ public class ViewportController : MonoBehaviour
             // Submit operation if mouse has released
             if (isDraggingAtom)
             {
-                undoManager.SubmitOperation(new TranslateOperation(selectionManager.Selection, dragTotalTranslation));
+                // Careful with assignment behavior: we have to copy assign the selection here! 
+                undoManager.SubmitOperation(new TranslateOperation(new(selectionManager.Selection),
+                    dragTotalTranslation));
 
                 rendererShallUpdate = true;
                 isDraggingAtom = false;

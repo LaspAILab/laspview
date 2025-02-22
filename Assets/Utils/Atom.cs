@@ -60,7 +60,7 @@ public class AtomView : ITransform
         RenderMat = atom.Symbol;
         Charge = atom.Charge;
         Position = ClipAtomCoords(atom.Coordinates, structure);
-        Radius = ConFun.Elements[atom.Symbol].Radius;
+        Radius = App.Elements[atom.Symbol].Radius;
         transformCache = null;
         collider = null;
     }
@@ -88,7 +88,7 @@ public class AtomView : ITransform
     public void SetElement(string newSymbol)
     {
         SourceAtom.Symbol = newSymbol;
-        Radius = ConFun.Elements[SourceAtom.Symbol].Radius;
+        Radius = App.Elements[SourceAtom.Symbol].Radius;
 
         if (RenderMat == Symbol)
         {

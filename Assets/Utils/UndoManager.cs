@@ -63,7 +63,7 @@ public class UndoManager
         if (stackTop != operationStack.Count - 1)
         {
             // Abandon remaining operations
-            operationStack.RemoveRange(stackTop, operationStack.Count - stackTop - 1);
+            operationStack.RemoveRange(stackTop + 1, operationStack.Count - stackTop - 1);
             Assert.AreEqual(stackTop, operationStack.Count - 1);
         }
 
