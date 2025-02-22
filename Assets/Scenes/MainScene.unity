@@ -839,28 +839,13 @@ MonoBehaviour:
     type: 3}
   R_ServerPanelPrefab: {fileID: 1061375235224783102, guid: 074ef9b03177749438e8c530df4fe809,
     type: 3}
-  nodePrefab: {fileID: 1582054456059128272, guid: db51956a9e00175468cfc6b591f9a299,
-    type: 3}
-  atomPrefab: {fileID: 4997048308515125665, guid: 9ff28f77f9b680440800ab9355d3f927,
-    type: 3}
   mouseBoxLinePrefab: {fileID: 7132163913887175618, guid: a7faa5ec85b7a604b843d2e517336162,
     type: 3}
   statusPanel: {fileID: 0}
   leftCanvas: {fileID: 0}
   rightCanvas: {fileID: 0}
   menuBtnStatus: 0
-  rayStartOnUI: 0
   cameraTransform: {fileID: 0}
-  onMove: 0
-  onCameraRotate: 0
-  onCameraTranslate: 0
-  onAtomSelect: 0
-  onAtomRotate: 0
-  onAtonTranslate: 0
-  onMoveCollectTime: 0
-  pickGO: []
-  copyGO: []
-  expandAtom: {fileID: 0}
   mouseBox: []
 --- !u!224 &432634782 stripped
 RectTransform:
@@ -982,9 +967,9 @@ MonoBehaviour:
   localServer: {fileID: 0}
   ArcStructuresPrefabVar: {fileID: 9043245066549477404, guid: e1df26a645eed964ba6ad36d04df10df,
     type: 3}
-  arcList: []
   rotateSpeed: 0.2
   currentArcIndex: -1
+  bondTolerance: 1.35
 --- !u!114 &534669907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1017,6 +1002,8 @@ MonoBehaviour:
     type: 3}
   extendPrefabVar: {fileID: 3380843556060708298, guid: 0463c0c9d8e970c498bc67dc107ff309,
     type: 3}
+  defaultBondScale: {x: 0.35, y: 1, z: 0.35}
+  garbage: {fileID: 0}
   farBias: {x: 2500, y: 0, z: 0}
 --- !u!114 &534669909
 MonoBehaviour:
@@ -1661,6 +1648,50 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 608749120}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &637342118
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 637342120}
+  - component: {fileID: 637342119}
+  m_Layer: 0
+  m_Name: AppContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &637342119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637342118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed9e34441ff04e3a93acf027f5380cac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &637342120
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637342118}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &639427471 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
@@ -4225,6 +4256,7 @@ RectTransform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 637342120}
   - {fileID: 170076735}
   - {fileID: 534669905}
   - {fileID: 422507620}

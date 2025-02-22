@@ -26,19 +26,7 @@ public class MainScr : MonoBehaviour
 #if !UNITY_WEBGL
     public LocalServer localServer;
 #endif
-    public GameObject ArcStructuresPrefabVar;
-    public List<ArcStructures> arcList;
-
-    //Camera parameters;
-    //private float m_fLastMousePosX = 0.0f;
-    //private float m_fLastMousePosY = 0.0f;
-    //private bool m_bMouseRightKeyDown = false;
-    public float rotateSpeed = 0.2f;
-
-    public static ConcurrentQueue<Action> callbackQueue = new();
-
-    public ArcFile currentFile;
-    public int currentArcIndex = -1;
+    
     public float bondTolerance = 1.35f;
 
     void Awake()
@@ -50,93 +38,11 @@ public class MainScr : MonoBehaviour
 #endif
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-#if !UNITY_WEBGL
-        string filename = ConFun.GlobalConfig["arc_default"];
-        OpenArcFile(Application.dataPath + "/" + filename);
-#else
-        string lines = 
-@"!BIOSYM archive 2 
-PBC = ON
-     Energy           10          10  -129.895506
-!DATE
-PBC    7.6679    7.6679   15.0000   90.0000   90.0000  120.0000
-H       0.008413248     4.455233640     8.566392459 CORE    1  H H   0.0000    1
-H       6.257571388     4.243667943     6.666642087 CORE    2  H H   0.0000    2
-H       3.815253288     0.753089160     5.124217983 CORE    3  H H   0.0000    3
-H       1.342005797     4.028462789     7.451793384 CORE    4  H H   0.0000    4
-H       0.086574563     2.814818537     7.852299561 CORE    5  H H   0.0000    5
-H       2.572615996     5.887984031     5.112457470 CORE    6  H H   0.0000    6
-C       0.279671901     3.881257765     7.667971729 CORE    7  C C   0.0000    7
-O      -0.454394321     4.353730708     6.513752863 CORE    8  O O   0.0000    8
-end
-end
-";
-        AddArc("test.arc" ,lines);
-#endif
-    }
-
-    public void OpenArcFile(string filename)
-    {
-        bool firstStructureLoaded = false;
-        Task.Run(() =>
-        {
-            currentFile = new();
-            currentFile.ReadArc(File.ReadLines(filename), count => callbackQueue.Enqueue(() =>
-            {
-                ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
-
-                if (!firstStructureLoaded)
-                {
-                    currentArcIndex = 0;
-                    ArcStructureView structureView = new(currentFile.Structures[currentArcIndex]);
-                    var viewport = Camera.main.GetComponent<ViewportController>();
-                    viewport.OpenStructureView(structureView);
-                    firstStructureLoaded = true;
-                }
-
-                ConFun.printStructureInfo(currentArcIndex, count, currentFile.Structures[currentArcIndex].Energy);
-            }));
-        });
-    }
-
     public void OnChangeArc()
     {
         int index = int.Parse(structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().text) - 1;
-        index = Mathf.Min(currentFile.Structures.Count - 1, index);
-        SwitchArc(index);
-    }
-
-    public void SwitchArc(int index)
-    {
-        index = Mathf.Clamp(index, 0, currentFile.Structures.Count - 1);
-        if (index == currentArcIndex)
-        {
-            return;
-        }
-        currentArcIndex = index;
-
-        Task.Run(() =>
-        {
-            ArcStructureView structureView = new(currentFile.Structures[index]);
-            callbackQueue.Enqueue(() =>
-            {
-                var viewport = Camera.main.GetComponent<ViewportController>();
-                viewport.OpenStructureView(structureView);
-                ConFun.printStructureInfo(index, currentFile.Structures.Count, currentFile.Structures[index].Energy);
-            });
-        });
-    }
-
-    private void Update()
-    {
-        // Run queued actions
-        if (callbackQueue.TryDequeue(out var action))
-        {
-            action();
-        }
+        index = Mathf.Min(App.Instance.CurrentFile.Structures.Count - 1, index);
+        App.Instance.SwitchStructure(index);
     }
 
 #if !UNITY_WEBGL

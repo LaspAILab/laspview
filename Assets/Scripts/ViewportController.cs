@@ -100,7 +100,7 @@ public class ViewportController : MonoBehaviour
                 CurrentStructureView.GenerateBonds(bondTolerance);
                 CurrentStructureView.SortLists();
 
-                MainScr.callbackQueue.Enqueue(() =>
+                App.Instance.ScheduleTask(() =>
                 {
                     bondRecalculationRunning = false;
                     if (bondToleranceDirtyFlag)
