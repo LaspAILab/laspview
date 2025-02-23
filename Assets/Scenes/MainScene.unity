@@ -407,7 +407,7 @@ PrefabInstance:
     - target: {fileID: 4855446089999835752, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
       propertyPath: m_Name
-      value: syfEmptyBlcok
+      value: PlaceholderBlock
       objectReference: {fileID: 0}
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
@@ -632,9 +632,9 @@ RectTransform:
   - {fileID: 208568198}
   - {fileID: 1339225062}
   - {fileID: 608749121}
-  - {fileID: 1764444934}
-  - {fileID: 2130866304}
   - {fileID: 210602562}
+  - {fileID: 2130866304}
+  - {fileID: 1764444934}
   m_Father: {fileID: 1918296187}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
@@ -839,14 +839,10 @@ MonoBehaviour:
     type: 3}
   R_ServerPanelPrefab: {fileID: 1061375235224783102, guid: 074ef9b03177749438e8c530df4fe809,
     type: 3}
-  mouseBoxLinePrefab: {fileID: 7132163913887175618, guid: a7faa5ec85b7a604b843d2e517336162,
-    type: 3}
   statusPanel: {fileID: 0}
   leftCanvas: {fileID: 0}
   rightCanvas: {fileID: 0}
   menuBtnStatus: 0
-  cameraTransform: {fileID: 0}
-  mouseBox: []
 --- !u!224 &432634782 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
@@ -1892,7 +1888,7 @@ PrefabInstance:
     - target: {fileID: 4855446089999835752, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
       propertyPath: m_Name
-      value: syfEmptyBlcok
+      value: PlaceholderBlock
       objectReference: {fileID: 0}
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
@@ -2456,7 +2452,7 @@ PrefabInstance:
     - target: {fileID: 4855446089999835752, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
       propertyPath: m_Name
-      value: syfEmptyBlcok
+      value: PlaceholderBlock
       objectReference: {fileID: 0}
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
@@ -2610,7 +2606,7 @@ PrefabInstance:
     - target: {fileID: 4855446089999835752, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
       propertyPath: m_Name
-      value: syfEmptyBlcok (1)
+      value: PlaceholderBlock
       objectReference: {fileID: 0}
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
@@ -3802,7 +3798,7 @@ PrefabInstance:
     - target: {fileID: 4855446089999835752, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
       propertyPath: m_Name
-      value: syfEmptyBlcok
+      value: PlaceholderBlock
       objectReference: {fileID: 0}
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
@@ -4577,9 +4573,9 @@ SceneRoots:
   m_Roots:
   - {fileID: 637342120}
   - {fileID: 170076735}
-  - {fileID: 1117215167}
   - {fileID: 534669905}
   - {fileID: 422507620}
   - {fileID: 703629821}
   - {fileID: 1033523879}
   - {fileID: 859746866}
+  - {fileID: 1117215167}

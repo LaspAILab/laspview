@@ -461,7 +461,7 @@ public class ViewportController : MonoBehaviour
                     ? (mouseDownPos.y, mousePos.y)
                     : (mousePos.y, mouseDownPos.y);
                 Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
-                selectionBoxDrawer.DrawBox(activeCamera, boxRect);
+                selectionBoxDrawer.DrawBox(boxRect);
             }
             else
             {
@@ -473,7 +473,7 @@ public class ViewportController : MonoBehaviour
         {
             selectionBoxDrawer.Display();
             Rect boxRect = Rect.MinMaxRect(mouseDownPos.x, mouseDownPos.y, mouseDownPos.x, mouseDownPos.y);
-            selectionBoxDrawer.DrawBox(activeCamera, boxRect);
+            selectionBoxDrawer.DrawBox(boxRect);
             currentTool = ToolType.BoxSelect;
         }
 

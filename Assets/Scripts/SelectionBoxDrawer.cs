@@ -6,17 +6,17 @@ public class SelectionBoxDrawer : MonoBehaviour
     public float thickness = 0.1f;
     
     private LineRenderer[] lineRenderers;
+    private Camera mainCamera;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        depth = Camera.main.nearClipPlane + 1e-5f;
+        mainCamera = Camera.main;
+        depth = mainCamera.nearClipPlane + 1e-5f;
         lineRenderers = new LineRenderer[4];
         for (int i = 0; i < transform.childCount; i++)
         {
             lineRenderers[i] = transform.GetChild(i).GetComponent<LineRenderer>();
-            lineRenderers[i].startWidth = thickness;
-            lineRenderers[i].endWidth = thickness;
             lineRenderers[i].positionCount = 2;
         }
         
@@ -35,11 +35,13 @@ public class SelectionBoxDrawer : MonoBehaviour
 
     private void SetLine(int i, Vector3 from, Vector3 to)
     {
+        lineRenderers[i].startWidth = thickness * mainCamera.orthographicSize;
+        lineRenderers[i].endWidth = thickness * mainCamera.orthographicSize;
         lineRenderers[i].SetPosition(0, from);
         lineRenderers[i].SetPosition(1, to);
     }
 
-    public void DrawBox(Camera mainCamera, Rect rect)
+    public void DrawBox(Rect rect)
     {
         Vector3 topLeft = mainCamera.ScreenToWorldPoint(new Vector3(rect.xMin, rect.yMin, depth));
         Vector3 topRight = mainCamera.ScreenToWorldPoint(new Vector3(rect.xMax, rect.yMin, depth));

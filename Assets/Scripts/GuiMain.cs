@@ -29,8 +29,6 @@ public class GuiMain : MonoBehaviour
     public GameObject R_ServerPanelPrefab;
 #endif
 
-    public GameObject mouseBoxLinePrefab;
-
     GameObject menuPanel;
     public GameObject statusPanel;
     public GameObject leftCanvas;
@@ -43,20 +41,6 @@ public class GuiMain : MonoBehaviour
 
     //********************* VAR for MOUSE CONTROL*********************
 
-    public Transform cameraTransform;
-    private Transform cameraCenter;
-    private Vector3 mouseLastPos;
-
-    //Local Var used for Camera Control
-    private Vector3 pickAtomAvgPos;         //for pick rotate
-    private Vector3 pickAtomAvgPosScreen;
-    private Vector3 offsetTemp;             //for tranlate    
-    
-    private float mouse0PressedTime;        //for Pick
-    private Vector3 mouseStart;             //for Pick
-    public LineRenderer[] mouseBox;         //for Pick
-
-
     void Awake()
     {
         S = this;
@@ -65,7 +49,6 @@ public class GuiMain : MonoBehaviour
         statusPanel = GameObject.Find("StatusPanel");
         leftCanvas = GameObject.Find("LeftCanvas");
         rightCanvas = GameObject.Find("RightCanvas");
-        cameraTransform = Camera.main.transform;
         SetMenuBtn();
     }
 
@@ -111,7 +94,7 @@ public class GuiMain : MonoBehaviour
     }
     public void SetUIInteract(Selectable s, bool interactable)
     {
-        if (interactable == true)
+        if (interactable)
         {
             s.image.color = UiUnPressedColor;
             s.interactable = true;
@@ -121,23 +104,6 @@ public class GuiMain : MonoBehaviour
             s.image.color = UiPressedColor;
             s.interactable = false;
         }
-    }
-
-    private LineRenderer mouseBoxLine(Vector3 v1, Vector3 v2)
-    {
-        //drawLine
-        LineRenderer line;
-        line = Instantiate(mouseBoxLinePrefab).GetComponent<LineRenderer>();
-        //line.positionCount = 2;//设置两点
-        //line.startColor = Color.white; //设置直线颜色
-        //line.endColor = Color.white;
-        line.startWidth = 0.002f * Camera.main.orthographicSize;//设置直线宽度
-        line.endWidth = 0.002f * Camera.main.orthographicSize;
-
-        //设置指示线的起点和终点
-        line.SetPosition(0, Camera.main.ScreenToWorldPoint(v1) + Camera.main.transform.forward);
-        line.SetPosition(1, Camera.main.ScreenToWorldPoint(v2) + Camera.main.transform.forward);
-        return line;
     }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
