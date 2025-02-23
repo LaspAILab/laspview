@@ -360,7 +360,7 @@ namespace ViewerNetwork
                 }
                 Loom.QueueOnMainThread((param) =>
                 {
-                    R_ServerPanelSrc.S.NetLocalBtnChange();
+                    L_ServerPanelSrc.S.NetLocalBtnChange();
                     ConFun.UpdateStatusLabel("Stop Listening");
                 }, null);
             });
@@ -368,7 +368,7 @@ namespace ViewerNetwork
 
         public void Quit2()
         {
-            if (R_ServerPanelSrc.S.lclSrvrListening == false)
+            if (L_ServerPanelSrc.S.lclSrvrListening == false)
             {
                 return;
             }

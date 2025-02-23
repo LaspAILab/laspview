@@ -11,13 +11,14 @@ using B83.Win32;
 using System.Linq;
 using System;
 using TMPro;
+using UnityEngine.Serialization;
 
 public class GuiMain : MonoBehaviour
 {
     static public GuiMain S;
     public GameObject B_ToolbarPanelPrefab;
     public GameObject L_DisplayPanelPrefab;
-    public GameObject L_EditPanelPrefab;
+    public GameObject R_LatticeEditPanelPrefab;
     public GameObject L_FilePanelPrefab;
     public GameObject L_ProjectPanelPrefab;
     public GameObject M_AddAtomWidgetPrefab;
@@ -82,7 +83,7 @@ public class GuiMain : MonoBehaviour
         //GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
         //GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
 #endif
-        GameObject l_EditPanel = Instantiate(L_EditPanelPrefab);
+        GameObject l_EditPanel = Instantiate(R_LatticeEditPanelPrefab);
     }
 
     public void SetAllUIInteract(GameObject go, bool interactable)

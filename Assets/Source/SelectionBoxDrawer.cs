@@ -3,7 +3,7 @@ using UnityEngine;
 public class SelectionBoxDrawer : MonoBehaviour
 {
     public float depth = 0.1f;
-    public float thickness = 0.1f;
+    public float thickness = 0.01f;
     
     private LineRenderer[] lineRenderers;
     private Camera mainCamera;

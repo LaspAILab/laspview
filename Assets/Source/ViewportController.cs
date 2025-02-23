@@ -64,6 +64,8 @@ public class ViewportController : MonoBehaviour
     // Record mouse down point to draw selection box
     private Vector3 mouseDownPos;
     private float mouseDownTime = 0f;
+    // Create a temporary selection manager for box selection, will be merged to the main selection when mouse up
+    private SelectionManager temporarySelectionManager;
 
     public ArcStructureView CurrentStructureView { get; private set; } = null;
 
@@ -232,6 +234,32 @@ public class ViewportController : MonoBehaviour
         }
 
         UpdateCameraTransform();
+    }
+
+    bool UpdateBoxSelection(Rect currentRect)
+    {
+        bool selectionChanged = false;
+        foreach (var item in CurrentStructureView.Atoms)
+        {
+            Vector3 pos = activeCamera.WorldToScreenPoint(item.Position);
+            bool isSelected = temporarySelectionManager.IsSelected(item);
+            bool isInRect = currentRect.Contains(pos);
+
+            if (isInRect && !isSelected)
+            {
+                temporarySelectionManager.Select(item);
+                selectionChanged = true;
+                continue;
+            }
+
+            if (!isInRect && isSelected)
+            {
+                temporarySelectionManager.Deselect(item);
+                selectionChanged = true;
+            }
+        }
+
+        return selectionChanged;
     }
 
     // Update is called once per frame
@@ -454,11 +482,16 @@ public class ViewportController : MonoBehaviour
                     : (mousePos.y, mouseDownPos.y);
                 Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
                 selectionBoxDrawer.DrawBox(boxRect);
+                rendererShallUpdate = rendererShallUpdate || UpdateBoxSelection(boxRect);
             }
             else
             {
+                // End box select
                 selectionBoxDrawer.Hide();
                 currentTool = ToolType.Select;
+                
+                selectionManager.MergeSelection(temporarySelectionManager);
+                temporarySelectionManager = null;
             }
         }
         else if (Input.GetKey(KeyCode.Mouse0) && !isDraggingAtom && Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
@@ -467,6 +500,14 @@ public class ViewportController : MonoBehaviour
             Rect boxRect = Rect.MinMaxRect(mouseDownPos.x, mouseDownPos.y, mouseDownPos.x, mouseDownPos.y);
             selectionBoxDrawer.DrawBox(boxRect);
             currentTool = ToolType.BoxSelect;
+
+            // Clear the current selection if shift down
+            if (!shiftDown)
+            {
+                selectionManager.ClearSelection();
+            }
+            
+            temporarySelectionManager = new SelectionManager();
         }
 
         if (Input.GetKeyUp(KeyCode.Mouse0))

@@ -825,7 +825,7 @@ MonoBehaviour:
     type: 3}
   L_DisplayPanelPrefab: {fileID: 5266063729481074028, guid: 633136d68fae24041a59542f8870f46f,
     type: 3}
-  L_EditPanelPrefab: {fileID: 3118757465854220619, guid: bac7eea144ff11041b9c5b7c84652eb2,
+  R_LatticeEditPanelPrefab: {fileID: 3118757465854220619, guid: bac7eea144ff11041b9c5b7c84652eb2,
     type: 3}
   L_FilePanelPrefab: {fileID: 1769060779682755573, guid: 4ab5a9816cbdb614697c0e2d5b9c46ea,
     type: 3}
@@ -2816,7 +2816,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   depth: 0.05
-  thickness: 0.1
+  thickness: 0.01
 --- !u!4 &1117215167
 Transform:
   m_ObjectHideFlags: 0

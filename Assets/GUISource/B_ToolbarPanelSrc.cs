@@ -88,7 +88,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 
         GuiMain.S.SetAllUIInteract(L_ProjectPanelSrc.S.gameObject, !onPlay);
         GuiMain.S.SetAllUIInteract(L_FilePanelSrc.S.gameObject, !onPlay);
-        GuiMain.S.SetAllUIInteract(L_EditPanelSrc.S.gameObject, !onPlay);
+        GuiMain.S.SetAllUIInteract(R_LatticeEditPanelSrc.S.gameObject, !onPlay);
 #if !UNITY_WEBGL
         //GuiMain.S.SetAllUIInteract(R_LASPPanelSrc.S.gameObject, !onPlay);
 #endif
@@ -106,14 +106,14 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             //    }
             //}
             //R_ServerPanelSrc.S.NetLocalBtnChange();
-            GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, false);
+            GuiMain.S.SetAllUIInteract(L_ServerPanelSrc.S.gameObject, false);
 #endif
         }
         else
         {
 #if !UNITY_WEBGL
-            GuiMain.S.SetAllUIInteract(R_ServerPanelSrc.S.gameObject, true);
-            R_ServerPanelSrc.S.NetLocalBtnChange();
+            GuiMain.S.SetAllUIInteract(L_ServerPanelSrc.S.gameObject, true);
+            L_ServerPanelSrc.S.NetLocalBtnChange();
 #endif
             // this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
         }
