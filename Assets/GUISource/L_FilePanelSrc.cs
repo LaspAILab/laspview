@@ -45,7 +45,7 @@ public class L_FilePanelSrc : MonoBehaviour
 
         // Open file with filter
         var extensions = new[] {
-            new ExtensionFilter("arc Files", "arc", "car"),
+            new ExtensionFilter("Arc Files", "arc", "car"),
             new ExtensionFilter("All Files", "*" ),
             };
 
@@ -109,6 +109,17 @@ public class L_FilePanelSrc : MonoBehaviour
 #endif
             }
         });
+    }
+
+    public void NewStructure()
+    {
+        ArcFile arcFile = new();
+        ArcStructure arcStructure = new();
+        arcStructure.Energy = 0;
+        arcStructure.SetLattice(new []{10f, 10f, 10f, 90f, 90f, 90f});
+        arcFile.Structures.Add(arcStructure);
+        
+        App.Instance.SetArcFile(arcFile);
     }
 
     //public void FileSaveAll()

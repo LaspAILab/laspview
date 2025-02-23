@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [Serializable]
 public struct SerializedElementContainer
@@ -46,7 +47,8 @@ public class App : MonoBehaviour
     public static Dictionary<string, ElementData> Elements;
     // Queue for scheduling tasks on main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
-    private ViewportController viewport;
+    
+    public ViewportController Viewport;
     
     public float bondTolerance = 1.35f;
 
@@ -66,7 +68,7 @@ public class App : MonoBehaviour
     {
         ReadPeriodicTable();
         Instance = this;
-        viewport = Camera.main.GetComponent<ViewportController>();
+        Viewport = Camera.main.GetComponent<ViewportController>();
     }
 
     private void Start()
@@ -127,7 +129,7 @@ end
             ArcStructureView structureView = new(CurrentFile.Structures[index]);
             ScheduleTask(() =>
             {
-                viewport.OpenStructureView(structureView);
+                Viewport.OpenStructureView(structureView);
                 ConFun.printStructureInfo(index, CurrentFile.StructureCount, CurrentFile.Structures[index].Energy);
             });
         });
@@ -139,21 +141,41 @@ end
         Task.Run(() =>
         {
             CurrentFile = new();
-            CurrentFile.ReadArc(content, count => ScheduleTask(() =>
+            CurrentFile.ReadArc(content, count =>
             {
-                ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
-
                 if (!firstStructureLoaded)
                 {
-                    CurrentStructureIndex = 0;
-                    ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
-                    viewport.OpenStructureView(structureView);
-                    firstStructureLoaded = true;
+                    
                 }
+                ScheduleTask(() =>
+                {
+                    ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
 
-                ConFun.printStructureInfo(CurrentStructureIndex, count, CurrentFile.Structures[CurrentStructureIndex].Energy);
-            }));
+                    if (!firstStructureLoaded)
+                    {
+                        CurrentStructureIndex = 0;
+                        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+                        Viewport.OpenStructureView(structureView);
+                        firstStructureLoaded = true;
+                    }
+
+                    ConFun.printStructureInfo(CurrentStructureIndex, count,
+                        CurrentFile.Structures[CurrentStructureIndex].Energy);
+                });
+            });
         });
+    }
+
+    public void SetArcFile(ArcFile arcFile)
+    {
+        CurrentFile = arcFile;
+
+        if (arcFile.StructureCount > 0)
+        {
+            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+            Viewport.OpenStructureView(structureView);
+            ConFun.printStructureInfo(CurrentStructureIndex, arcFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
+        }
     }
     
     void Update()

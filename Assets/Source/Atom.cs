@@ -29,7 +29,7 @@ public class AtomView : ITransform
     /// <param name="structure">The parent structure of the atom</param>
     /// <param name="repeat">If true, then use repeat, else use clamp</param>
     /// <returns></returns>
-    private static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure, bool repeat = true)
+    public static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure, bool repeat)
     {
         // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
         Vector3 fract = structure.CartesianToFractional(posCartesian);
@@ -59,25 +59,25 @@ public class AtomView : ITransform
         Symbol = atom.Symbol;
         RenderMat = atom.Symbol;
         Charge = atom.Charge;
-        Position = ClipAtomCoords(atom.Coordinates, structure);
+        Position = ClipAtomCoords(atom.Coordinates, structure, true);
         Radius = App.Elements[atom.Symbol].Radius;
         transformCache = null;
         collider = null;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure, bool isTemporary)
+    public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure, bool viewOnly, bool repeat = false)
     {
-        if (!isTemporary)
+        if (!viewOnly)
         {
             SourceAtom.Coordinates = posCartesian;
         }
         
-        Position = ClipAtomCoords(posCartesian, parentStructure, false);
+        Position = ClipAtomCoords(posCartesian, parentStructure, repeat);
         transformCache = null;
 
         // A faster way for null check since Unity uses a slow overload for ==
-        if (!isTemporary && collider is not null)
+        if (!viewOnly && collider is not null)
         {
             // Move collider
             collider.SetAtom(this, Position, Radius);
@@ -136,6 +136,7 @@ public class AtomView : ITransform
     public Vector3 Position
     {
         get;
+        // Be careful calling this, use `SetPosition` instead
         private set;
     }
 
