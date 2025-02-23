@@ -126,6 +126,16 @@ public class ViewportController : MonoBehaviour
         }
     }
 
+    public void ChangeLattice(float[] newLatticeParams, bool keepCartesian)
+    {
+        CurrentStructureView.ChangeLattice(newLatticeParams, keepCartesian);
+        // Recalculate lattice transforms
+        structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
+        latticeRenderer.RenderLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
+        RefocusCamera();
+        RecalculateBonds();
+    }
+
     public void OpenStructureView(ArcStructureView structureView)
     {
         CurrentStructureView?.ReleaseColliders();
@@ -137,6 +147,7 @@ public class ViewportController : MonoBehaviour
         undoManager = new(CurrentStructureView);
         selectionManager = new();
 
+        R_LatticeEditPanelSrc.S.UpdateLattice(structureView.Structure);
         structureRenderer.SetStructureView(structureView);
         // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
         structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
@@ -225,7 +236,7 @@ public class ViewportController : MonoBehaviour
 
         if (deltaViewportSize.HasValue)
         {
-            cameraViewportSize = Mathf.Clamp(cameraViewportSize + deltaViewportSize.Value, 0, 10000f);
+            cameraViewportSize = Mathf.Clamp(cameraViewportSize + deltaViewportSize.Value, 1f, 10000f);
         }
 
         if (deltaCenterPos.HasValue)

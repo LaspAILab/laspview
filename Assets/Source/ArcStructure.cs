@@ -13,72 +13,28 @@ using UnityEngine.UIElements;
 
 public class ArcStructure
 {
-    public float Energy
-    {
-        get;
-        set;
-    }
+    public float Energy { get; set; }
 
-    public float Conv
-    {
-        get;
-        set;
-    }
+    public float Conv { get; set; }
 
-    public int PathId
-    {
-        get;
-        set;
-    }
+    public int PathId { get; set; }
 
-    public int NumStr
-    {
-        get;
-        set;
-    }
+    public int NumStr { get; set; }
 
-    public int NumMinimum
-    {
-        get;
-        set;
-    }
+    public int NumMinimum { get; set; }
 
-    public int NoPathway
-    {
-        get;
-        set;
-    }
+    public int NoPathway { get; set; }
 
-    public Matrix4x4 LatticeMatrix
-    {
-        get;
-        set;
-    }
+    public Matrix4x4 LatticeMatrix { get; set; }
 
-    public Matrix4x4 InvLatticeMatrix
-    {
-        get;
-        set;
-    }
+    public Matrix4x4 InvLatticeMatrix { get; set; }
 
     // Lattice parameters: (a, b, c, α, β, γ)
-    public float[] LatticeParams
-    {
-        get;
-        set;
-    }
+    public float[] LatticeParams { get; set; }
 
-    public List<Atom> Atoms
-    {
-        get;
-        set;
-    }
+    public List<Atom> Atoms { get; set; }
 
-    public int AtomIndex
-    {
-        get;
-        set;
-    } = 0;
+    public int AtomIndex { get; set; } = 0;
 
     public ArcStructure()
     {
@@ -116,7 +72,8 @@ public class ArcStructure
             throw new ArgumentException("Lattice parameters must have 6 elements.");
         }
 
-        float bc2 = latticeParams[1] * latticeParams[1] + latticeParams[2] * latticeParams[2] - 2 * latticeParams[1] * latticeParams[2] * Mathf.Cos(latticeParams[3] / 180.0f * Mathf.PI);
+        float bc2 = latticeParams[1] * latticeParams[1] + latticeParams[2] * latticeParams[2] - 2 * latticeParams[1] *
+            latticeParams[2] * Mathf.Cos(latticeParams[3] / 180.0f * Mathf.PI);
         float h1 = latticeParams[0];
         float h2 = latticeParams[1] * Mathf.Cos(latticeParams[5] / 180.0f * Mathf.PI);
         float h3 = latticeParams[1] * Mathf.Sin(latticeParams[5] / 180.0f * Mathf.PI);
@@ -129,7 +86,8 @@ public class ArcStructure
         // [h1, 0,  0 ]
         // [h2, h3, 0 ]
         // [h4, h5, h6]
-        LatticeMatrix = new Matrix4x4(new Vector4(h1, 0, 0, 0), new Vector4(h2, h3, 0, 0), new Vector4(h4, h5, h6, 0), new Vector4(0, 0, 0, 1));
+        LatticeMatrix = new Matrix4x4(new Vector4(h1, 0, 0, 0), new Vector4(h2, h3, 0, 0), new Vector4(h4, h5, h6, 0),
+            new Vector4(0, 0, 0, 1));
         InvLatticeMatrix = LatticeMatrix.inverse;
     }
 
@@ -150,12 +108,8 @@ public class ArcStructure
 
 public class ArcFile
 {
-    public List<ArcStructure> Structures
-    {
-        get;
-        private set;
-    }
-    
+    public List<ArcStructure> Structures { get; private set; }
+
     public int StructureCount => Structures.Count;
 
     public ArcFile()
@@ -197,7 +151,8 @@ public class ArcStructureView
             Atoms.Add(new AtomView(item, structure));
         }
 
-        TranslationVectorsCartesian = TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
+        TranslationVectorsCartesian =
+            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
     private void AddBond(AtomView fromAtom, AtomView toAtom, Vector3 theta, float rate)
@@ -223,14 +178,13 @@ public class ArcStructureView
 
     public void GenerateBonds(float tolerance)
     {
-        var latticeTranslations = TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToList();
-
         BondMutex.WaitOne();
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
             UpdateAtomBonds(Atoms[i], tolerance, false);
         }
+
         BondMutex.ReleaseMutex();
     }
 
@@ -313,6 +267,30 @@ public class ArcStructureView
         foreach (var item in Atoms)
         {
             item.DestroyCollider();
+        }
+    }
+
+    public void ChangeLattice(float[] latticeParams, bool keepCartesian = true)
+    {
+        if (keepCartesian)
+        {
+            Structure.SetLattice(latticeParams);
+            // Just re-clip the atoms to lattice
+            foreach (var item in Atoms)
+            {
+                item.SetPosition(item.SourceAtom.Coordinates, Structure, false, true);
+            }
+        }
+        else
+        {
+            var prevCartToFract = Structure.InvLatticeMatrix;
+            Structure.SetLattice(latticeParams);
+
+            foreach (var item in Atoms)
+            {
+                Vector3 fractional = prevCartToFract * item.SourceAtom.Coordinates;
+                item.SetPosition(Structure.FractionalToCartesian(fractional), Structure, false, true);
+            }
         }
     }
 
