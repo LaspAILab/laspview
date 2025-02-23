@@ -68,4 +68,15 @@ public class SelectionManager
         Selection.Clear();
         return true;
     }
+
+    public void MergeSelection(SelectionManager other)
+    {
+        foreach (var item in other.Selection)
+        {
+            if (!IsSelected(item))
+            {
+                Selection.Add(item);
+            }
+        }
+    }
 }

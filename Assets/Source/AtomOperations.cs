@@ -53,12 +53,49 @@ public class TranslateOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
-public class ChangeSymbolOperation : IOperation
+public class SetPositionOperation : IOperation
+{
+    private AtomView targetAtom;
+    private Vector3 newPosition, oldPosition;
+
+    public SetPositionOperation(AtomView targetAtom, Vector3 newPosition)
+    {
+        this.targetAtom = targetAtom;
+        this.newPosition = newPosition;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        oldPosition = targetAtom.Position;
+        targetAtom.SetPosition(newPosition, structureView.Structure, false);
+
+        structureView.BondMutex.WaitOne();
+        structureView.UpdateAtomBonds(targetAtom, App.Instance.bondTolerance, true);
+        structureView.BondMutex.ReleaseMutex();
+
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        targetAtom.SetPosition(oldPosition, structureView.Structure, false);
+
+        structureView.BondMutex.WaitOne();
+        structureView.UpdateAtomBonds(targetAtom, App.Instance.bondTolerance, true);
+        structureView.BondMutex.ReleaseMutex();
+
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class SetSymbolOperation : IOperation
 {
     private AtomView targetAtom;
     private string newSymbol, oldSymbol;
 
-    public ChangeSymbolOperation(AtomView targetAtom, string newSymbol)
+    public SetSymbolOperation(AtomView targetAtom, string newSymbol)
     {
         this.targetAtom = targetAtom;
         this.newSymbol = newSymbol;

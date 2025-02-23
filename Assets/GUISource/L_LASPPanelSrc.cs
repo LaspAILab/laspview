@@ -8,10 +8,10 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Lasp4Win;
 using UnityEditor;
-public class R_LASPPanelSrc : MonoBehaviour
+public class L_LASPPanelSrc : MonoBehaviour
 {
 #if !UNITY_WEBGL
-    static public R_LASPPanelSrc S;
+    static public L_LASPPanelSrc S;
 
     static public syfPanelPara laspPanelPara;
     string workDirName;
@@ -36,7 +36,7 @@ public class R_LASPPanelSrc : MonoBehaviour
         laspParaSet = this.transform.GetChild(this.transform.childCount - 1).gameObject;
 
         //Set LASP Panel
-        this.transform.SetParent(GuiMain.S.rightCanvas.transform);
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button lpButton = GameObject.Find("LaspBtn").GetComponent<Button>();
@@ -91,15 +91,13 @@ public class R_LASPPanelSrc : MonoBehaviour
             StringBuilder otherPara = LoadLaspIn(lines);
             laspInTextSaved = WriteLaspin(otherPara);
         }
-        else if (laspParaSetActive == true)
+        else if (laspParaSetActive)
         {
             laspParaSetActive = false;
             laspParaSet.SetActive(laspParaSetActive);
             laspPanelPara.paraDict["new lasp task"].GetComponentInChildren<Text>().text = "New Lasp Task";
             GuiMain.S.SetUIInteract(laspPanelPara.paraDict["prefab directory"].GetComponentInParent<Dropdown>(), true);
         }
-
-
     }
 
 
