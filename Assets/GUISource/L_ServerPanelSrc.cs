@@ -5,10 +5,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using ViewerNetwork;
 using System.Threading.Tasks;
-public class R_ServerPanelSrc : MonoBehaviour
+public class L_ServerPanelSrc : MonoBehaviour
 {
 #if !UNITY_WEBGL
-    static public R_ServerPanelSrc S;
+    static public L_ServerPanelSrc S;
 
     // Start is called before the first frame update
     public bool lclSrvrListening = false;
@@ -17,7 +17,7 @@ public class R_ServerPanelSrc : MonoBehaviour
         S = this;
 
         //Set Server panel
-        this.transform.SetParent(GuiMain.S.rightCanvas.transform);
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         //print default remote ip on ServerIP inputfield;
