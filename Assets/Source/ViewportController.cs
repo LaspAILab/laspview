@@ -363,17 +363,13 @@ public class ViewportController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Mouse0))
             {
-                switch (currentTool)
+                if (currentTool != ToolType.MoveAtom)
                 {
-                    case ToolType.RenameAtom:
-                    case ToolType.RotateView:
-                    case ToolType.MoveView:
-                    case ToolType.Select:
-                        currentTool = ToolType.MoveAtom;
-                        break;
-                    case ToolType.MoveAtom:
-                        shallMoveAtom = true;
-                        break;
+                    currentTool = ToolType.MoveAtom;
+                }
+                else
+                {
+                    shallMoveAtom = true;
                 }
             }
             else
@@ -414,17 +410,13 @@ public class ViewportController : MonoBehaviour
 
             if (Input.GetKey(KeyCode.Mouse2))
             {
-                switch (currentTool)
+                if (currentTool != ToolType.MoveView)
                 {
-                    case ToolType.RenameAtom:
-                    case ToolType.MoveAtom:
-                    case ToolType.RotateView:
-                    case ToolType.Select:
-                        currentTool = ToolType.MoveView;
-                        break;
-                    case ToolType.MoveView:
-                        cameraMoved = true;
-                        break;
+                    currentTool = ToolType.MoveView;
+                }
+                else
+                {
+                    cameraMoved = true;
                 }
             }
             else
