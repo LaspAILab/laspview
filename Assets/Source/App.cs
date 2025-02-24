@@ -184,15 +184,19 @@ end
         });
     }
 
-    public void SetArcFile(ArcFile arcFile)
+    public void NewEmpty()
     {
-        CurrentFile = arcFile;
+        CurrentFile = new();
+        ArcStructure arcStructure = new();
+        arcStructure.Energy = 0;
+        arcStructure.SetLattice(new []{10f, 10f, 10f, 90f, 90f, 90f});
+        CurrentFile.Structures.Add(arcStructure);
 
-        if (arcFile.StructureCount > 0)
+        if (CurrentFile.StructureCount > 0)
         {
             ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
             Viewport.OpenStructureView(structureView);
-            ConFun.printStructureInfo(CurrentStructureIndex, arcFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
+            ConFun.printStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
         }
     }
     
