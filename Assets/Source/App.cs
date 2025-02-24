@@ -52,7 +52,7 @@ public class App : MonoBehaviour
     
     public ViewportController Viewport;
     
-    private float bondTolerance = 1.35f;
+    private float bondTolerance = 1.26f;
 
     public float BondTolerance
     {
@@ -65,6 +65,7 @@ public class App : MonoBehaviour
             }
             
             bondTolerance = value;
+            Viewport.CurrentStructureView.BondTolerance = bondTolerance;
             Viewport.RecalculateBonds();
         }
     }
@@ -143,7 +144,7 @@ end
 
         Task.Run(() =>
         {
-            ArcStructureView structureView = new(CurrentFile.Structures[index]);
+            ArcStructureView structureView = new(CurrentFile.Structures[index], bondTolerance);
             ScheduleTask(() =>
             {
                 Viewport.OpenStructureView(structureView);
@@ -171,7 +172,7 @@ end
                     if (!firstStructureLoaded)
                     {
                         CurrentStructureIndex = 0;
-                        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+                        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
                         Viewport.OpenStructureView(structureView);
                         firstStructureLoaded = true;
                     }
@@ -189,7 +190,7 @@ end
 
         if (arcFile.StructureCount > 0)
         {
-            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
             Viewport.OpenStructureView(structureView);
             ConFun.printStructureInfo(CurrentStructureIndex, arcFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
         }

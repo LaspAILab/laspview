@@ -147,8 +147,16 @@ public class ArcStructureView
 
     public Mutex BondMutex;
 
-    public ArcStructureView(ArcStructure structure)
+    // Remember to recalculate bonds after change
+    public float BondTolerance
     {
+        get;
+        set;
+    }
+
+    public ArcStructureView(ArcStructure structure, float bondTolerance = 1.0f)
+    {
+        BondTolerance = bondTolerance;
         Structure = structure;
         BondMutex = new();
 
@@ -183,13 +191,13 @@ public class ArcStructureView
         });
     }
 
-    public void GenerateBonds(float tolerance)
+    public void GenerateBonds()
     {
         BondMutex.WaitOne();
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
-            UpdateAtomBonds(Atoms[i], tolerance, false, true);
+            UpdateAtomBonds(Atoms[i], BondTolerance, false, true);
         }
 
         BondMutex.ReleaseMutex();
@@ -314,7 +322,7 @@ public class ArcStructureView
         var newAtom = Structure.AddAtom(elemSymbol, coords, charge);
         var newAtomView = new AtomView(newAtom, Structure);
         Atoms.Add(newAtomView);
-        UpdateAtomBonds(newAtomView, App.Instance.BondTolerance);
+        UpdateAtomBonds(newAtomView, BondTolerance);
         
         return newAtomView;
     }

@@ -10,7 +10,7 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
     public VectorInputController lengthsInput, anglesInput, repeatsInput;
     public Toggle keepFractionalToggle;
 
-    void Awake()
+    void Start()
     {
         S = this;
 
@@ -19,10 +19,7 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
-        edButton.onClick.AddListener(() =>
-        {
-            GuiMain.S.BtnHideObject(edButton, this.gameObject);
-        });
+        edButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(edButton, this.gameObject); });
         // gameObject.SetActive(false);
     }
 
@@ -34,9 +31,18 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
 
     public void ChangeLattice()
     {
-        Vector3 lengths = lengthsInput.GetValue();
-        Vector3 angles = anglesInput.GetValue();
+        Vector3? lengthsNullable = lengthsInput.GetValue();
+        Vector3? anglesNullable = anglesInput.GetValue();
+
+        if (lengthsNullable == null || anglesNullable == null)
+        {
+            ConFun.UpdateStatusLabel("Invalid lattice params");
+            return;
+        }
+
+        Vector3 lengths = lengthsNullable.Value, angles = anglesNullable.Value;
+
         float[] latticeParams = { lengths.x, lengths.y, lengths.z, angles.x, angles.y, angles.z };
-        App.Instance.Viewport.ChangeLattice(latticeParams, !keepFractionalToggle.isOn);
+        App.Instance.Viewport.SubmitOperation(new ChangeLatticeOperation(latticeParams, !keepFractionalToggle.isOn));
     }
 }

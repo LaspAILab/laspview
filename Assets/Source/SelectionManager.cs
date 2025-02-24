@@ -1,15 +1,25 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 public class SelectionManager
 {
-    public List<AtomView> Selection { get; } = new();
+    public List<AtomView> Selection { get; private set; }
+    
+    private Action<List<AtomView>> onSelectionChanged;
     
     public bool IsEmpty => Selection.Count == 0;
     
     public int Count => Selection.Count;
 
+    public SelectionManager(Action<List<AtomView>> onSelectionChanged = null)
+    {
+        Selection = new();
+        this.onSelectionChanged = onSelectionChanged;
+        this.onSelectionChanged?.Invoke(Selection);
+    }
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSelected(AtomView atomView)
     {
@@ -21,6 +31,8 @@ public class SelectionManager
     {
         atomView.RenderMat = StructureRenderer.RENDERMAT_SELECTION;
         Selection.Add(atomView);
+        
+        onSelectionChanged?.Invoke(Selection);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,6 +42,8 @@ public class SelectionManager
         {
             Select(item);
         }
+        
+        onSelectionChanged?.Invoke(Selection);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -37,6 +51,8 @@ public class SelectionManager
     {
         ClearSelection();
         Select(atomView);
+        
+        onSelectionChanged?.Invoke(Selection);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,13 +60,22 @@ public class SelectionManager
     {
         ClearSelection();
         Select(atomViews);
+        
+        onSelectionChanged?.Invoke(Selection);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Deselect(AtomView atomView)
     {
         atomView.RenderMat = atomView.Symbol;
-        return Selection.Remove(atomView);
+        bool result = Selection.Remove(atomView);
+
+        if (result)
+        {
+            onSelectionChanged?.Invoke(Selection);
+        }
+        
+        return result;
     }
 
     public bool ClearSelection()
@@ -66,6 +91,7 @@ public class SelectionManager
         }
 
         Selection.Clear();
+        onSelectionChanged?.Invoke(Selection);
         return true;
     }
 
@@ -78,5 +104,7 @@ public class SelectionManager
                 Selection.Add(item);
             }
         }
+        
+        onSelectionChanged?.Invoke(Selection);
     }
 }
