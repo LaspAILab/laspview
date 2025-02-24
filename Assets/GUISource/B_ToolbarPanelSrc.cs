@@ -73,7 +73,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 
     public void OnPlayerPlayBtnClicked()
     {
-        if (onPlay == false)
+        if (!onPlay)
         {
             onPlay = true;
             btnPlay.gameObject.GetComponentsInChildren<Image>()[1].sprite = pauseTexture;

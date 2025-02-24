@@ -101,7 +101,7 @@ public class L_FilePanelSrc : MonoBehaviour
 
     public void FileSaveSingle()
     {
-        if (App.Instance.CurrentFile == null)
+        if (App.Instance.Viewport.CurrentStructureView == null)
         {
             return;
         }   
@@ -110,7 +110,9 @@ public class L_FilePanelSrc : MonoBehaviour
         {
             if (!string.IsNullOrEmpty(path))
             {
-                string str = App.Instance.CurrentFile.WriteArc();
+                ArcFile newArcFile = new();
+                newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
+                string str = newArcFile.WriteArc();
 #if !UNITY_WEBGL
                 File.WriteAllText(path, str);
 #endif
@@ -123,13 +125,18 @@ public class L_FilePanelSrc : MonoBehaviour
         App.Instance.NewEmpty();
     }
 
-    //public void FileSaveAll()
-    //{
-    //    StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", ".arc", "", (string path) =>
-    //    {
-    //        string str = MainScr.S.CurrentArc().ArcWriteAll();
-    //        File.WriteAllText(path, str);
-    //    });
-    //}
+    public void FileSaveAll()
+    {
+        if (App.Instance.CurrentFile == null)
+        {
+            return;
+        }   
+        
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
+        {
+            string str = App.Instance.CurrentFile.WriteArc();
+            File.WriteAllText(path, str);
+        });
+    }
 
 }
