@@ -171,6 +171,7 @@ end
                             ArcStructureView structureView =
                                 new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
                             Viewport.OpenStructureView(structureView);
+                            Viewport.RefocusCamera();
                             firstStructureLoaded = true;
                         }
 
