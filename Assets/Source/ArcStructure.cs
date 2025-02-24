@@ -322,6 +322,8 @@ public class ArcStructureView
         var newAtom = Structure.AddAtom(elemSymbol, coords, charge);
         var newAtomView = new AtomView(newAtom, Structure);
         Atoms.Add(newAtomView);
+        
+        newAtomView.CreateCollider();
         UpdateAtomBonds(newAtomView, BondTolerance);
         
         return newAtomView;

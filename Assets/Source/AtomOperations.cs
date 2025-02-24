@@ -107,7 +107,7 @@ public class SetElementOperation : IOperation
     {
         oldSymbol = targetAtom.Symbol;
         targetAtom.SetElement(newSymbol);
-        
+
         structureView.BondMutex.WaitOne();
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         structureView.BondMutex.ReleaseMutex();
@@ -117,7 +117,7 @@ public class SetElementOperation : IOperation
     protected override bool UndoImpl(ArcStructureView structureView)
     {
         targetAtom.SetElement(oldSymbol);
-        
+
         structureView.BondMutex.WaitOne();
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         structureView.BondMutex.ReleaseMutex();
@@ -161,7 +161,7 @@ public class AddAtomOperation : IOperation
     private string symbol;
     private float charge;
 
-    public AddAtomOperation(Vector3 position, string symbol, int charge=0)
+    public AddAtomOperation(Vector3 position, string symbol, float charge = 0)
     {
         this.position = position;
         this.symbol = symbol;
@@ -199,14 +199,14 @@ public class RemoveAtomsOperation : IOperation
     protected override bool DoImpl(ArcStructureView structureView)
     {
         removedAtomsCopy = removedAtoms.Select(x => x.SourceAtom).ToList();
-        
+
         foreach (var item in removedAtoms)
         {
             structureView.DeleteAtom(item);
         }
-        
+
         removedAtoms.Clear();
-        
+
         return true;
     }
 
@@ -216,6 +216,7 @@ public class RemoveAtomsOperation : IOperation
         {
             removedAtoms.Add(structureView.AddAtom(item.Symbol, item.Coordinates, item.Charge));
         }
+
         return true;
     }
 
@@ -233,7 +234,7 @@ public class ChangeLatticeOperation : IOperation
         this.newParams = newParams;
         this.keepCartesian = keepCartesian;
     }
-    
+
     protected override bool DoImpl(ArcStructureView structureView)
     {
         oldParams = structureView.Structure.LatticeParams;

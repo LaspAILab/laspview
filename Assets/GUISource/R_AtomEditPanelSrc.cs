@@ -10,10 +10,13 @@ public class R_AtomEditPanelSrc : MonoBehaviour
 
     public VectorInputController coordsInput;
     public Dropdown elementDropdown;
+    public Toggle fractionalToggle;
     public ScalarInputController chargeInput;
 
     public GameObject label, edits, button;
     private AtomView activeAtom;
+    
+    private ArcStructure currentArc;
 
     void Start()
     {
@@ -35,16 +38,27 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         chargeInput.SetOnChangeCallback(UpdateCharge);
     }
 
+    public void SetCurrentStructure(ArcStructure arcStructure)
+    {
+        currentArc = arcStructure;
+        OnNoSelection();
+    }
+
+    public void OnNoSelection()
+    {
+        label.SetActive(false);
+        edits.SetActive(true);
+        button.SetActive(true);
+        coordsInput.SetValue(0.5f, 0.5f, 0.5f);
+        chargeInput.SetValue(0);
+        activeAtom = null;
+    }
+
     public void UpdateSelection(List<AtomView> selection)
     {
         if (selection.Count == 0)
         {
-            label.SetActive(false);
-            edits.SetActive(true);
-            button.SetActive(true);
-            coordsInput.SetValue(0, 0, 0);
-            chargeInput.SetValue(0);
-            activeAtom = null;
+            OnNoSelection();
             return;
         }
 
@@ -62,8 +76,23 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         label.SetActive(false);
         edits.SetActive(true);
         button.SetActive(false);
+        DisplayActiveAtomProperties();
+    }
+
+    public void DisplayActiveAtomProperties()
+    {
+        if (activeAtom == null)
+        {
+            ConFun.UpdateStatusLabel("Cannot display property of null");
+            return;
+        }
+        
         elementDropdown.value = elementDropdown.options.FindIndex(x => x.text == activeAtom.SourceAtom.Symbol);
-        coordsInput.SetValue(activeAtom.SourceAtom.Coordinates);
+
+        coordsInput.SetValue(fractionalToggle.isOn
+            ? currentArc.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
+            : activeAtom.SourceAtom.Coordinates);
+
         chargeInput.SetValue(activeAtom.SourceAtom.Charge);
     }
 
@@ -92,8 +121,10 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             ConFun.UpdateStatusLabel("Invalid position");
             return;
         }
-        
-        App.Instance.Viewport.SubmitOperation(new SetPositionOperation(activeAtom, coords.Value));
+
+        App.Instance.Viewport.SubmitOperation(new SetPositionOperation(activeAtom, fractionalToggle.isOn
+            ? currentArc.FractionalToCartesian(coords.Value)
+            : coords.Value));
     }
 
     public void UpdateCharge()
@@ -110,5 +141,33 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         }
         
         App.Instance.Viewport.SubmitOperation(new SetChargeOperation(activeAtom, charge));
+    }
+
+    public void ToggleFractionalCoordinates()
+    {
+        DisplayActiveAtomProperties();
+    }
+
+    public void AddAtom()
+    {
+        Vector3? coords = coordsInput.GetValue();
+        if (coords == null)
+        {
+            ConFun.UpdateStatusLabel("Invalid position");
+            return;
+        }
+        
+        if (!float.TryParse(chargeInput.GetValue(), out float charge))
+        {
+            ConFun.UpdateStatusLabel("Invalid charge");
+            return;
+        }
+        
+        string element = elementDropdown.options[elementDropdown.value].text;
+        Assert.IsTrue(App.Elements.ContainsKey(element));
+
+        App.Instance.Viewport.SubmitOperation(new AddAtomOperation(fractionalToggle.isOn
+            ? currentArc.FractionalToCartesian(coords.Value)
+            : coords.Value, element, charge));
     }
 }
