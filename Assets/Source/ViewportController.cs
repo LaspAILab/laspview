@@ -58,7 +58,6 @@ public class ViewportController : MonoBehaviour
 
     // Record mouse down point to draw selection box
     private Vector3 mouseDownPos;
-
     private float mouseDownTime = 0f;
 
     // Create a temporary selection manager for box selection, will be merged to the main selection when mouse up
@@ -108,7 +107,7 @@ public class ViewportController : MonoBehaviour
                     }
                     else
                     {
-                        structureRenderer.RecollectDrawBatches();
+                        shallUpdateRenderer = true;
                     }
                 });
             });
@@ -567,7 +566,7 @@ public class ViewportController : MonoBehaviour
                 CurrentStructureView.BondMutex.WaitOne();
                 foreach (var item in selectionManager.Selection)
                 {
-                    CurrentStructureView.UpdateAtomBonds(item, App.Instance.BondTolerance, true);
+                    CurrentStructureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
                 }
 
                 CurrentStructureView.BondMutex.ReleaseMutex();
