@@ -122,6 +122,7 @@ public class ViewportController : MonoBehaviour
         CurrentStructureView = structureView;
         CurrentStructureView.CreateColliders();
 
+        R_AtomEditPanelSrc.S.SetCurrentStructure(CurrentStructureView.Structure);
         undoManager = new(CurrentStructureView);
         selectionManager = new(R_AtomEditPanelSrc.S.UpdateSelection);
 
