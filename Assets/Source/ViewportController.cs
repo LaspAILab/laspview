@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 
@@ -34,11 +35,10 @@ public class ViewportController : MonoBehaviour
 
     public GUIStyle labelStyle = new();
 
-    private float bondTolerance = 1.26f;
-    private bool bondRecalculationRunning = false, bondToleranceDirtyFlag = false;
-
     // Whether to update bonds in realtime when moving atoms
     private bool updateBondsRealtime = true;
+    private bool bondRecalculationRunning = false, bondDirtyFlag = false;
+    
     private int repeatA = 1, repeatB = 1, repeatC = 1;
 
     // Angles in sphere coordinates, in radians!
@@ -58,7 +58,9 @@ public class ViewportController : MonoBehaviour
 
     // Record mouse down point to draw selection box
     private Vector3 mouseDownPos;
+
     private float mouseDownTime = 0f;
+
     // Create a temporary selection manager for box selection, will be merged to the main selection when mouse up
     private SelectionManager temporarySelectionManager;
 
@@ -86,21 +88,21 @@ public class ViewportController : MonoBehaviour
         if (bondRecalculationRunning)
         {
             // Hint background task to rerun
-            bondToleranceDirtyFlag = true;
+            bondDirtyFlag = true;
         }
         else
         {
             bondRecalculationRunning = true;
-            bondToleranceDirtyFlag = false;
+            bondDirtyFlag = false;
             Task.Run(() =>
             {
-                CurrentStructureView.GenerateBonds(App.Instance.BondTolerance);
+                CurrentStructureView.GenerateBonds();
                 CurrentStructureView.SortLists();
 
                 App.Instance.ScheduleTask(() =>
                 {
                     bondRecalculationRunning = false;
-                    if (bondToleranceDirtyFlag)
+                    if (bondDirtyFlag)
                     {
                         RecalculateBonds();
                     }
@@ -113,24 +115,15 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    public void ChangeLattice(float[] newLatticeParams, bool keepCartesian)
-    {
-        CurrentStructureView.ChangeLattice(newLatticeParams, keepCartesian);
-        RecalculateBonds();
-        
-        shallUpdateLattice = true;
-    }
-
     public void OpenStructureView(ArcStructureView structureView)
     {
         CurrentStructureView?.ReleaseColliders();
 
         CurrentStructureView = structureView;
-        CurrentStructureView.GenerateBonds(bondTolerance);
         CurrentStructureView.CreateColliders();
 
         undoManager = new(CurrentStructureView);
-        selectionManager = new();
+        selectionManager = new(R_AtomEditPanelSrc.S.UpdateSelection);
 
         R_LatticeEditPanelSrc.S.UpdateLattice(structureView.Structure);
         structureRenderer.SetStructureView(structureView);
@@ -138,6 +131,14 @@ public class ViewportController : MonoBehaviour
         structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
         latticeRenderer.RenderLattice(structureView.Structure, repeatA, repeatB, repeatC);
         RefocusCamera();
+        
+        RecalculateBonds();
+    }
+
+    public void SubmitOperation(IOperation op)
+    {
+        undoManager.SubmitOperation(op);
+        OnOperationDone(op);
     }
 
     public void RefocusCamera()
@@ -267,19 +268,40 @@ public class ViewportController : MonoBehaviour
         }
 
         List<AtomView> atomsHovered = new();
+        bool raycastOnUI = EventSystem.current.IsPointerOverGameObject();
 
-        var raycasts = Physics.RaycastAll(activeCamera.ScreenPointToRay(Input.mousePosition));
-        foreach (var hitInfo in raycasts)
+        if (raycastOnUI)
         {
-            if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
+            // Cancel any ongoing mouse operations
+            currentTool = ToolType.Select;
+            
+            // Submit operation if mouse has released
+            if (isDraggingAtom)
             {
-                atomsHovered.Add(colliderScript.Atom);
-                structureRenderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.Atom.Position,
-                    colliderScript.Atom.Radius + 0.5f);
+                // Careful with assignment behavior: we have to copy assign the selection here! 
+                IOperation op = new TranslateOperation(new(selectionManager.Selection),
+                    dragTotalTranslation);
+                SubmitOperation(op);
+
+                isDraggingAtom = false;
             }
         }
+        else
+        {
+            var raycasts = Physics.RaycastAll(activeCamera.ScreenPointToRay(Input.mousePosition));
+            foreach (var hitInfo in raycasts)
+            {
+                if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
+                {
+                    atomsHovered.Add(colliderScript.Atom);
+                    structureRenderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.Atom.Position,
+                        colliderScript.Atom.Radius + 0.5f);
+                }
+            }
 
-        HandleMouseEvents(atomsHovered);
+            HandleMouseEvents(atomsHovered);
+        }
+
         HandleKeyboardEvents();
 
         if (shallUpdateLattice)
@@ -289,7 +311,7 @@ public class ViewportController : MonoBehaviour
             RefocusCamera();
             shallUpdateLattice = false;
         }
-        
+
         if (shallUpdateRenderer)
         {
             structureRenderer.RecollectDrawBatches(true);
@@ -302,9 +324,12 @@ public class ViewportController : MonoBehaviour
         switch (op.Flags)
         {
             case UpdateFlags.UpdateAtom:
+                R_AtomEditPanelSrc.S.UpdateSelection(selectionManager.Selection);
                 shallUpdateRenderer = true;
                 break;
             case UpdateFlags.UpdateLattice:
+                R_LatticeEditPanelSrc.S.UpdateLattice(CurrentStructureView.Structure);
+                RecalculateBonds();
                 shallUpdateRenderer = true;
                 shallUpdateLattice = true;
                 break;
@@ -313,7 +338,6 @@ public class ViewportController : MonoBehaviour
 
     void HandleKeyboardEvents()
     {
-
         var move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
         if (move.magnitude > 1e-5)
         {
@@ -497,7 +521,7 @@ public class ViewportController : MonoBehaviour
                 // End box select
                 selectionBoxDrawer.Hide();
                 currentTool = ToolType.Select;
-                
+
                 selectionManager.MergeSelection(temporarySelectionManager);
                 temporarySelectionManager = null;
             }
@@ -514,7 +538,7 @@ public class ViewportController : MonoBehaviour
             {
                 selectionManager.ClearSelection();
             }
-            
+
             temporarySelectionManager = new SelectionManager();
         }
 
@@ -542,7 +566,7 @@ public class ViewportController : MonoBehaviour
                 CurrentStructureView.BondMutex.WaitOne();
                 foreach (var item in selectionManager.Selection)
                 {
-                    CurrentStructureView.UpdateAtomBonds(item, bondTolerance, true);
+                    CurrentStructureView.UpdateAtomBonds(item, App.Instance.BondTolerance, true);
                 }
 
                 CurrentStructureView.BondMutex.ReleaseMutex();
@@ -559,9 +583,8 @@ public class ViewportController : MonoBehaviour
                 // Careful with assignment behavior: we have to copy assign the selection here! 
                 IOperation op = new TranslateOperation(new(selectionManager.Selection),
                     dragTotalTranslation);
-                undoManager.SubmitOperation(op);
-                OnOperationDone(op);
-                
+                SubmitOperation(op);
+
                 isDraggingAtom = false;
             }
         }
@@ -570,8 +593,7 @@ public class ViewportController : MonoBehaviour
         {
             IOperation op = new RemoveAtomsOperation(new(selectionManager.Selection));
             selectionManager.ClearSelection();
-            undoManager.SubmitOperation(op);
-            OnOperationDone(op);
+            SubmitOperation(op);
         }
 
         prevMousePos = Input.mousePosition;
@@ -595,7 +617,7 @@ public class ViewportController : MonoBehaviour
                     continue;
                 }
 
-                GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{i}]", labelStyle);
+                GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{selectionManager.Selection[i].Symbol}]", labelStyle);
             }
         }
     }

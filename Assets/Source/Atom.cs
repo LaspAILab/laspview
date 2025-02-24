@@ -98,6 +98,9 @@ public class AtomView : ITransform
         {
             Symbol = newSymbol;
         }
+        
+        // Since the radius has changed, we have to renew the transform cache
+        transformCache = null;
     }
 
     public void CreateTransformCache(float radiusScale = 1f)

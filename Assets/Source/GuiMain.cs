@@ -18,12 +18,13 @@ public class GuiMain : MonoBehaviour
     static public GuiMain S;
     public GameObject B_ToolbarPanelPrefab;
     public GameObject L_DisplayPanelPrefab;
-    public GameObject R_LatticeEditPanelPrefab;
     public GameObject L_FilePanelPrefab;
     public GameObject L_ProjectPanelPrefab;
     public GameObject M_AddAtomWidgetPrefab;
     public GameObject M_EditLatticeWidgetPrefab;
     public GameObject M_SupercellWidgetPrefab;
+    public GameObject R_LatticeEditPanelPrefab;
+    public GameObject R_AtomEditPanelPrefab;
 #if !UNITY_WEBGL
     //public GameObject M_LaspInWidgetPrefab;
     //public GameObject R_LASPPanelPrefab;
@@ -83,6 +84,7 @@ public class GuiMain : MonoBehaviour
         //GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
         //GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
 #endif
+        GameObject l_AtomPanel = Instantiate(R_AtomEditPanelPrefab);
         GameObject l_EditPanel = Instantiate(R_LatticeEditPanelPrefab);
     }
 
