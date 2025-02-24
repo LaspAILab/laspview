@@ -29,12 +29,12 @@ public class VectorInputController : MonoBehaviour
             return null;
         }
         
-        if (!float.TryParse(inputFields[0].text, out float b))
+        if (!float.TryParse(inputFields[1].text, out float b))
         {
             return null;
         }
         
-        if (!float.TryParse(inputFields[0].text, out float c))
+        if (!float.TryParse(inputFields[2].text, out float c))
         {
             return null;
         }
