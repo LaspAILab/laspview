@@ -19,7 +19,6 @@ internal enum ToolType
 
 public class ViewportController : MonoBehaviour
 {
-    const float DOUBLE_CLICK_THRESHOLD = 0.2f;
     const float BOX_SELECT_THRESHOLD = 0.2f;
     const float PAN_SPEED = 1f;
 
@@ -33,7 +32,7 @@ public class ViewportController : MonoBehaviour
     [NonSerialized] private Camera activeCamera;
     [NonSerialized] private SelectionBoxDrawer selectionBoxDrawer;
 
-    public GUIStyle labelStyle = new(), textboxStyle = new();
+    public GUIStyle labelStyle = new();
 
     private float bondTolerance = 1.26f;
     private bool bondRecalculationRunning = false, bondToleranceDirtyFlag = false;
@@ -57,15 +56,13 @@ public class ViewportController : MonoBehaviour
     // Record the total translation made within one drag operation
     private Vector3 dragTotalTranslation;
 
-    // Trace last clicked atom and click time to detect double clicks
-    private AtomView lastClickedAtom = null;
-    private float lastClickTime = 0f;
-
     // Record mouse down point to draw selection box
     private Vector3 mouseDownPos;
     private float mouseDownTime = 0f;
     // Create a temporary selection manager for box selection, will be merged to the main selection when mouse up
     private SelectionManager temporarySelectionManager;
+
+    private bool shallUpdateRenderer = false, shallUpdateLattice = false;
 
     public ArcStructureView CurrentStructureView { get; private set; } = null;
 
@@ -79,23 +76,13 @@ public class ViewportController : MonoBehaviour
         ColliderPool.GlobalPool = new(colliderPrefab, colliderParent);
     }
 
-    public float BondTolerance
+    public void RecalculateBonds()
     {
-        get => bondTolerance;
-        set
+        if (CurrentStructureView == null)
         {
-            if (Mathf.Approximately(bondTolerance, value))
-            {
-                return;
-            }
-
-            bondTolerance = value;
-            RecalculateBonds();
+            return;
         }
-    }
-
-    private void RecalculateBonds()
-    {
+        
         if (bondRecalculationRunning)
         {
             // Hint background task to rerun
@@ -107,7 +94,7 @@ public class ViewportController : MonoBehaviour
             bondToleranceDirtyFlag = false;
             Task.Run(() =>
             {
-                CurrentStructureView.GenerateBonds(bondTolerance);
+                CurrentStructureView.GenerateBonds(App.Instance.BondTolerance);
                 CurrentStructureView.SortLists();
 
                 App.Instance.ScheduleTask(() =>
@@ -129,11 +116,9 @@ public class ViewportController : MonoBehaviour
     public void ChangeLattice(float[] newLatticeParams, bool keepCartesian)
     {
         CurrentStructureView.ChangeLattice(newLatticeParams, keepCartesian);
-        // Recalculate lattice transforms
-        structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
-        latticeRenderer.RenderLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
-        RefocusCamera();
         RecalculateBonds();
+        
+        shallUpdateLattice = true;
     }
 
     public void OpenStructureView(ArcStructureView structureView)
@@ -294,18 +279,40 @@ public class ViewportController : MonoBehaviour
             }
         }
 
-        bool shallRecollectDrawBatches = HandleMouseEvents(atomsHovered);
-        shallRecollectDrawBatches = shallRecollectDrawBatches || HandleKeyboardEvents();
+        HandleMouseEvents(atomsHovered);
+        HandleKeyboardEvents();
 
-        if (shallRecollectDrawBatches)
+        if (shallUpdateLattice)
+        {
+            structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
+            latticeRenderer.RenderLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
+            RefocusCamera();
+            shallUpdateLattice = false;
+        }
+        
+        if (shallUpdateRenderer)
         {
             structureRenderer.RecollectDrawBatches(true);
+            shallUpdateRenderer = false;
         }
     }
 
-    bool HandleKeyboardEvents()
+    void OnOperationDone(IOperation op)
     {
-        bool rendererShallUpdate = false;
+        switch (op.Flags)
+        {
+            case UpdateFlags.UpdateAtom:
+                shallUpdateRenderer = true;
+                break;
+            case UpdateFlags.UpdateLattice:
+                shallUpdateRenderer = true;
+                shallUpdateLattice = true;
+                break;
+        }
+    }
+
+    void HandleKeyboardEvents()
+    {
 
         var move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
         if (move.magnitude > 1e-5)
@@ -322,37 +329,27 @@ public class ViewportController : MonoBehaviour
             if (Input.GetKeyUp(KeyCode.Z))
             {
                 // Undo
-                Debug.Log("Undo!");
+                ConFun.UpdateStatusLabel("Undo!");
                 op = undoManager.Undo();
             }
             else if (Input.GetKeyUp(KeyCode.Y))
             {
+                ConFun.UpdateStatusLabel("Redo!");
                 op = undoManager.Redo();
             }
 
             if (op != null)
             {
-                switch (op.Flags)
-                {
-                    case UpdateFlags.UpdateAtom:
-                        rendererShallUpdate = true;
-                        break;
-                    case UpdateFlags.UpdateLattice:
-                        rendererShallUpdate = true;
-                        latticeRenderer.RenderLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
-                        break;
-                }
+                OnOperationDone(op);
             }
         }
-
-        return rendererShallUpdate;
     }
 
-    bool HandleMouseEvents(List<AtomView> raycastAtom)
+    void HandleMouseEvents(List<AtomView> raycastAtom)
     {
         AtomView clickedAtom = raycastAtom.Count > 0 ? raycastAtom[0] : null;
         bool cameraRotated = false, cameraZoomed = Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5, cameraMoved = false;
-        bool shallMoveAtom = false, rendererShallUpdate = false;
+        bool shallMoveAtom = false;
         var mouseWorldPos = activeCamera.ScreenToWorldPoint(Input.mousePosition);
 
         bool shiftDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -387,13 +384,13 @@ public class ViewportController : MonoBehaviour
                     selectionManager.Select(clickedAtom);
                 }
 
-                rendererShallUpdate = true;
+                shallUpdateRenderer = true;
             }
             else if (!shiftDown && !altDown)
             {
                 if (selectionManager.ClearSelection())
                 {
-                    rendererShallUpdate = true;
+                    shallUpdateRenderer = true;
                 }
             }
         }
@@ -493,7 +490,7 @@ public class ViewportController : MonoBehaviour
                     : (mousePos.y, mouseDownPos.y);
                 Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
                 selectionBoxDrawer.DrawBox(boxRect);
-                rendererShallUpdate = rendererShallUpdate || UpdateBoxSelection(boxRect);
+                shallUpdateRenderer = shallUpdateRenderer || UpdateBoxSelection(boxRect);
             }
             else
             {
@@ -519,20 +516,6 @@ public class ViewportController : MonoBehaviour
             }
             
             temporarySelectionManager = new SelectionManager();
-        }
-
-        if (Input.GetKeyUp(KeyCode.Mouse0))
-        {
-            var time = Time.time;
-            if (clickedAtom != null && clickedAtom == lastClickedAtom && time - lastClickTime < DOUBLE_CLICK_THRESHOLD)
-            {
-                // Handle double click
-                Debug.Log($"Double click on {clickedAtom.Symbol}");
-                currentTool = ToolType.RenameAtom;
-            }
-
-            lastClickTime = time;
-            lastClickedAtom = clickedAtom;
         }
 
         if (shallMoveAtom)
@@ -566,7 +549,7 @@ public class ViewportController : MonoBehaviour
             }
 
             isDraggingAtom = true;
-            rendererShallUpdate = true;
+            shallUpdateRenderer = true;
         }
         else
         {
@@ -574,16 +557,24 @@ public class ViewportController : MonoBehaviour
             if (isDraggingAtom)
             {
                 // Careful with assignment behavior: we have to copy assign the selection here! 
-                undoManager.SubmitOperation(new TranslateOperation(new(selectionManager.Selection),
-                    dragTotalTranslation));
-
-                rendererShallUpdate = true;
+                IOperation op = new TranslateOperation(new(selectionManager.Selection),
+                    dragTotalTranslation);
+                undoManager.SubmitOperation(op);
+                OnOperationDone(op);
+                
                 isDraggingAtom = false;
             }
         }
 
+        if (Input.GetKeyUp(KeyCode.Delete) && !selectionManager.IsEmpty)
+        {
+            IOperation op = new RemoveAtomsOperation(new(selectionManager.Selection));
+            selectionManager.ClearSelection();
+            undoManager.SubmitOperation(op);
+            OnOperationDone(op);
+        }
+
         prevMousePos = Input.mousePosition;
-        return rendererShallUpdate;
     }
 
     private void OnGUI()
@@ -604,16 +595,8 @@ public class ViewportController : MonoBehaviour
                     continue;
                 }
 
-                GUI.Label(new Rect(posScreen.x - 10, posScreen.y - 10, 100, 100), $"[{i}]", labelStyle);
+                GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{i}]", labelStyle);
             }
-        }
-
-        if (currentTool == ToolType.RenameAtom && lastClickedAtom != null)
-        {
-            var posScreen = activeCamera.WorldToScreenPoint(lastClickedAtom.Position);
-            posScreen.y = Screen.height - posScreen.y;
-
-            GUI.TextField(new Rect(posScreen.x - 40, posScreen.y - 15, 80, 30), lastClickedAtom.Symbol);
         }
     }
 }
