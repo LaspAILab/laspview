@@ -44,7 +44,7 @@ public class L_ServerPanelSrc : MonoBehaviour
             if (this.gameObject.activeSelf)
             {
                 Dropdown Dp = this.GetComponentInChildren<Dropdown>();
-                List<string> addr = MainScr.S.localServer.GetIPAddress();
+                List<string> addr = new(); // MainScr.S.localServer.GetIPAddress();
                 List<Dropdown.OptionData> addDrop = new List<Dropdown.OptionData>();
                 foreach (string str in addr)
                 {
@@ -57,7 +57,7 @@ public class L_ServerPanelSrc : MonoBehaviour
         });
 
         Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
-        List<string> addrString = MainScr.S.localServer.GetIPAddress();
+        List<string> addrString = new(); // MainScr.S.localServer.GetIPAddress();
         List<Dropdown.OptionData> addrDrop = new List<Dropdown.OptionData>();
         foreach (string str in addrString)
         {
@@ -96,7 +96,7 @@ public class L_ServerPanelSrc : MonoBehaviour
         {
             //when Btn text = "Stop Listening"
 
-            MainScr.S.localServer.Quit2();
+            // MainScr.S.localServer.Quit2();
             lclSrvrListening = false;
             NetLocalBtnChange();
             //NetLocalBtnChange is called in LocalServer.Quit(), like a callback function
@@ -112,7 +112,7 @@ public class L_ServerPanelSrc : MonoBehaviour
             if (localAddrDp.options.Count == 0) return;
             string ip = localAddrDp.options[localAddrDp.value].text;
             //ip = "127.0.0.1";//for test
-            MainScr.S.localServer.StartServer(ip);
+            // MainScr.S.localServer.StartServer(ip);
             lclSrvrListening = true;
             NetLocalBtnChange();
         }

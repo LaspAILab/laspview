@@ -146,7 +146,7 @@ end
             ScheduleTask(() =>
             {
                 Viewport.OpenStructureView(structureView);
-                ConFun.printStructureInfo(index, CurrentFile.StructureCount, CurrentFile.Structures[index].Energy);
+                ConFun.UpdateStructureInfo(index, CurrentFile.StructureCount, CurrentFile.Structures[index].Energy);
             });
         });
     }
@@ -175,7 +175,7 @@ end
                         firstStructureLoaded = true;
                     }
 
-                    ConFun.printStructureInfo(CurrentStructureIndex, count,
+                    ConFun.UpdateStructureInfo(CurrentStructureIndex, count,
                         CurrentFile.Structures[CurrentStructureIndex].Energy);
                 });
             });
@@ -194,7 +194,7 @@ end
         {
             ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
             Viewport.OpenStructureView(structureView);
-            ConFun.printStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
+            ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
         }
     }
     

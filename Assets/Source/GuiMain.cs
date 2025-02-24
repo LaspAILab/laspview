@@ -1,16 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-
 using System.Text;
-
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using B83.Win32;
 using System.Linq;
 using System;
-using TMPro;
 using UnityEngine.Serialization;
 
 public class GuiMain : MonoBehaviour
@@ -95,6 +91,7 @@ public class GuiMain : MonoBehaviour
             SetUIInteract(c, interactable);
         }
     }
+
     public void SetUIInteract(Selectable s, bool interactable)
     {
         if (interactable)
