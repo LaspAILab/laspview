@@ -18,7 +18,7 @@ public static class ArcIO
     {
         ArcStructure currentStructure = new();
 
-        string lastLine = null;
+        string prevLine = null;
         foreach (var line in lines)
         {
             if (line.Trim() == "")
@@ -108,14 +108,14 @@ public static class ArcIO
                 }
             }
 
-            if (line.Trim() == "end" && lastLine.Trim() == "end")
+            if (line.Trim() == "end" && prevLine.Trim() == "end")
             {
                 arcFile.Structures.Add(currentStructure);
                 progressCallback?.Invoke(arcFile.StructureCount);
                 currentStructure = new();
             }
             
-            lastLine = line;
+            prevLine = line;
         }
     }
 

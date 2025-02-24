@@ -159,25 +159,25 @@ end
             CurrentFile = new();
             CurrentFile.ReadArc(content, count =>
             {
-                if (!firstStructureLoaded)
+                if (callbackQueue.IsEmpty)
                 {
-                    
-                }
-                ScheduleTask(() =>
-                {
-                    ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
-
-                    if (!firstStructureLoaded)
+                    ScheduleTask(() =>
                     {
-                        CurrentStructureIndex = 0;
-                        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
-                        Viewport.OpenStructureView(structureView);
-                        firstStructureLoaded = true;
-                    }
+                        ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
 
-                    ConFun.UpdateStructureInfo(CurrentStructureIndex, count,
-                        CurrentFile.Structures[CurrentStructureIndex].Energy);
-                });
+                        if (!firstStructureLoaded)
+                        {
+                            CurrentStructureIndex = 0;
+                            ArcStructureView structureView =
+                                new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+                            Viewport.OpenStructureView(structureView);
+                            firstStructureLoaded = true;
+                        }
+
+                        ConFun.UpdateStructureInfo(CurrentStructureIndex, count,
+                            CurrentFile.Structures[CurrentStructureIndex].Energy);
+                    });
+                }
             });
         });
     }
