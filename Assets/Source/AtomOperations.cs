@@ -26,7 +26,7 @@ public class TranslateOperation : IOperation
         structureView.BondMutex.WaitOne();
         foreach (var item in targetAtoms)
         {
-            structureView.UpdateAtomBonds(item, App.Instance.BondTolerance, true);
+            structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
         }
 
         structureView.BondMutex.ReleaseMutex();
@@ -44,7 +44,7 @@ public class TranslateOperation : IOperation
         structureView.BondMutex.WaitOne();
         foreach (var item in targetAtoms)
         {
-            structureView.UpdateAtomBonds(item, App.Instance.BondTolerance, true);
+            structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
         }
 
         structureView.BondMutex.ReleaseMutex();
@@ -70,10 +70,7 @@ public class SetPositionOperation : IOperation
     {
         oldPosition = targetAtom.Position;
         targetAtom.SetPosition(newPosition, structureView.Structure, false);
-
-        structureView.BondMutex.WaitOne();
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
-        structureView.BondMutex.ReleaseMutex();
 
         return true;
     }
@@ -81,10 +78,7 @@ public class SetPositionOperation : IOperation
     protected override bool UndoImpl(ArcStructureView structureView)
     {
         targetAtom.SetPosition(oldPosition, structureView.Structure, false);
-
-        structureView.BondMutex.WaitOne();
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
-        structureView.BondMutex.ReleaseMutex();
 
         return true;
     }
@@ -108,9 +102,7 @@ public class SetElementOperation : IOperation
         oldSymbol = targetAtom.Symbol;
         targetAtom.SetElement(newSymbol);
 
-        structureView.BondMutex.WaitOne();
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
-        structureView.BondMutex.ReleaseMutex();
         return true;
     }
 
@@ -118,9 +110,7 @@ public class SetElementOperation : IOperation
     {
         targetAtom.SetElement(oldSymbol);
 
-        structureView.BondMutex.WaitOne();
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
-        structureView.BondMutex.ReleaseMutex();
         return true;
     }
 
@@ -246,6 +236,32 @@ public class ChangeLatticeOperation : IOperation
     {
         structureView.ChangeLattice(oldParams, keepCartesian);
         return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateLattice;
+}
+
+public class SuperCellOperation : IOperation
+{
+    private int repeatA, repeatB, repeatC;
+
+    public SuperCellOperation(int repeatA, int repeatB, int repeatC)
+    {
+        this.repeatA = repeatA;
+        this.repeatB = repeatB;
+        this.repeatC = repeatC;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        structureView.ToSuperCell(repeatA, repeatB, repeatC);
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        // TODO: unimplemented
+        return false;
     }
 
     public override UpdateFlags Flags => UpdateFlags.UpdateLattice;

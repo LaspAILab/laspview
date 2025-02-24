@@ -45,4 +45,18 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         float[] latticeParams = { lengths.x, lengths.y, lengths.z, angles.x, angles.y, angles.z };
         App.Instance.Viewport.SubmitOperation(new ChangeLatticeOperation(latticeParams, !keepFractionalToggle.isOn));
     }
+
+    public void ToSuperCell()
+    {
+        Vector3? repeatsNullable = repeatsInput.GetValue();
+
+        if (repeatsNullable == null)
+        {
+            ConFun.UpdateStatusLabel("Invalid lattice params");
+            return;
+        }
+
+        Vector3 repeats = repeatsNullable.Value;
+        App.Instance.Viewport.SubmitOperation(new SuperCellOperation((int)repeats.x, (int)repeats.y, (int)repeats.z));
+    }
 }
