@@ -34,15 +34,15 @@ public class CanvasSampleOpenFileText : MonoBehaviour, IPointerDownHandler {
 
     void Start() {
         var button = GetComponent<Button>();
-        //button.onClick.AddListener(OnClick);
+        button.onClick.AddListener(OnClick);
     }
 
-    //private void OnClick() {
-    //    var paths = StandaloneFileBrowser.OpenFilePanel("Title", "", "txt", false);
-    //    if (paths.Length > 0) {
-    //        StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
-    //    }
-    //}
+    private void OnClick() {
+        var paths = StandaloneFileBrowser.OpenFilePanel("Title", "", "txt", false);
+        if (paths.Length > 0) {
+            StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
+        }
+    }
 #endif
 
     private IEnumerator OutputRoutine(string url) {
