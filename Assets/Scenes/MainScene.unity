@@ -825,8 +825,6 @@ MonoBehaviour:
     type: 3}
   L_DisplayPanelPrefab: {fileID: 5266063729481074028, guid: 633136d68fae24041a59542f8870f46f,
     type: 3}
-  R_LatticeEditPanelPrefab: {fileID: 3118757465854220619, guid: bac7eea144ff11041b9c5b7c84652eb2,
-    type: 3}
   L_FilePanelPrefab: {fileID: 1769060779682755573, guid: 4ab5a9816cbdb614697c0e2d5b9c46ea,
     type: 3}
   L_ProjectPanelPrefab: {fileID: 7245585973414460741, guid: d9196f624746d764cb5ce750df8a530e,
@@ -836,6 +834,10 @@ MonoBehaviour:
   M_EditLatticeWidgetPrefab: {fileID: 539081823233144031, guid: fc02f28fcafafa044b0d0f9e427c2b64,
     type: 3}
   M_SupercellWidgetPrefab: {fileID: 4791832997610671859, guid: 71ba854c434856045b4dbe81ca96d575,
+    type: 3}
+  R_LatticeEditPanelPrefab: {fileID: 3118757465854220619, guid: bac7eea144ff11041b9c5b7c84652eb2,
+    type: 3}
+  R_AtomEditPanelPrefab: {fileID: 3118757465854220619, guid: b108c353e328cd548a9a5ac22f8e2191,
     type: 3}
   R_ServerPanelPrefab: {fileID: 1061375235224783102, guid: 074ef9b03177749438e8c530df4fe809,
     type: 3}
@@ -1110,73 +1112,6 @@ MonoBehaviour:
     m_Font: {fileID: 0}
     m_FontSize: 24
     m_FontStyle: 1
-    m_Alignment: 0
-    m_WordWrap: 0
-    m_RichText: 1
-    m_TextClipping: 0
-    m_ImagePosition: 0
-    m_ContentOffset: {x: 0, y: 0}
-    m_FixedWidth: 0
-    m_FixedHeight: 0
-    m_StretchWidth: 1
-    m_StretchHeight: 0
-  textboxStyle:
-    m_Name: 
-    m_Normal:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Hover:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Active:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Focused:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnNormal:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnHover:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnActive:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_OnFocused:
-      m_Background: {fileID: 0}
-      m_ScaledBackgrounds: []
-      m_TextColor: {r: 0, g: 0, b: 0, a: 1}
-    m_Border:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Margin:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Padding:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Overflow:
-      m_Left: 0
-      m_Right: 0
-      m_Top: 0
-      m_Bottom: 0
-    m_Font: {fileID: 0}
-    m_FontSize: 0
-    m_FontStyle: 0
     m_Alignment: 0
     m_WordWrap: 0
     m_RichText: 1
@@ -1651,7 +1586,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed9e34441ff04e3a93acf027f5380cac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bondTolerance: 1.35
+  Viewport: {fileID: 0}
 --- !u!4 &637342120
 Transform:
   m_ObjectHideFlags: 0

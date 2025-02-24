@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 
 public class TranslateOperation : IOperation
@@ -91,12 +92,12 @@ public class SetPositionOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
-public class SetSymbolOperation : IOperation
+public class SetElementOperation : IOperation
 {
     private AtomView targetAtom;
     private string newSymbol, oldSymbol;
 
-    public SetSymbolOperation(AtomView targetAtom, string newSymbol)
+    public SetElementOperation(AtomView targetAtom, string newSymbol)
     {
         this.targetAtom = targetAtom;
         this.newSymbol = newSymbol;
@@ -124,6 +125,33 @@ public class SetSymbolOperation : IOperation
     }
 
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class SetChargeOperation : IOperation
+{
+    private AtomView targetAtom;
+    private float newCharge, oldCharge;
+
+    public SetChargeOperation(AtomView targetAtom, float newCharge)
+    {
+        this.targetAtom = targetAtom;
+        this.newCharge = newCharge;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        oldCharge = targetAtom.SourceAtom.Charge;
+        targetAtom.SourceAtom.Charge = newCharge;
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        targetAtom.SourceAtom.Charge = oldCharge;
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.None;
 }
 
 public class AddAtomOperation : IOperation
@@ -192,4 +220,32 @@ public class RemoveAtomsOperation : IOperation
     }
 
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class ChangeLatticeOperation : IOperation
+{
+    private float[] newParams, oldParams;
+    private bool keepCartesian;
+
+    public ChangeLatticeOperation(float[] newParams, bool keepCartesian)
+    {
+        Assert.AreEqual(newParams.Length, 6);
+        this.newParams = newParams;
+        this.keepCartesian = keepCartesian;
+    }
+    
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        oldParams = structureView.Structure.LatticeParams;
+        structureView.ChangeLattice(newParams, keepCartesian);
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        structureView.ChangeLattice(oldParams, keepCartesian);
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateLattice;
 }
