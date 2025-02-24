@@ -120,6 +120,7 @@ public class ViewportController : MonoBehaviour
 
         CurrentStructureView = structureView;
         CurrentStructureView.CreateColliders();
+        CurrentStructureView.GenerateBonds();
 
         R_AtomEditPanelSrc.S.SetCurrentStructure(CurrentStructureView.Structure);
         undoManager = new(CurrentStructureView);
@@ -130,9 +131,6 @@ public class ViewportController : MonoBehaviour
         // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
         structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
         latticeRenderer.RenderLattice(structureView.Structure, repeatA, repeatB, repeatC);
-        RefocusCamera();
-        
-        RecalculateBonds();
     }
 
     public void SubmitOperation(IOperation op)

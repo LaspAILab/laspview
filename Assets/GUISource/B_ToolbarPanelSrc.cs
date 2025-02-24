@@ -94,7 +94,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 #endif
         if (onPlay)
         {
-            this.PlayerBtnChecked((false, false));
+            PlayerBtnChecked((false, false));
 #if !UNITY_WEBGL
             //foreach (Selectable c in R_ServerPanelSrc.S.gameObject.GetComponentsInChildren<Selectable>())
             //{
@@ -115,7 +115,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             GuiMain.S.SetAllUIInteract(L_ServerPanelSrc.S.gameObject, true);
             L_ServerPanelSrc.S.NetLocalBtnChange();
 #endif
-            // this.PlayerBtnChecked(MainScr.S.CurrentArc().DrawStructure(MainScr.S.CurrentArc().currentStr));
+            PlayerBtnChecked((true, true));
         }
     }
 
