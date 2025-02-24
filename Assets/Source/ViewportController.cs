@@ -580,6 +580,8 @@ public class ViewportController : MonoBehaviour
             // Submit operation if mouse has released
             if (isDraggingAtom)
             {
+                var translation = mouseWorldPos - activeCamera.ScreenToWorldPoint(prevMousePos);
+                dragTotalTranslation += translation;
                 // Careful with assignment behavior: we have to copy assign the selection here! 
                 IOperation op = new TranslateOperation(new(selectionManager.Selection),
                     dragTotalTranslation);
