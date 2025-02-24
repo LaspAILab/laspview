@@ -16,9 +16,6 @@ public class GuiMain : MonoBehaviour
     public GameObject L_DisplayPanelPrefab;
     public GameObject L_FilePanelPrefab;
     public GameObject L_ProjectPanelPrefab;
-    public GameObject M_AddAtomWidgetPrefab;
-    public GameObject M_EditLatticeWidgetPrefab;
-    public GameObject M_SupercellWidgetPrefab;
     public GameObject R_LatticeEditPanelPrefab;
     public GameObject R_AtomEditPanelPrefab;
 #if !UNITY_WEBGL
@@ -72,9 +69,6 @@ public class GuiMain : MonoBehaviour
         GameObject l_ProjectPanel = Instantiate(L_ProjectPanelPrefab);
         GameObject l_FilePanel = Instantiate(L_FilePanelPrefab);
         GameObject l_DisplayPanel = Instantiate(L_DisplayPanelPrefab);
-        GameObject m_AddAtomWidget = Instantiate(M_AddAtomWidgetPrefab);
-        GameObject m_EditLatticeWidget = Instantiate(M_EditLatticeWidgetPrefab);
-        GameObject m_SupercellWidget = Instantiate(M_SupercellWidgetPrefab);
 #if !UNITY_WEBGL
         GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
         //GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
