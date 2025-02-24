@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -67,6 +68,18 @@ public class ArcStructure
         return newAtom;
     }
 
+    public Atom AddAtom(Atom atom)
+    {
+        if (!App.Elements.ContainsKey(atom.Symbol))
+        {
+            throw new ArgumentException("Element symbol not found in the element data dictionary.");
+        }
+
+        atom.Index = AtomIndex++;
+        Atoms.Add(atom);
+        return atom;
+    }
+
     public bool RemoveAtom(Atom atom)
     {
         return Atoms.Remove(atom);
@@ -100,14 +113,14 @@ public class ArcStructure
 
     public Vector3 FractionalToCartesian(Vector3 posFractional)
     {
-        Vector4 tmp = posFractional;
+        Vector4 tmp = new Vector4(posFractional.x, posFractional.y, posFractional.z, 1);
         tmp = LatticeMatrix * tmp;
         return (Vector3)tmp;
     }
 
     public Vector3 CartesianToFractional(Vector3 posCartesian)
     {
-        Vector4 tmp = posCartesian;
+        Vector4 tmp = new Vector4(posCartesian.x, posCartesian.y, posCartesian.z, 1);
         tmp = InvLatticeMatrix * tmp;
         return (Vector3)tmp;
     }
@@ -148,11 +161,7 @@ public class ArcStructureView
     public Mutex BondMutex;
 
     // Remember to recalculate bonds after change
-    public float BondTolerance
-    {
-        get;
-        set;
-    }
+    public float BondTolerance { get; set; }
 
     public ArcStructureView(ArcStructure structure, float bondTolerance = 1.0f)
     {
@@ -197,13 +206,22 @@ public class ArcStructureView
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
-            UpdateAtomBonds(Atoms[i], BondTolerance, false, true);
+            UpdateAtomBondsNoLock(Atoms[i], BondTolerance, false, true);
         }
 
         BondMutex.ReleaseMutex();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void UpdateAtomBonds(AtomView targetAtom, float tolerance, bool cleanExisting = false,
+        bool skipForward = false)
+    {
+        BondMutex.WaitOne();
+        UpdateAtomBondsNoLock(targetAtom, tolerance, cleanExisting, skipForward);
+        BondMutex.ReleaseMutex();
+    }
+
+    public void UpdateAtomBondsNoLock(AtomView targetAtom, float tolerance, bool cleanExisting = false,
         bool skipForward = false)
     {
         if (cleanExisting)
@@ -219,7 +237,7 @@ public class ArcStructureView
             {
                 continue;
             }
-            
+
             if (Atoms[i] == targetAtom)
             {
                 continue;
@@ -262,6 +280,7 @@ public class ArcStructureView
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Matrix4x4 GetLatticeTransform(int aIndex, int bIndex, int cIndex)
     {
         Vector3 translateCart = Structure.FractionalToCartesian(new Vector3(aIndex, bIndex, cIndex));
@@ -271,12 +290,14 @@ public class ArcStructureView
     /// <summary>
     /// Sort atom and bond list for more efficient draw cell batching
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SortLists()
     {
         Atoms.Sort((a, b) => a.RenderMat.CompareTo(b.RenderMat));
         Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CreateColliders()
     {
         foreach (var item in Atoms)
@@ -285,6 +306,7 @@ public class ArcStructureView
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ReleaseColliders()
     {
         foreach (var item in Atoms)
@@ -311,21 +333,89 @@ public class ArcStructureView
 
             foreach (var item in Atoms)
             {
-                Vector3 fractional = prevCartToFract * item.SourceAtom.Coordinates;
+                Vector3 prevPos = item.SourceAtom.Coordinates;
+                Vector3 fractional = prevCartToFract * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1);
                 item.SetPosition(Structure.FractionalToCartesian(fractional), Structure, false, true);
             }
         }
+        
+        TranslationVectorsCartesian =
+            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
-    public AtomView AddAtom(string elemSymbol, Vector3 coords, float charge)
+    public void ToSuperCell(int repeatA, int repeatB, int repeatC)
+    {
+        List<Atom> newAtoms = new();
+
+        for (int i = 0; i < repeatA; i++)
+        {
+            for (int j = 0; j < repeatB; j++)
+            {
+                for (int k = 0; k < repeatC; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0)
+                    {
+                        continue;
+                    }
+
+                    var latticeTransform = GetLatticeTransform(i, j, k);
+                    foreach (var item in Atoms)
+                    {
+                        Vector3 prevPos = item.SourceAtom.Coordinates;
+                        newAtoms.Add(new Atom
+                        {
+                            Charge = item.SourceAtom.Charge,
+                            Coordinates = latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1),
+                            Symbol = item.SourceAtom.Symbol,
+                        });
+                    }
+                }
+            }
+        }
+
+        Structure.SetLattice(new[]
+        {
+            Structure.LatticeParams[0] * repeatA, Structure.LatticeParams[1] * repeatB,
+            Structure.LatticeParams[2] * repeatC,
+            Structure.LatticeParams[3], Structure.LatticeParams[4], Structure.LatticeParams[5]
+        });
+        
+        TranslationVectorsCartesian =
+            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
+
+        foreach (var item in newAtoms)
+        {
+            AddAtom(item, false);
+        }
+    }
+
+    public AtomView AddAtom(string elemSymbol, Vector3 coords, float charge, bool updateBonds = true)
     {
         var newAtom = Structure.AddAtom(elemSymbol, coords, charge);
         var newAtomView = new AtomView(newAtom, Structure);
         Atoms.Add(newAtomView);
-        
+
         newAtomView.CreateCollider();
-        UpdateAtomBonds(newAtomView, BondTolerance);
-        
+        if (updateBonds)
+        {
+            UpdateAtomBonds(newAtomView, BondTolerance);
+        }
+
+        return newAtomView;
+    }
+
+    public AtomView AddAtom(Atom atom, bool updateBonds = true)
+    {
+        var newAtom = Structure.AddAtom(atom);
+        var newAtomView = new AtomView(newAtom, Structure);
+        Atoms.Add(newAtomView);
+
+        newAtomView.CreateCollider();
+        if (updateBonds)
+        {
+            UpdateAtomBonds(newAtomView, BondTolerance);
+        }
+
         return newAtomView;
     }
 

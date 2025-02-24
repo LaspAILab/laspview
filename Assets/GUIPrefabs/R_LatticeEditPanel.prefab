@@ -572,9 +572,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: EditWidgetEditLattice
+      - m_Target: {fileID: -2047234392221754124}
+        m_TargetAssemblyTypeName: R_LatticeEditPanelSrc, Assembly-CSharp
+        m_MethodName: ToSuperCell
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1359,10 +1359,50 @@ PrefabInstance:
       propertyPath: m_MinWidth
       value: 50
       objectReference: {fileID: 0}
+    - target: {fileID: 5997129502603299709, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_Text
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5997129502603299709, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5997129502603299709, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_KeyboardType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5997129502603299709, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_CharacterValidation
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6718414422116332495, guid: b2cefdb092917024fa00a8ffc2114b9d,
         type: 3}
       propertyPath: m_Text
-      value: 15.0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6762465209084521680, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_Text
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6762465209084521680, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6762465209084521680, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_KeyboardType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6762465209084521680, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_CharacterValidation
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6922637285012111144, guid: b2cefdb092917024fa00a8ffc2114b9d,
         type: 3}
@@ -1447,7 +1487,7 @@ PrefabInstance:
     - target: {fileID: 7939297062607676809, guid: b2cefdb092917024fa00a8ffc2114b9d,
         type: 3}
       propertyPath: m_Text
-      value: 15.0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8015002136619136370, guid: b2cefdb092917024fa00a8ffc2114b9d,
         type: 3}
@@ -1457,7 +1497,27 @@ PrefabInstance:
     - target: {fileID: 8399562342072335808, guid: b2cefdb092917024fa00a8ffc2114b9d,
         type: 3}
       propertyPath: m_Text
-      value: 15.0
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9196852870298976911, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_Text
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9196852870298976911, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_ContentType
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 9196852870298976911, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_KeyboardType
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 9196852870298976911, guid: b2cefdb092917024fa00a8ffc2114b9d,
+        type: 3}
+      propertyPath: m_CharacterValidation
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
