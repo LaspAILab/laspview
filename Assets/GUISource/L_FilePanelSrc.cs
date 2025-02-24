@@ -61,7 +61,7 @@ public class L_FilePanelSrc : MonoBehaviour
             }
         });
 #elif UNITY_STANDALONE_OSX
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", extensions, true);
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, true);
         FileRead(paths);
 #endif
 #endif

@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
-using static System.Windows.Forms.LinkLabel;
 
 
 public static class ArcIO
@@ -17,8 +16,9 @@ public static class ArcIO
 
     public static void ReadArc(this ArcFile arcFile, IEnumerable<string> lines, Action<int> progressCallback = null)
     {
-        ArcStructure currentStructure = null;
+        ArcStructure currentStructure = new();
 
+        string lastLine = null;
         foreach (var line in lines)
         {
             if (line.Trim() == "")
@@ -27,17 +27,15 @@ public static class ArcIO
             }
 
             var tokens = SplitWhiteSpace(line);
-            if (tokens.Contains("Energy") || tokens.Contains("IS") || tokens.Contains("TS") ||
+            if (tokens[0].StartsWith("!DATE"))
+            {
+                // TODO: Precess date
+            }
+            
+            if (tokens.Contains("Energy") || tokens.Contains("IS") ||
+                tokens.Contains("TS") ||
                 (tokens.Contains("SSW") && !tokens.Contains("Str")))
             {
-                if (currentStructure != null)
-                {
-                    arcFile.Structures.Add(currentStructure);
-                    progressCallback?.Invoke(arcFile.StructureCount);
-                }
-
-                currentStructure = new ArcStructure();
-
                 if (line.Contains("****"))
                 {
                     currentStructure.Conv = 9999;
@@ -76,7 +74,7 @@ public static class ArcIO
             {
                 try
                 {
-                    float[] latticeParams = tokens.Skip(1).Select(float.Parse).ToArray();
+                    float[] latticeParams = tokens.Skip(1).Take(6).Select(float.Parse).ToArray();
                     currentStructure.SetLattice(latticeParams);
                 }
                 catch (FormatException e)
@@ -87,13 +85,18 @@ public static class ArcIO
                 {
                     Debug.Log($"Invalid PBC line: {e.Message}");
                 }
+                catch (Exception e)
+                {
+                    Debug.Log($"Unknown exception: {e.Message}");
+                }
             }
             else if (tokens.Contains("CORE"))
             {
                 try
                 {
                     Vector3 coords = new(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3]));
-                    currentStructure.AddAtom(tokens[0], coords, float.Parse(tokens[tokens.Length - 2]));
+                    
+                    currentStructure.AddAtom(tokens[0], coords, float.Parse(tokens[8]));
                 }
                 catch (FormatException e)
                 {
@@ -104,12 +107,15 @@ public static class ArcIO
                     Debug.Log($"Invalid atom: {e.Message}");
                 }
             }
-        }
 
-        if (currentStructure != null)
-        {
-            arcFile.Structures.Add(currentStructure);
-            progressCallback?.Invoke(arcFile.StructureCount);
+            if (line.Trim() == "end" && lastLine.Trim() == "end")
+            {
+                arcFile.Structures.Add(currentStructure);
+                progressCallback?.Invoke(arcFile.StructureCount);
+                currentStructure = new();
+            }
+            
+            lastLine = line;
         }
     }
 
