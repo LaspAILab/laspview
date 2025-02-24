@@ -433,6 +433,5 @@ public class ArcStructureView
     ~ArcStructureView()
     {
         BondMutex.Dispose();
-        ReleaseColliders();
     }
 }
