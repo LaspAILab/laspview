@@ -37,6 +37,12 @@ public class L_FilePanelSrc : MonoBehaviour
         });
         this.gameObject.SetActive(false);
     }
+    
+    public static ExtensionFilter[] Extensions = new[] {
+        new ExtensionFilter("Arc Files", "arc", "car"),
+        new ExtensionFilter("All Files", "*" ),
+    };
+    
     public void FileOpen()
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -44,13 +50,10 @@ public class L_FilePanelSrc : MonoBehaviour
 #else
 
         // Open file with filter
-        var extensions = new[] {
-            new ExtensionFilter("Arc Files", "arc", "car"),
-            new ExtensionFilter("All Files", "*" ),
-            };
+        
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", extensions, true, (string[] paths) =>
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, true, (string[] paths) =>
         {
             if (paths.Length != 0)
             {
@@ -98,14 +101,18 @@ public class L_FilePanelSrc : MonoBehaviour
 
     public void FileSaveSingle()
     {
-
-        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", ".arc", "", (string path) =>
+        if (App.Instance.CurrentFile == null)
         {
-            if (path != null && path != "")
+            return;
+        }   
+        
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
+        {
+            if (!string.IsNullOrEmpty(path))
             {
-                // string str = MainScr.S.CurrentArc().ArcWrite();
+                string str = App.Instance.CurrentFile.WriteArc();
 #if !UNITY_WEBGL
-                // File.WriteAllText(path, str);
+                File.WriteAllText(path, str);
 #endif
             }
         });
@@ -113,13 +120,7 @@ public class L_FilePanelSrc : MonoBehaviour
 
     public void NewStructure()
     {
-        ArcFile arcFile = new();
-        ArcStructure arcStructure = new();
-        arcStructure.Energy = 0;
-        arcStructure.SetLattice(new []{10f, 10f, 10f, 90f, 90f, 90f});
-        arcFile.Structures.Add(arcStructure);
-        
-        App.Instance.SetArcFile(arcFile);
+        App.Instance.NewEmpty();
     }
 
     //public void FileSaveAll()
