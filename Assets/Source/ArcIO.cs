@@ -27,7 +27,8 @@ public static class ArcIO
             }
 
             var tokens = SplitWhiteSpace(line);
-            if (tokens.Contains("Energy") || tokens.Contains("IS") || tokens.Contains("TS") || (tokens.Contains("SSW") && !tokens.Contains("Str")))
+            if (tokens.Contains("Energy") || tokens.Contains("IS") || tokens.Contains("TS") ||
+                (tokens.Contains("SSW") && !tokens.Contains("Str")))
             {
                 if (currentStructure != null)
                 {
@@ -112,10 +113,31 @@ public static class ArcIO
         }
     }
 
-    public static ArcFile ReadArc(IEnumerable<string> lines, Action<int> progressCallback = null)
+    public static string WriteArc(this ArcFile arcFile)
     {
-        ArcFile arcFile = new();
-        arcFile.ReadArc(lines, progressCallback);
-        return arcFile;
+        StringBuilder lines = new StringBuilder();
+        // Header
+        lines.Append("!BIOSYM archive 2\nPBC=ON\n");
+
+        for (int i = 0; i < arcFile.StructureCount; i++)
+        {
+            ArcStructure arcStructure = arcFile.Structures[i];
+            lines.Append($"                      Energy{i,10:d}{0.0f,16:f4}{arcStructure.Energy,18:f6}\n");
+            lines.Append("!DATE\n");
+            lines.Append(string.Format("PBC{0,14:f8}{1,14:f8}{2,14:f8}{3,14:f8}{4,14:f8}{5,14:f8}\n",
+                arcStructure.LatticeParams[0], arcStructure.LatticeParams[1], arcStructure.LatticeParams[2],
+                arcStructure.LatticeParams[3], arcStructure.LatticeParams[4], arcStructure.LatticeParams[5]));
+            for (int h = 0; h < arcStructure.Atoms.Count; h++)
+            {
+                Atom atom = arcStructure.Atoms[h];
+                lines.Append(string.Format("{0,-2}{1,15:f9}{2,15:f9}{3,15:f9}", atom.Symbol, atom.Coordinates[0],
+                    atom.Coordinates[1], atom.Coordinates[2]));
+                lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-3}{atom.Symbol,-3}{0.0f,8:f4}{h + 1,5:d}\n");
+            }
+
+            lines.Append("end\nend\n");
+        }
+
+        return lines.ToString();
     }
 }
