@@ -27,6 +27,11 @@ public class L_LASPPanelSrc : MonoBehaviour
     string nnpot_dir;
     string lasp_run_dir;
 
+    public static string[] PySplit(string line)
+    {
+        return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
+    }
+    
     void Awake()
     {
         S = this;
@@ -130,7 +135,7 @@ public class L_LASPPanelSrc : MonoBehaviour
             int i = 0;
             for (i = 0; i < lines.Length; i++)
             {
-                string[] para = ConFun.PySplit(lines[i].ToLower());
+                string[] para = PySplit(lines[i].ToLower());
                 para[0] = para[0];
                 if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
                 {
@@ -200,7 +205,7 @@ public class L_LASPPanelSrc : MonoBehaviour
         for (i = 0; i < lines.Length; i++)
         {
             string st = lines[i];
-            string[] para = ConFun.PySplit(lines[i].ToLower());
+            string[] para = PySplit(lines[i].ToLower());
             if (uiPara.ContainsKey(para[0]) || (para[0] == "%block" && para[1] == "netinfo"))
             {
                 if (para[0] == "potential")
@@ -244,7 +249,7 @@ public class L_LASPPanelSrc : MonoBehaviour
                     Dropdown dp = laspPanelPara.paraDict["nn pot"].GetComponent<Dropdown>();
                     i++;
 
-                    para = ConFun.PySplit(lines[i].ToLower());
+                    para = PySplit(lines[i].ToLower());
                     int j = 0;
                     for (; j < dp.options.Count; j++)
                     {

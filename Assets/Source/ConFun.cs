@@ -15,7 +15,6 @@ using System.Linq;
 public class ConFun : MonoBehaviour
 {
     public static Dictionary<string, string> GlobalConfig;
-    public List<string> NecessaryConfigKeys;
 
     public static GameObject structureText;
     static Text statusLabel;
@@ -24,19 +23,9 @@ public class ConFun : MonoBehaviour
     {
         structureText = GameObject.Find("StructureText");
         statusLabel = GameObject.Find("StatusText").GetComponent<Text>();
-#if !UNITY_WEBGL
-        NecessaryConfigKeys = new List<string> { "user", "remote_ip", "remote_port", "local_port" };
-#else
-        NecessaryConfigKeys = new List<string>();
-#endif
         
         ReadGlobalConfig();
         GlobalConfig.Add("model_type", "scale");
-    }
-
-    public static string[] PySplit(string line)
-    {
-        return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
     }
 
     public void ReadGlobalConfig()
@@ -44,31 +33,27 @@ public class ConFun : MonoBehaviour
         GlobalConfig = new Dictionary<string, string>();
 #if !UNITY_WEBGL
         // printStatusInfo(Application.dataPath);
-        string[] lines = File.ReadAllLines(Application.dataPath + "/LaspViewConsole.log");
+        string[] lines = File.ReadAllLines(Application.dataPath + "/LaspViewConsole.cfg");
 #else
         string[] lines = { };
         //string[] lines = { " arc_default = lowestpath - 1.arc "};
 #endif
         foreach (string lin in lines)
         {
-            if (lin.Trim() == "") continue;
+            if (lin.Trim() == "")
+            {
+                continue;
+            }
             string[] kv = lin.Split('=');
             GlobalConfig.Add(kv[0], kv[1]);
         }
-        foreach (string para in NecessaryConfigKeys)
-        {
-            if (!GlobalConfig.ContainsKey(para))
-            {
-                UpdateStatusLabel("NOT Cantain KEY " + para + " ,plz check allkey.log and RESTART the program");
-            }
-        }
     }
 
-    public static void printStructureInfo(int currentStruc, int totalStrucs, float energy)
+    public static void UpdateStructureInfo(int currentStruct, int totalStructs, float energy)
     {
         //print(structureText);
-        structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().SetTextWithoutNotify((currentStruc + 1).ToString());
-        structureText.transform.GetChild(3).GetComponent<Text>().text = totalStrucs.ToString();
+        structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().SetTextWithoutNotify((currentStruct + 1).ToString());
+        structureText.transform.GetChild(3).GetComponent<Text>().text = totalStructs.ToString();
         structureText.transform.GetChild(5).GetComponent<Text>().text = energy.ToString("f3");
     }
 
