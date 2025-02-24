@@ -40,7 +40,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"], (int)modelPara["lat range c"]);
         viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
         viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
-        viewport.BondTolerance = modelPara["tolerance"];
+        App.Instance.BondTolerance = modelPara["tolerance"];
         // MainScr.S.CurrentStructure().DrawModel();
         // GuiMain.S.FocusCameraCenter();
     }

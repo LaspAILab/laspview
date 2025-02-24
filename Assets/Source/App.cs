@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Application = UnityEngine.Application;
 
 [Serializable]
 public struct SerializedElementContainer
@@ -50,7 +52,22 @@ public class App : MonoBehaviour
     
     public ViewportController Viewport;
     
-    public float bondTolerance = 1.35f;
+    private float bondTolerance = 1.35f;
+
+    public float BondTolerance
+    {
+        get => bondTolerance;
+        set
+        {
+            if (Mathf.Approximately(bondTolerance, value))
+            {
+                return;
+            }
+            
+            bondTolerance = value;
+            Viewport.RecalculateBonds();
+        }
+    }
 
     public ArcFile CurrentFile
     {

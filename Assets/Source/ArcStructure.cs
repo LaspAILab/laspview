@@ -49,20 +49,27 @@ public class ArcStructure
         Atoms = new();
     }
 
-    public void AddAtom(string elemSymbol, Vector3 coords, float charge)
+    public Atom AddAtom(string elemSymbol, Vector3 coords, float charge)
     {
         if (!App.Elements.ContainsKey(elemSymbol))
         {
             throw new ArgumentException("Element symbol not found in the element data dictionary.");
         }
 
-        Atoms.Add(new Atom
+        var newAtom = new Atom
         {
             Index = AtomIndex++,
             Symbol = elemSymbol,
             Coordinates = coords,
             Charge = charge
-        });
+        };
+        Atoms.Add(newAtom);
+        return newAtom;
+    }
+
+    public bool RemoveAtom(Atom atom)
+    {
+        return Atoms.Remove(atom);
     }
 
     public void SetLattice(float[] latticeParams)
@@ -182,21 +189,29 @@ public class ArcStructureView
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
-            UpdateAtomBonds(Atoms[i], tolerance, false);
+            UpdateAtomBonds(Atoms[i], tolerance, false, true);
         }
 
         BondMutex.ReleaseMutex();
     }
 
-    public void UpdateAtomBonds(AtomView targetAtom, float tolerance, bool cleanExisting = false)
+    public void UpdateAtomBonds(AtomView targetAtom, float tolerance, bool cleanExisting = false,
+        bool skipForward = false)
     {
         if (cleanExisting)
         {
             Bonds.RemoveAll(bond => bond.FromAtom == targetAtom || bond.ToAtom == targetAtom);
         }
 
+        int atomIndex = Atoms.IndexOf(targetAtom);
+
         for (int i = 0; i < Atoms.Count; i++)
         {
+            if (skipForward && i <= atomIndex)
+            {
+                continue;
+            }
+            
             if (Atoms[i] == targetAtom)
             {
                 continue;
@@ -292,6 +307,27 @@ public class ArcStructureView
                 item.SetPosition(Structure.FractionalToCartesian(fractional), Structure, false, true);
             }
         }
+    }
+
+    public AtomView AddAtom(string elemSymbol, Vector3 coords, float charge)
+    {
+        var newAtom = Structure.AddAtom(elemSymbol, coords, charge);
+        var newAtomView = new AtomView(newAtom, Structure);
+        Atoms.Add(newAtomView);
+        UpdateAtomBonds(newAtomView, App.Instance.BondTolerance);
+        
+        return newAtomView;
+    }
+
+    public void DeleteAtom(AtomView atomView)
+    {
+        // Remove bonds
+        Bonds.RemoveAll(bond => bond.FromAtom == atomView || bond.ToAtom == atomView);
+        // Remove source atom
+        Structure.RemoveAtom(atomView.SourceAtom);
+        // Remove atom view
+        atomView.DestroyCollider();
+        Atoms.Remove(atomView);
     }
 
     ~ArcStructureView()

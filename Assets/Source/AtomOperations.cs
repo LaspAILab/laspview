@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
@@ -24,7 +25,7 @@ public class TranslateOperation : IOperation
         structureView.BondMutex.WaitOne();
         foreach (var item in targetAtoms)
         {
-            structureView.UpdateAtomBonds(item, App.Instance.bondTolerance, true);
+            structureView.UpdateAtomBonds(item, App.Instance.BondTolerance, true);
         }
 
         structureView.BondMutex.ReleaseMutex();
@@ -42,7 +43,7 @@ public class TranslateOperation : IOperation
         structureView.BondMutex.WaitOne();
         foreach (var item in targetAtoms)
         {
-            structureView.UpdateAtomBonds(item, App.Instance.bondTolerance, true);
+            structureView.UpdateAtomBonds(item, App.Instance.BondTolerance, true);
         }
 
         structureView.BondMutex.ReleaseMutex();
@@ -70,7 +71,7 @@ public class SetPositionOperation : IOperation
         targetAtom.SetPosition(newPosition, structureView.Structure, false);
 
         structureView.BondMutex.WaitOne();
-        structureView.UpdateAtomBonds(targetAtom, App.Instance.bondTolerance, true);
+        structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         structureView.BondMutex.ReleaseMutex();
 
         return true;
@@ -81,7 +82,7 @@ public class SetPositionOperation : IOperation
         targetAtom.SetPosition(oldPosition, structureView.Structure, false);
 
         structureView.BondMutex.WaitOne();
-        structureView.UpdateAtomBonds(targetAtom, App.Instance.bondTolerance, true);
+        structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         structureView.BondMutex.ReleaseMutex();
 
         return true;
@@ -105,12 +106,88 @@ public class SetSymbolOperation : IOperation
     {
         oldSymbol = targetAtom.Symbol;
         targetAtom.SetElement(newSymbol);
+        
+        structureView.BondMutex.WaitOne();
+        structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
+        structureView.BondMutex.ReleaseMutex();
         return true;
     }
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
         targetAtom.SetElement(oldSymbol);
+        
+        structureView.BondMutex.WaitOne();
+        structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
+        structureView.BondMutex.ReleaseMutex();
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class AddAtomOperation : IOperation
+{
+    private AtomView addedAtom;
+    private Vector3 position;
+    private string symbol;
+    private float charge;
+
+    public AddAtomOperation(Vector3 position, string symbol, int charge=0)
+    {
+        this.position = position;
+        this.symbol = symbol;
+        this.charge = charge;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        addedAtom = structureView.AddAtom(symbol, position, charge);
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        structureView.DeleteAtom(addedAtom);
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class RemoveAtomsOperation : IOperation
+{
+    private List<AtomView> removedAtoms;
+    private List<Atom> removedAtomsCopy;
+    private Vector3 position;
+    private string symbol;
+    private float charge;
+
+    public RemoveAtomsOperation(List<AtomView> removedAtoms)
+    {
+        this.removedAtoms = removedAtoms;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        removedAtomsCopy = removedAtoms.Select(x => x.SourceAtom).ToList();
+        
+        foreach (var item in removedAtoms)
+        {
+            structureView.DeleteAtom(item);
+        }
+        
+        removedAtoms.Clear();
+        
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        foreach (var item in removedAtomsCopy)
+        {
+            removedAtoms.Add(structureView.AddAtom(item.Symbol, item.Coordinates, item.Charge));
+        }
         return true;
     }
 
