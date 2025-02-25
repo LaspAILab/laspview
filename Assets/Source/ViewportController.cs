@@ -35,20 +35,22 @@ public class ViewportController : MonoBehaviour
 
     public GUIStyle labelStyle = new();
 
+    private int atomsLayer, latticeLayer;
+
     // Whether to update bonds in realtime when moving atoms
     private bool updateBondsRealtime = true;
     private bool bondRecalculationRunning = false, bondDirtyFlag = false;
-    
-    private int repeatA = 1, repeatB = 1, repeatC = 1;
 
-    // Angles in sphere coordinates, in radians!
-    private float cameraAltitude = 0f, cameraAzimuth = 0f;
+    private int repeatA = 1, repeatB = 1, repeatC = 1;
 
     private Vector3 cameraCenter;
 
     // How far the camera is from the focal center
+    private float cameraDistance;
     private float cameraViewportSize = 0f;
+
     private Vector3 prevMousePos;
+    private Ray mouseRay;
     private ToolType currentTool = ToolType.Select;
 
     private bool isDraggingAtom = false;
@@ -75,6 +77,9 @@ public class ViewportController : MonoBehaviour
         activeCamera = Camera.main;
         selectionBoxDrawer = GameObject.Find("SelectionBoxContainer").GetComponent<SelectionBoxDrawer>();
         ColliderPool.GlobalPool = new(colliderPrefab, colliderParent);
+
+        atomsLayer = LayerMask.NameToLayer("Default");
+        latticeLayer = LayerMask.NameToLayer("TransparentFX");
     }
 
     public void RecalculateBonds()
@@ -83,7 +88,7 @@ public class ViewportController : MonoBehaviour
         {
             return;
         }
-        
+
         if (bondRecalculationRunning)
         {
             // Hint background task to rerun
@@ -130,7 +135,7 @@ public class ViewportController : MonoBehaviour
         structureRenderer.SetStructureView(structureView);
         // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
         structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
-        latticeRenderer.RenderLattice(structureView.Structure, repeatA, repeatB, repeatC);
+        latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
     }
 
     public void SubmitOperation(IOperation op)
@@ -143,21 +148,10 @@ public class ViewportController : MonoBehaviour
     {
         cameraCenter = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)) / 2;
         cameraViewportSize = cameraCenter.magnitude + 3.5f;
-
-        UpdateCameraTransform();
-    }
-
-    private void UpdateCameraTransform()
-    {
-        float cosAltitude = Mathf.Cos(cameraAltitude);
-        var pos = new Vector3(cosAltitude * Mathf.Sin(cameraAzimuth), Mathf.Sin(cameraAltitude),
-            -cosAltitude * Mathf.Cos(cameraAzimuth));
-        pos *= (4 * cameraCenter.magnitude);
-        pos += cameraCenter;
-
-        var rot = Quaternion.Euler(cameraAltitude * Mathf.Rad2Deg, -cameraAzimuth * Mathf.Rad2Deg, 0);
-        activeCamera.transform.SetPositionAndRotation(pos, rot);
         activeCamera.orthographicSize = cameraViewportSize;
+        cameraDistance = 4 * cameraCenter.magnitude;
+
+        UpdateCameraPos();
     }
 
     /// <summary>
@@ -193,7 +187,7 @@ public class ViewportController : MonoBehaviour
         }
 
         structureRenderer.SetLatticeRepeat(this.repeatA, this.repeatB, this.repeatC);
-        latticeRenderer.RenderLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
+        latticeRenderer.SetLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
         RefocusCamera();
     }
 
@@ -206,29 +200,40 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void UpdateCamera(float? deltaAltitude, float? deltaAzimuth, float? deltaViewportSize, Vector3? deltaCenterPos)
+    void ResizeViewport(float deltaViewportSize)
     {
-        if (deltaAltitude.HasValue)
-        {
-            cameraAltitude = Mathf.Clamp(cameraAltitude + deltaAltitude.Value, -Mathf.PI / 2, Mathf.PI / 2);
-        }
+        cameraViewportSize = Mathf.Clamp(cameraViewportSize + deltaViewportSize, 1f, 10000f);
+        activeCamera.orthographicSize = cameraViewportSize;
+    }
 
-        if (deltaAzimuth.HasValue)
-        {
-            cameraAzimuth = (cameraAzimuth + deltaAzimuth.Value) % (2f * Mathf.PI);
-        }
+    void UpdateCameraPos()
+    {
+        Vector3 translation = activeCamera.transform.worldToLocalMatrix *
+                              new Vector4(cameraCenter.x, cameraCenter.y, cameraCenter.z, 1);
+        // Do not change depth
+        translation.z -= cameraDistance;
+        activeCamera.transform.Translate(translation, Space.Self);
+    }
 
-        if (deltaViewportSize.HasValue)
+    void RotateCamera()
+    {
+        Vector3 corner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
+        if (Physics.Raycast(mouseRay, out _, activeCamera.farClipPlane, 1 << latticeLayer))
         {
-            cameraViewportSize = Mathf.Clamp(cameraViewportSize + deltaViewportSize.Value, 1f, 10000f);
+            Vector3 deltaMouse = Input.mousePosition - prevMousePos;
+            float rotateSpeed = 360f / Screen.height * activeCamera.orthographicSize / corner.magnitude;
+            activeCamera.transform.RotateAround(cameraCenter, activeCamera.transform.up, deltaMouse.x * rotateSpeed);
+            activeCamera.transform.RotateAround(cameraCenter, activeCamera.transform.right,
+                -deltaMouse.y * rotateSpeed);
         }
-
-        if (deltaCenterPos.HasValue)
+        else
         {
-            cameraCenter += deltaCenterPos.Value;
+            Vector3 centerScreen = activeCamera.WorldToScreenPoint(0.5f * corner);
+            Vector3 a = centerScreen - Input.mousePosition;
+            Vector3 b = centerScreen - prevMousePos;
+            float degree = Mathf.Sign(Vector3.Cross(a, b).z) * Vector3.Angle(a, b);
+            activeCamera.transform.RotateAround(cameraCenter, activeCamera.transform.forward, degree);
         }
-
-        UpdateCameraTransform();
     }
 
     bool UpdateBoxSelection(Rect currentRect)
@@ -272,7 +277,7 @@ public class ViewportController : MonoBehaviour
         {
             // Cancel any ongoing mouse operations
             currentTool = ToolType.Select;
-            
+
             // Submit operation if mouse has released
             if (isDraggingAtom)
             {
@@ -286,7 +291,8 @@ public class ViewportController : MonoBehaviour
         }
         else
         {
-            var raycasts = Physics.RaycastAll(activeCamera.ScreenPointToRay(Input.mousePosition));
+            mouseRay = activeCamera.ScreenPointToRay(Input.mousePosition);
+            var raycasts = Physics.RaycastAll(mouseRay, activeCamera.farClipPlane, 1 << atomsLayer);
             foreach (var hitInfo in raycasts)
             {
                 if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
@@ -305,8 +311,7 @@ public class ViewportController : MonoBehaviour
         if (shallUpdateLattice)
         {
             structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
-            latticeRenderer.RenderLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
-            RefocusCamera();
+            latticeRenderer.SetLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
             shallUpdateLattice = false;
         }
 
@@ -340,7 +345,8 @@ public class ViewportController : MonoBehaviour
         if (move.magnitude > 1e-5)
         {
             var deltaCenter = activeCamera.transform.TransformDirection(PAN_SPEED * move);
-            UpdateCamera(null, null, null, deltaCenter);
+            cameraCenter += deltaCenter;
+            UpdateCameraPos();
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
@@ -486,15 +492,20 @@ public class ViewportController : MonoBehaviour
                 }
             }
 
-            if (cameraRotated || cameraMoved || cameraZoomed)
+            if (cameraMoved)
             {
-                float? deltaAlt = cameraRotated ? Input.mousePositionDelta.y * -0.01f : null;
-                float? deltaAzi = cameraRotated ? Input.mousePositionDelta.x * -0.01f : null;
-                float? deltaViewportSize = cameraZoomed ? Input.mouseScrollDelta.y * -5 : null;
+                cameraCenter += (activeCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos);
+                UpdateCameraPos();
+            }
 
-                Vector3? deltaCenter =
-                    cameraMoved ? (activeCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos) : null;
-                UpdateCamera(deltaAlt, deltaAzi, deltaViewportSize, deltaCenter);
+            if (cameraZoomed)
+            {
+                ResizeViewport(Input.mouseScrollDelta.y * -2);
+            }
+
+            if (cameraRotated)
+            {
+                RotateCamera();
             }
         }
 
@@ -617,7 +628,8 @@ public class ViewportController : MonoBehaviour
                     continue;
                 }
 
-                GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{selectionManager.Selection[i].Symbol}]", labelStyle);
+                GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100),
+                    $"[{selectionManager.Selection[i].Symbol}]", labelStyle);
             }
         }
     }
