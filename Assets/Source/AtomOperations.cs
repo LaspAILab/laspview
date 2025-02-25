@@ -20,7 +20,7 @@ public class TranslateOperation : IOperation
     {
         foreach (var item in targetAtoms)
         {
-            item.SetPosition(item.SourceAtom.Coordinates + translation, structureView.Structure, false);
+            structureView.SetAtomPosition(item, item.SourceAtom.Coordinates + translation, false);
         }
 
         structureView.BondMutex.WaitOne();
@@ -38,7 +38,7 @@ public class TranslateOperation : IOperation
     {
         foreach (var item in targetAtoms)
         {
-            item.SetPosition(item.SourceAtom.Coordinates - translation, structureView.Structure, false);
+            structureView.SetAtomPosition(item, item.SourceAtom.Coordinates - translation, false);
         }
 
         structureView.BondMutex.WaitOne();
@@ -69,7 +69,7 @@ public class SetPositionOperation : IOperation
     protected override bool DoImpl(ArcStructureView structureView)
     {
         oldPosition = targetAtom.Position;
-        targetAtom.SetPosition(newPosition, structureView.Structure, false);
+        structureView.SetAtomPosition(targetAtom, newPosition, false);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
 
         return true;
@@ -77,7 +77,7 @@ public class SetPositionOperation : IOperation
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
-        targetAtom.SetPosition(oldPosition, structureView.Structure, false);
+        structureView.SetAtomPosition(targetAtom, oldPosition, false);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
 
         return true;
@@ -100,7 +100,7 @@ public class SetElementOperation : IOperation
     protected override bool DoImpl(ArcStructureView structureView)
     {
         oldSymbol = targetAtom.Symbol;
-        targetAtom.SetElement(newSymbol);
+        structureView.SetAtomElement(targetAtom, newSymbol);
 
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         return true;
@@ -108,7 +108,7 @@ public class SetElementOperation : IOperation
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
-        targetAtom.SetElement(oldSymbol);
+        structureView.SetAtomElement(targetAtom, oldSymbol);
 
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         return true;
@@ -166,7 +166,7 @@ public class AddAtomOperation : IOperation
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
-        structureView.DeleteAtom(addedAtom);
+        structureView.RemoveAtom(addedAtom);
         return true;
     }
 
@@ -192,7 +192,7 @@ public class RemoveAtomsOperation : IOperation
 
         foreach (var item in removedAtoms)
         {
-            structureView.DeleteAtom(item);
+            structureView.RemoveAtom(item);
         }
 
         removedAtoms.Clear();
