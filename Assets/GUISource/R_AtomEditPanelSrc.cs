@@ -14,6 +14,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     public ScalarInputController chargeInput;
 
     public GameObject label, edits, button;
+
+    private Text textLabel;
     private AtomView activeAtom;
     
     private ArcStructure currentArc;
@@ -34,6 +36,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             elementDropdown.options.Add(new Dropdown.OptionData(kv.Key));
         }
         
+        textLabel = label.GetComponent<Text>();
         coordsInput.SetOnChangeCallback(UpdateCoords);
         chargeInput.SetOnChangeCallback(UpdateCharge);
     }
@@ -46,9 +49,14 @@ public class R_AtomEditPanelSrc : MonoBehaviour
 
     public void OnNoSelection()
     {
-        label.SetActive(false);
+        label.SetActive(true);
         edits.SetActive(true);
         button.SetActive(true);
+        
+        if (currentArc != null)
+        {
+            textLabel.text = $"{currentArc.Atoms.Count} atoms within single lattice";
+        }
         coordsInput.SetValue(0.5f, 0.5f, 0.5f);
         chargeInput.SetValue(0);
         activeAtom = null;
@@ -65,6 +73,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         if (selection.Count > 1)
         {
             label.SetActive(true);
+            textLabel.text = $"{selection.Count} atoms selected";
             edits.SetActive(false);
             button.SetActive(false);
             activeAtom = null;
@@ -83,7 +92,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     {
         if (activeAtom == null)
         {
-            ConFun.UpdateStatusLabel("Cannot display property of null");
+            textLabel.text = $"{currentArc.Atoms.Count} atoms within single lattice";
             return;
         }
         

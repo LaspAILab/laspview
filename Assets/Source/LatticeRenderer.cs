@@ -64,6 +64,7 @@ public class LatticeRenderer : MonoBehaviour
             }
         }
 
+        // Set bounding box
         boxCollider.center = furthestPoint / 2;
         boxCollider.size = furthestPoint;
     }

@@ -1564,7 +1564,7 @@ PrefabInstance:
     - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_Text
-      value: More than one atoms selected
+      value: Placeholder
       objectReference: {fileID: 0}
     - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}

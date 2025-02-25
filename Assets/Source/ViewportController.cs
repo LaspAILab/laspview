@@ -332,6 +332,8 @@ public class ViewportController : MonoBehaviour
                 break;
             case UpdateFlags.UpdateLattice:
                 R_LatticeEditPanelSrc.S.UpdateLattice(CurrentStructureView.Structure);
+                // Update display properties since they may have changed due to lattice reform
+                R_AtomEditPanelSrc.S.DisplayActiveAtomProperties();
                 RecalculateBonds();
                 shallUpdateRenderer = true;
                 shallUpdateLattice = true;
