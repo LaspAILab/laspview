@@ -142,15 +142,18 @@ public class ArcFile
 public class ArcStructureView
 {
     // Vectors to translate the lattice, in fractional coords, used to check cross-lattice bonds
-    public static readonly Vector3[] TranslationVectorsFractional = new Vector3[]
+    static readonly Vector3[] TranslationVectorsFractional =
     {
         new(1, 0, 0),
         new(0, 1, 0),
         new(0, 0, 1),
+        new(-1, 0, 0),
+        new(0, -1, 0),
+        new(0, 0, -1),
     };
 
     // Translation vectors, converted to cartesian space
-    public Vector3[] TranslationVectorsCartesian;
+    Vector3[] translationVectorsCartesian;
 
     public ArcStructure Structure;
 
@@ -163,22 +166,84 @@ public class ArcStructureView
     // Remember to recalculate bonds after change
     public float BondTolerance { get; set; }
 
+    private PointOctree<AtomView> accelerationOctree;
+    private float maxAtomRadius = 0f;
+
     public ArcStructureView(ArcStructure structure, float bondTolerance = 1.0f)
     {
         BondTolerance = bondTolerance;
         Structure = structure;
         BondMutex = new();
 
+        var latticeCenter = structure.FractionalToCartesian(new Vector3(0.5f, 0.5f, 0.5f));
+        var maxSide = Mathf.Max(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
+        accelerationOctree = new PointOctree<AtomView>(maxSide, latticeCenter, 10f);
         Atoms.Capacity = structure.Atoms.Count;
         foreach (var item in structure.Atoms)
         {
-            Atoms.Add(new AtomView(item, structure));
+            AddAtomView(new AtomView(item, structure));
         }
 
-        TranslationVectorsCartesian =
+        translationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void AddAtomView(AtomView atomView)
+    {
+        Atoms.Add(atomView);
+        accelerationOctree.Add(atomView, atomView.Position);
+        maxAtomRadius = Mathf.Max(maxAtomRadius, atomView.Radius);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void RemoveAtomView(AtomView atomView)
+    {
+        Atoms.Remove(atomView);
+        accelerationOctree.Remove(atomView);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SetAtomPosition(AtomView atomView, Vector3 posCartesian, bool viewOnly, bool repeat = false)
+    {
+        if (!viewOnly)
+        {
+            atomView.SourceAtom.Coordinates = posCartesian;
+        }
+
+        atomView.Position = AtomView.ClipAtomCoords(posCartesian, Structure, repeat);
+        atomView.InvalidateTransform();
+        accelerationOctree.Remove(atomView);
+        accelerationOctree.Add(atomView, atomView.Position);
+
+        // A faster way for null check since Unity uses a slow overload for ==
+        if (!viewOnly && atomView.Collider is not null)
+        {
+            // Move collider
+            atomView.Collider.SetAtom(atomView, atomView.Position, atomView.Radius);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SetAtomElement(AtomView atomView, string newSymbol)
+    {
+        atomView.SourceAtom.Symbol = newSymbol;
+        atomView.Radius = App.Elements[atomView.SourceAtom.Symbol].Radius;
+
+        if (atomView.RenderMat == atomView.Symbol)
+        {
+            atomView.RenderMat = atomView.Symbol = newSymbol;
+        }
+        else
+        {
+            atomView.Symbol = newSymbol;
+        }
+
+        // Since the radius has changed, we have to renew the transform cache
+        atomView.InvalidateTransform();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void AddBond(AtomView fromAtom, AtomView toAtom, Vector3 theta, float rate)
     {
         Bonds.Add(new BondView
@@ -229,52 +294,55 @@ public class ArcStructureView
             Bonds.RemoveAll(bond => bond.FromAtom == targetAtom || bond.ToAtom == targetAtom);
         }
 
-        int atomIndex = Atoms.IndexOf(targetAtom);
+        float maxDistance = tolerance * (targetAtom.Radius + maxAtomRadius);
+        List<AtomView> nearbyAtoms = new();
+        accelerationOctree.GetNearbyNonAlloc(targetAtom.Position, maxDistance, nearbyAtoms);
 
-        for (int i = 0; i < Atoms.Count; i++)
+        foreach (var otherAtom in nearbyAtoms)
         {
-            if (skipForward && i <= atomIndex)
+            if (skipForward && otherAtom.SourceAtom.Index <= targetAtom.SourceAtom.Index)
+            {
+                continue;
+            }
+            
+            if (otherAtom == targetAtom)
             {
                 continue;
             }
 
-            if (Atoms[i] == targetAtom)
-            {
-                continue;
-            }
-
-            float radiusA = App.Elements[targetAtom.Symbol].Radius;
-            float radiusB = App.Elements[Atoms[i].Symbol].Radius;
-            float sumRadius = radiusA + radiusB;
-
-            // Check bond within lattice
-            float distance = Vector3.Distance(targetAtom.Position, Atoms[i].Position);
+            float sumRadius = targetAtom.Radius + otherAtom.Radius;
+            float distance = Vector3.Distance(targetAtom.Position, otherAtom.Position);
             if (distance < tolerance * sumRadius)
             {
-                Vector3 theta = Atoms[i].Position - targetAtom.Position;
-                float len = radiusA / sumRadius;
-                AddBond(targetAtom, Atoms[i], theta, len);
+                Vector3 theta = otherAtom.Position - targetAtom.Position;
+                AddBond(targetAtom, otherAtom, theta, targetAtom.Radius / sumRadius);
             }
+        }
 
-            // Check bond across lattice
-            foreach (var item in TranslationVectorsCartesian)
+        // Check bond across lattice
+        for (int i = 0; i < translationVectorsCartesian.Length; i++)
+        {
+            var translatedCoord = targetAtom.Position + translationVectorsCartesian[i];
+            accelerationOctree.GetNearbyNonAlloc(translatedCoord, maxDistance, nearbyAtoms);
+
+            foreach (var otherAtom in nearbyAtoms)
             {
-                var translatedCoord = Atoms[i].Position + item;
-                distance = Vector3.Distance(targetAtom.Position, translatedCoord);
-                if (distance < tolerance * sumRadius)
+                if (skipForward && otherAtom.SourceAtom.Index <= targetAtom.SourceAtom.Index)
                 {
-                    Vector3 theta = translatedCoord - targetAtom.Position;
-                    float len = radiusA / sumRadius;
-                    AddBond(targetAtom, Atoms[i], theta, len);
+                    continue;
+                }
+                
+                if (otherAtom == targetAtom)
+                {
+                    continue;
                 }
 
-                translatedCoord = targetAtom.Position + item;
-                distance = Vector3.Distance(Atoms[i].Position, translatedCoord);
+                float sumRadius = targetAtom.Radius + otherAtom.Radius;
+                float distance = Vector3.Distance(translatedCoord, otherAtom.Position);
                 if (distance < tolerance * sumRadius)
                 {
-                    Vector3 theta = translatedCoord - Atoms[i].Position;
-                    float len = radiusA / sumRadius;
-                    AddBond(Atoms[i], targetAtom, theta, len);
+                    Vector3 theta = otherAtom.Position - translatedCoord;
+                    AddBond(targetAtom, otherAtom, theta, targetAtom.Radius / sumRadius);
                 }
             }
         }
@@ -323,7 +391,7 @@ public class ArcStructureView
             // Just re-clip the atoms to lattice
             foreach (var item in Atoms)
             {
-                item.SetPosition(item.SourceAtom.Coordinates, Structure, false, true);
+                SetAtomPosition(item, item.SourceAtom.Coordinates, false, true);
             }
         }
         else
@@ -335,11 +403,11 @@ public class ArcStructureView
             {
                 Vector3 prevPos = item.SourceAtom.Coordinates;
                 Vector3 fractional = prevCartToFract * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1);
-                item.SetPosition(Structure.FractionalToCartesian(fractional), Structure, false, true);
+                SetAtomPosition(item, Structure.FractionalToCartesian(fractional), false, true);
             }
         }
-        
-        TranslationVectorsCartesian =
+
+        translationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
@@ -379,8 +447,8 @@ public class ArcStructureView
             Structure.LatticeParams[2] * repeatC,
             Structure.LatticeParams[3], Structure.LatticeParams[4], Structure.LatticeParams[5]
         });
-        
-        TranslationVectorsCartesian =
+
+        translationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
 
         foreach (var item in newAtoms)
@@ -393,7 +461,7 @@ public class ArcStructureView
     {
         var newAtom = Structure.AddAtom(elemSymbol, coords, charge);
         var newAtomView = new AtomView(newAtom, Structure);
-        Atoms.Add(newAtomView);
+        AddAtomView(newAtomView);
 
         newAtomView.CreateCollider();
         if (updateBonds)
@@ -408,7 +476,7 @@ public class ArcStructureView
     {
         var newAtom = Structure.AddAtom(atom);
         var newAtomView = new AtomView(newAtom, Structure);
-        Atoms.Add(newAtomView);
+        AddAtomView(newAtomView);
 
         newAtomView.CreateCollider();
         if (updateBonds)
@@ -419,7 +487,7 @@ public class ArcStructureView
         return newAtomView;
     }
 
-    public void DeleteAtom(AtomView atomView)
+    public void RemoveAtom(AtomView atomView)
     {
         // Remove bonds
         Bonds.RemoveAll(bond => bond.FromAtom == atomView || bond.ToAtom == atomView);
@@ -427,7 +495,7 @@ public class ArcStructureView
         Structure.RemoveAtom(atomView.SourceAtom);
         // Remove atom view
         atomView.DestroyCollider();
-        Atoms.Remove(atomView);
+        RemoveAtomView(atomView);
     }
 
     ~ArcStructureView()

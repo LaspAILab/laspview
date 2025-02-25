@@ -62,44 +62,11 @@ public class AtomView : ITransform
         Position = ClipAtomCoords(atom.Coordinates, structure, true);
         Radius = App.Elements[atom.Symbol].Radius;
         transformCache = null;
-        collider = null;
+        Collider = null;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetPosition(Vector3 posCartesian, ArcStructure parentStructure, bool viewOnly, bool repeat = false)
+    public void InvalidateTransform()
     {
-        if (!viewOnly)
-        {
-            SourceAtom.Coordinates = posCartesian;
-        }
-
-        Position = ClipAtomCoords(posCartesian, parentStructure, repeat);
-        transformCache = null;
-
-        // A faster way for null check since Unity uses a slow overload for ==
-        if (!viewOnly && collider is not null)
-        {
-            // Move collider
-            collider.SetAtom(this, Position, Radius);
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetElement(string newSymbol)
-    {
-        SourceAtom.Symbol = newSymbol;
-        Radius = App.Elements[SourceAtom.Symbol].Radius;
-
-        if (RenderMat == Symbol)
-        {
-            RenderMat = Symbol = newSymbol;
-        }
-        else
-        {
-            Symbol = newSymbol;
-        }
-
-        // Since the radius has changed, we have to renew the transform cache
         transformCache = null;
     }
 
@@ -111,26 +78,26 @@ public class AtomView : ITransform
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CreateCollider()
     {
-        collider = ColliderPool.GlobalPool.BorrowCollider();
-        collider.SetAtom(this, Position, Radius);
+        Collider = ColliderPool.GlobalPool.BorrowCollider();
+        Collider.SetAtom(this, Position, Radius);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void DestroyCollider()
     {
-        if (collider is not null)
+        if (Collider is not null)
         {
-            ColliderPool.GlobalPool.DropCollider(collider);
-            collider = null;
+            ColliderPool.GlobalPool.DropCollider(Collider);
+            Collider = null;
         }
     }
 
     ~AtomView()
     {
         // Destructor is not called on the main thread, so we have to schedule task
-        if (collider is not null)
+        if (Collider is not null)
         {
-            App.Instance.ScheduleTask(() => ColliderPool.GlobalPool.DropCollider(collider));
+            App.Instance.ScheduleTask(() => ColliderPool.GlobalPool.DropCollider(Collider));
         }
     }
 
@@ -140,7 +107,7 @@ public class AtomView : ITransform
     {
         get;
         // Be careful calling this, use `SetPosition` instead
-        private set;
+        set;
     }
 
     public string Symbol;
@@ -151,7 +118,7 @@ public class AtomView : ITransform
     public float Charge;
     public float Radius;
 
-    private ColliderScript collider;
+    public ColliderScript Collider;
     private Matrix4x4? transformCache;
 
     public Matrix4x4 Transform
