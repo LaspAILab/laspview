@@ -202,7 +202,7 @@ public class ViewportController : MonoBehaviour
     {
         foreach (var item in atoms)
         {
-            item.SetPosition(item.Position + translation, CurrentStructureView.Structure, true);
+            CurrentStructureView.SetAtomPosition(item, item.Position + translation, true);
         }
     }
 
