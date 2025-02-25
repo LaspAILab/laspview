@@ -829,12 +829,6 @@ MonoBehaviour:
     type: 3}
   L_ProjectPanelPrefab: {fileID: 7245585973414460741, guid: d9196f624746d764cb5ce750df8a530e,
     type: 3}
-  M_AddAtomWidgetPrefab: {fileID: 3895727628057942293, guid: 1cc7762358730e941ad2c1e76df47108,
-    type: 3}
-  M_EditLatticeWidgetPrefab: {fileID: 539081823233144031, guid: fc02f28fcafafa044b0d0f9e427c2b64,
-    type: 3}
-  M_SupercellWidgetPrefab: {fileID: 4791832997610671859, guid: 71ba854c434856045b4dbe81ca96d575,
-    type: 3}
   R_LatticeEditPanelPrefab: {fileID: 3118757465854220619, guid: bac7eea144ff11041b9c5b7c84652eb2,
     type: 3}
   R_AtomEditPanelPrefab: {fileID: 3118757465854220619, guid: b108c353e328cd548a9a5ac22f8e2191,
@@ -1933,7 +1927,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 859746866}
-  m_Layer: 0
+  - component: {fileID: 859746867}
+  m_Layer: 1
   m_Name: LatticeLineParent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1955,6 +1950,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &859746867
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 859746865}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 10, y: 10, z: 10}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1001 &860225309
 PrefabInstance:
   m_ObjectHideFlags: 0
