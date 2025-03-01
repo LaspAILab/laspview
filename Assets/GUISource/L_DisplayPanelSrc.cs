@@ -22,7 +22,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         DisplayLoadModelPara();
         
         //Set DisplayPanel
-        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform, false);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button dspButton = GameObject.Find("DisplayBtn").GetComponent<Button>();
