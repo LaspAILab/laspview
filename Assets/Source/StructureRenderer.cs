@@ -5,39 +5,37 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Profiling;
+using UnityEngine.Rendering;
 
 // Batch of atoms and bonds that belong to the same element, so that they could be rendered in batch
-class DrawBatch
+struct DrawBatch
 {
-    public List<Matrix4x4> AtomTransforms = new();
-    public List<Matrix4x4> BondTransforms = new();
+    public List<Matrix4x4> AtomTransforms;
+    public List<Matrix4x4> BondTransforms;
+}
+
+struct RenderArgs
+{
+    public RenderParams Params;
+    public Material Mat;
 }
 
 public class StructureRenderer : MonoBehaviour
 {
     public const string RENDERMAT_SELECTION = "select";
 
-    static Dictionary<string, Material> ElementMaterials = new();
+    static Dictionary<string, RenderArgs> ElementMaterials = new();
+    private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     Dictionary<string, DrawBatch> ElementDrawBatches = new();
 
     public Material RenderMaterial;
     public Mesh AtomMesh;
     public Mesh BondMesh;
 
-    public ArcStructureView CurrentStructureView
-    {
-        get;
-        private set;
-    } = null;
+    public ArcStructureView CurrentStructureView { get; private set; } = null;
 
     private float stickRadius = 0.35f, radiusScale = 1f;
     private Matrix4x4[,,] latticeTransforms = null;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
 
     public void SetBondStyle(float stickRadius)
     {
@@ -45,6 +43,7 @@ public class StructureRenderer : MonoBehaviour
         {
             return;
         }
+
         this.stickRadius = stickRadius;
 
         foreach (var item in CurrentStructureView.Bonds)
@@ -57,10 +56,11 @@ public class StructureRenderer : MonoBehaviour
 
     public void SetAtomStyle(float radiusScale)
     {
-        if (this.radiusScale == radiusScale)
+        if (Mathf.Approximately(this.radiusScale, radiusScale))
         {
             return;
         }
+
         this.radiusScale = radiusScale;
 
         foreach (var item in CurrentStructureView.Atoms)
@@ -104,7 +104,9 @@ public class StructureRenderer : MonoBehaviour
         }
 
         int length = buffer.Count;
-        int repeatA = latticeTransforms.GetLength(0), repeatB = latticeTransforms.GetLength(1), repeatC = latticeTransforms.GetLength(2);
+        int repeatA = latticeTransforms.GetLength(0),
+            repeatB = latticeTransforms.GetLength(1),
+            repeatC = latticeTransforms.GetLength(2);
         buffer.Capacity = length * repeatA * repeatB * repeatC;
 
         for (int i = 0; i < repeatA; i++)
@@ -135,40 +137,60 @@ public class StructureRenderer : MonoBehaviour
         {
             drawBatches[renderMat] = new();
         }
-        ReplicateBuffer(ref buffer);
-        drawBatches[renderMat].AtomTransforms = buffer;
 
+        ReplicateBuffer(ref buffer);
+        drawBatches[renderMat] = new DrawBatch
+        {
+            AtomTransforms = buffer,
+            BondTransforms = null
+        };
+
+        // Lazy creation for materials
         if (!ElementMaterials.ContainsKey(renderMat))
         {
             Material material = new(RenderMaterial);
-            if(renderMat == RENDERMAT_SELECTION)
+            if (renderMat == RENDERMAT_SELECTION)
             {
-                material.SetColor("_BaseColor", Color.yellow);
+                material.SetColor(BaseColor, Color.yellow);
             }
             else
             {
-                material.SetColor("_BaseColor", App.Elements[renderMat].Color);
+                material.SetColor(BaseColor, App.Elements[renderMat].Color);
             }
-                
-            ElementMaterials[renderMat] = material;
+
+            ElementMaterials[renderMat] = new RenderArgs
+            {
+                Mat = material,
+                Params = new RenderParams(material)
+                {
+                    shadowCastingMode = ShadowCastingMode.Off,
+                    receiveShadows = false
+                }
+            };
         }
     }
 
     private void SubmitBondBuffer(Dictionary<string, DrawBatch> drawBatches, string renderMat, List<Matrix4x4> buffer)
     {
         ReplicateBuffer(ref buffer);
-        drawBatches[renderMat].BondTransforms = buffer;
+
+        var atomsBuffer = drawBatches[renderMat].AtomTransforms;
+        drawBatches[renderMat] = new DrawBatch
+        {
+            AtomTransforms = atomsBuffer,
+            BondTransforms = buffer
+        };
     }
 
     internal void SetStructureView(ArcStructureView structureView)
     {
         CurrentStructureView = structureView;
-        
+
         // Recollect the draw batches
         RecollectDrawBatches(true);
     }
 
-    internal void RecollectDrawBatches(bool doSort=false)
+    internal void RecollectDrawBatches(bool doSort = false)
     {
         Profiler.BeginSample("Collect draw batch");
         if (doSort)
@@ -176,6 +198,8 @@ public class StructureRenderer : MonoBehaviour
             CurrentStructureView.SortLists();
         }
 
+        // We create a new dictionary here to potentially support running this function on another thread
+        // Since the old dict isn't modified but reassigned, this function is thread-safe
         Dictionary<string, DrawBatch> drawBatches = new();
         // GC.Collect();
 
@@ -205,7 +229,9 @@ public class StructureRenderer : MonoBehaviour
         buffer = new();
         currentRenderMat = "";
 
+#if !UNITY_WEBGL
         CurrentStructureView.BondMutex.WaitOne();
+#endif
         foreach (var item in CurrentStructureView.Bonds)
         {
             if (item.FromAtom.RenderMat != currentRenderMat)
@@ -221,7 +247,9 @@ public class StructureRenderer : MonoBehaviour
 
             buffer.Add(item.Transform);
         }
+#if !UNITY_WEBGL
         CurrentStructureView.BondMutex.ReleaseMutex();
+#endif
 
         if (buffer.Count > 0)
         {
@@ -234,7 +262,7 @@ public class StructureRenderer : MonoBehaviour
 
     internal void RenderSingleAtom(string renderMat, Vector3 pos, float radius)
     {
-        RenderParams renderParams = new(ElementMaterials[renderMat]);
+        var renderParams = ElementMaterials[renderMat].Params;
         var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * radiusScale * Vector3.one);
         Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
     }
@@ -244,9 +272,9 @@ public class StructureRenderer : MonoBehaviour
     {
         foreach (var item in ElementDrawBatches)
         {
-            RenderParams renderParams = new(ElementMaterials[item.Key]);
+            var renderParams = ElementMaterials[item.Key].Params;
             Graphics.RenderMeshInstanced(renderParams, AtomMesh, 0, item.Value.AtomTransforms);
-            if (item.Value.BondTransforms.Count > 0)
+            if (item.Value.BondTransforms != null && item.Value.BondTransforms.Count > 0)
             {
                 Graphics.RenderMeshInstanced(renderParams, BondMesh, 0, item.Value.BondTransforms);
             }

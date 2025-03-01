@@ -128,8 +128,10 @@ public class ArcStructure
 
 public class ArcFile
 {
+#if !UNITY_WEBGL
     public Mutex ListMutex;
-    
+#endif
+
     public List<ArcStructure> Structures { get; private set; }
 
     public int StructureCount => Structures.Count;
@@ -137,12 +139,16 @@ public class ArcFile
     public ArcFile()
     {
         Structures = new();
+#if !UNITY_WEBGL
         ListMutex = new();
+#endif
     }
 
     ~ArcFile()
     {
+#if !UNITY_WEBGL
         ListMutex.Dispose();
+#endif
         Debug.Log("Disposing arc file");
     }
 }
@@ -170,7 +176,9 @@ public class ArcStructureView
 
     public List<BondView> Bonds = new();
 
+#if !UNITY_WEBGL
     public Mutex BondMutex;
+#endif
 
     // Remember to recalculate bonds after change
     public float BondTolerance { get; set; }
@@ -182,7 +190,9 @@ public class ArcStructureView
     {
         BondTolerance = bondTolerance;
         Structure = structure;
+#if !UNITY_WEBGL
         BondMutex = new();
+#endif
 
         var latticeCenter = structure.FractionalToCartesian(new Vector3(0.5f, 0.5f, 0.5f));
         var maxSide = Mathf.Max(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
@@ -276,23 +286,30 @@ public class ArcStructureView
 
     public void GenerateBonds()
     {
+#if !UNITY_WEBGL
         BondMutex.WaitOne();
+#endif
         Bonds.Clear();
         for (int i = 0; i < Atoms.Count; i++)
         {
             UpdateAtomBondsNoLock(Atoms[i], BondTolerance, false, true);
         }
-
+#if !UNITY_WEBGL
         BondMutex.ReleaseMutex();
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void UpdateAtomBonds(AtomView targetAtom, float tolerance, bool cleanExisting = false,
         bool skipForward = false)
     {
+#if !UNITY_WEBGL
         BondMutex.WaitOne();
+#endif
         UpdateAtomBondsNoLock(targetAtom, tolerance, cleanExisting, skipForward);
+#if !UNITY_WEBGL
         BondMutex.ReleaseMutex();
+#endif
     }
 
     public void UpdateAtomBondsNoLock(AtomView targetAtom, float tolerance, bool cleanExisting = false,
@@ -510,7 +527,9 @@ public class ArcStructureView
 
     ~ArcStructureView()
     {
+#if !UNITY_WEBGL
         BondMutex.Dispose();
+#endif
         Debug.Log("Disposing arc structure view");
     }
 }

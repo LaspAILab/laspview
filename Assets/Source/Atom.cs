@@ -97,7 +97,11 @@ public class AtomView : ITransform
         // Destructor is not called on the main thread, so we have to schedule task
         if (Collider is not null)
         {
+#if UNITY_WEBGL
+            ColliderPool.GlobalPool.DropCollider(Collider);
+#else
             App.Instance.ScheduleTask(() => ColliderPool.GlobalPool.DropCollider(Collider));
+#endif
         }
     }
 

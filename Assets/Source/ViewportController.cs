@@ -89,6 +89,11 @@ public class ViewportController : MonoBehaviour
             return;
         }
 
+#if UNITY_WEBGL
+        CurrentStructureView.GenerateBonds();
+        CurrentStructureView.SortLists();
+        shallUpdateRenderer = true;
+#else
         if (bondRecalculationRunning)
         {
             // Hint background task to rerun
@@ -117,6 +122,7 @@ public class ViewportController : MonoBehaviour
                 });
             });
         }
+#endif
     }
 
     public void OpenStructureView(ArcStructureView structureView)
@@ -446,7 +452,7 @@ public class ViewportController : MonoBehaviour
                     currentTool = ToolType.Select;
                 }
             }
-            
+
             if (Input.GetKey(KeyCode.Mouse1))
             {
                 if (currentTool != ToolType.MoveView)
@@ -514,7 +520,7 @@ public class ViewportController : MonoBehaviour
                 }
             }
         }
-        
+
         if (cameraMoved)
         {
             cameraCenter += (activeCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos);
@@ -594,13 +600,18 @@ public class ViewportController : MonoBehaviour
             MoveAtomsPreview(selectionManager.Selection, translation);
             if (updateBondsRealtime)
             {
+#if !UNITY_WEBGL
                 CurrentStructureView.BondMutex.WaitOne();
+#endif
+
                 foreach (var item in selectionManager.Selection)
                 {
                     CurrentStructureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
                 }
 
+#if !UNITY_WEBGL
                 CurrentStructureView.BondMutex.ReleaseMutex();
+#endif
             }
 
             isDraggingAtom = true;
