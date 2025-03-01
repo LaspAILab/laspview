@@ -60,7 +60,7 @@ public class L_FilePanelSrc : MonoBehaviour
         S = this;
 
         //Set FilePanel
-        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform, false);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();

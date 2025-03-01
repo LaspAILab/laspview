@@ -29,7 +29,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
         S = this;
 
         //Set toolbar 
-        this.transform.SetParent(GuiMain.S.statusPanel.transform);
+        this.transform.SetParent(GuiMain.S.statusPanel.transform, false);
         this.transform.localScale = Vector3.one;
         this.transform.SetSiblingIndex(1);
 

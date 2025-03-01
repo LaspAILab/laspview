@@ -13,7 +13,7 @@ public class L_ProjectPanelSrc : MonoBehaviour
         S = this;
 
         //Set ProjectPanel
-        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform, false);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button pjButton = GameObject.Find("ProjectBtn").GetComponent<Button>();
