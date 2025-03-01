@@ -17,7 +17,7 @@ public class L_ServerPanelSrc : MonoBehaviour
         S = this;
 
         //Set Server panel
-        this.transform.SetParent(GuiMain.S.leftCanvas.transform);
+        this.transform.SetParent(GuiMain.S.leftCanvas.transform, false);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         //print default remote ip on ServerIP inputfield;

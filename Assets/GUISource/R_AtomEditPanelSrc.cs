@@ -25,7 +25,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         S = this;
 
         //Set Edit panel
-        this.transform.SetParent(GuiMain.S.rightCanvas.transform);
+        this.transform.SetParent(GuiMain.S.rightCanvas.transform, false);
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
