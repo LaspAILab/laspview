@@ -446,6 +446,26 @@ public class ViewportController : MonoBehaviour
                     currentTool = ToolType.Select;
                 }
             }
+            
+            if (Input.GetKey(KeyCode.Mouse1))
+            {
+                if (currentTool != ToolType.MoveView)
+                {
+                    currentTool = ToolType.MoveView;
+                }
+                else
+                {
+                    cameraMoved = true;
+                }
+            }
+            else
+            {
+                if (currentTool == ToolType.MoveView)
+                {
+                    cameraMoved = true;
+                    currentTool = ToolType.Select;
+                }
+            }
         }
         else
         {
@@ -493,22 +513,22 @@ public class ViewportController : MonoBehaviour
                     currentTool = ToolType.Select;
                 }
             }
+        }
+        
+        if (cameraMoved)
+        {
+            cameraCenter += (activeCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos);
+            UpdateCameraPos();
+        }
 
-            if (cameraMoved)
-            {
-                cameraCenter += (activeCamera.ScreenToWorldPoint(prevMousePos) - mouseWorldPos);
-                UpdateCameraPos();
-            }
+        if (cameraZoomed)
+        {
+            ResizeViewport(Input.mouseScrollDelta.y * -2);
+        }
 
-            if (cameraZoomed)
-            {
-                ResizeViewport(Input.mouseScrollDelta.y * -2);
-            }
-
-            if (cameraRotated)
-            {
-                RotateCamera();
-            }
+        if (cameraRotated)
+        {
+            RotateCamera();
         }
 
         if (currentTool == ToolType.BoxSelect)

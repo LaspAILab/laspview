@@ -1,5 +1,4 @@
-﻿
-// Unity cannot serialize raw json arrays, so we wrap it with a class as a workaround
+﻿// Unity cannot serialize raw json arrays, so we wrap it with a class as a workaround
 
 using System;
 using System.Collections.Concurrent;
@@ -43,14 +42,17 @@ public struct ElementData
 public class App : MonoBehaviour
 {
     public static App Instance;
-    
+
     public static Dictionary<string, ElementData> Elements;
+
     // Queue for scheduling tasks on main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
-    
+
     public ViewportController Viewport;
-    
+
     private float bondTolerance = 1.26f;
+
+    private bool loadedStructuresDirty = false, firstStructureLoaded = false;
 
     public float BondTolerance
     {
@@ -61,24 +63,16 @@ public class App : MonoBehaviour
             {
                 return;
             }
-            
+
             bondTolerance = value;
             Viewport.CurrentStructureView.BondTolerance = bondTolerance;
             Viewport.RecalculateBonds();
         }
     }
 
-    public ArcFile CurrentFile
-    {
-        get;
-        private set;
-    }
+    public ArcFile CurrentFile { get; private set; }
 
-    public int CurrentStructureIndex
-    {
-        get;
-        private set;
-    }
+    public int CurrentStructureIndex { get; private set; }
 
     void Awake()
     {
@@ -116,8 +110,8 @@ end
 
     private void ReadPeriodicTable()
     {
-        var periodicTableJson = Resources.Load<TextAsset>("Elements");
-        var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson.text).Elements;
+        var periodicTableJson = File.ReadAllText(Path.Join(Application.dataPath, "Elements.json"));
+        var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson).Elements;
         Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
     }
 
@@ -130,56 +124,39 @@ end
     {
         OpenArc(File.ReadLines(filename));
     }
-    
+
     public void SwitchStructure(int index)
     {
+        CurrentFile.ListMutex.WaitOne();
         index = Mathf.Clamp(index, 0, CurrentFile.StructureCount - 1);
         if (index == CurrentStructureIndex)
         {
+            CurrentFile.ListMutex.ReleaseMutex();
             return;
         }
-        CurrentStructureIndex  = index;
+
+        CurrentStructureIndex = index;
+        ArcStructure currentStructure = CurrentFile.Structures[index];
+        CurrentFile.ListMutex.ReleaseMutex();
 
         Task.Run(() =>
         {
-            ArcStructureView structureView = new(CurrentFile.Structures[index], bondTolerance);
+            ArcStructureView structureView = new(currentStructure, bondTolerance);
             ScheduleTask(() =>
             {
                 Viewport.OpenStructureView(structureView);
-                ConFun.UpdateStructureInfo(index, CurrentFile.StructureCount, CurrentFile.Structures[index].Energy);
+                ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
             });
         });
     }
-    
+
     public void OpenArc(IEnumerable<string> content)
     {
-        bool firstStructureLoaded = false;
+        firstStructureLoaded = false;
         Task.Run(() =>
         {
             CurrentFile = new();
-            CurrentFile.ReadArc(content, count =>
-            {
-                if (callbackQueue.IsEmpty)
-                {
-                    ScheduleTask(() =>
-                    {
-                        ConFun.UpdateStatusLabel($"Reading arc file: {count} structures loaded");
-
-                        if (!firstStructureLoaded)
-                        {
-                            CurrentStructureIndex = 0;
-                            ArcStructureView structureView =
-                                new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
-                            Viewport.OpenStructureView(structureView);
-                            Viewport.RefocusCamera();
-                            firstStructureLoaded = true;
-                        }
-
-                        ConFun.UpdateStructureInfo(CurrentStructureIndex, count,
-                            CurrentFile.Structures[CurrentStructureIndex].Energy);
-                    });
-                }
-            });
+            CurrentFile.ReadArc(content, _ => { loadedStructuresDirty = true; });
         });
     }
 
@@ -188,23 +165,49 @@ end
         CurrentFile = new();
         ArcStructure arcStructure = new();
         arcStructure.Energy = 0;
-        arcStructure.SetLattice(new []{10f, 10f, 10f, 90f, 90f, 90f});
+        arcStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });
         CurrentFile.Structures.Add(arcStructure);
 
         if (CurrentFile.StructureCount > 0)
         {
             ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
             Viewport.OpenStructureView(structureView);
-            ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, CurrentFile.Structures[CurrentStructureIndex].Energy);
+            ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
+                CurrentFile.Structures[CurrentStructureIndex].Energy);
         }
     }
-    
+
     void Update()
     {
         // Run queued actions
         if (callbackQueue.TryDequeue(out var action))
         {
             action();
+        }
+
+        if (loadedStructuresDirty)
+        {
+            loadedStructuresDirty = false;
+
+            CurrentFile.ListMutex.WaitOne();
+            int numLoadedStructures = CurrentFile.StructureCount;
+            ArcStructure currentStructure = CurrentFile.Structures[CurrentStructureIndex];
+            CurrentFile.ListMutex.ReleaseMutex();
+
+            if (!firstStructureLoaded)
+            {
+                CurrentStructureIndex = 0;
+
+                ArcStructureView structureView =
+                    new(currentStructure, bondTolerance);
+                Viewport.OpenStructureView(structureView);
+                Viewport.RefocusCamera();
+                firstStructureLoaded = true;
+            }
+
+            ConFun.UpdateStatusLabel($"Reading arc file: {numLoadedStructures} structures loaded");
+            ConFun.UpdateStructureInfo(CurrentStructureIndex, numLoadedStructures,
+                currentStructure.Energy);
         }
     }
 }

@@ -128,6 +128,8 @@ public class ArcStructure
 
 public class ArcFile
 {
+    public Mutex ListMutex;
+    
     public List<ArcStructure> Structures { get; private set; }
 
     public int StructureCount => Structures.Count;
@@ -135,6 +137,13 @@ public class ArcFile
     public ArcFile()
     {
         Structures = new();
+        ListMutex = new();
+    }
+
+    ~ArcFile()
+    {
+        ListMutex.Dispose();
+        Debug.Log("Disposing arc file");
     }
 }
 
@@ -204,7 +213,7 @@ public class ArcStructureView
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetAtomPosition(AtomView atomView, Vector3 posCartesian, bool viewOnly, bool repeat = false)
+    public void SetAtomPosition(AtomView atomView, Vector3 posCartesian, bool viewOnly, bool repeat = true)
     {
         if (!viewOnly)
         {
@@ -304,7 +313,7 @@ public class ArcStructureView
             {
                 continue;
             }
-            
+
             if (otherAtom == targetAtom)
             {
                 continue;
@@ -331,7 +340,7 @@ public class ArcStructureView
                 {
                     continue;
                 }
-                
+
                 if (otherAtom == targetAtom)
                 {
                     continue;
@@ -413,7 +422,8 @@ public class ArcStructureView
 
     public void ToSuperCell(int repeatA, int repeatB, int repeatC)
     {
-        List<Atom> newAtoms = new();
+        List<Atom> newAtoms = new(Atoms.Count * (repeatA + repeatB + repeatC - 1));
+        Atoms.Capacity = Atoms.Count * (repeatA + repeatB + repeatC);
 
         for (int i = 0; i < repeatA; i++)
         {
@@ -501,5 +511,6 @@ public class ArcStructureView
     ~ArcStructureView()
     {
         BondMutex.Dispose();
+        Debug.Log("Disposing arc structure view");
     }
 }
