@@ -21,7 +21,7 @@ public class L_FilePanelSrc : MonoBehaviour
 
     [DllImport("__Internal")]
     private static extern void UploadFile(string gameObjectName, string methodName, string filter, bool multiple);
-    
+
     [DllImport("__Internal")]
     private static extern void DownloadFile(string gameObjectName, string methodName, string filename, byte[] byteArray,
         int byteArraySize);
@@ -34,10 +34,18 @@ public class L_FilePanelSrc : MonoBehaviour
 
     private IEnumerator OutputRoutine(string url)
     {
-        var loader = new UnityWebRequest(url);
-        yield return loader;
-        arcText = loader.result.ToString();
-        Debug.Log("Got text: " + arcText);
+        var loader = UnityWebRequest.Get(url);
+        yield return loader.SendWebRequest();
+
+        if (loader.result != UnityWebRequest.Result.Success)
+        {
+            Debug.Log("WebGL upload error: " + loader.error);
+        }
+        else
+        {
+            arcText = loader.downloadHandler.text;
+            App.Instance.OpenArc(arcText.Split('\n'));
+        }
     }
 
     // Called from browser
@@ -56,7 +64,7 @@ public class L_FilePanelSrc : MonoBehaviour
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
-        flButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(flButton, this.gameObject); });
+        flButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(flButton, gameObject); });
         this.gameObject.SetActive(false);
     }
 
@@ -78,7 +86,7 @@ public class L_FilePanelSrc : MonoBehaviour
             }
         });
 #elif UNITY_WEBGL && !UNITY_EDITOR
-        UploadFile(gameObject.name, "OnFileUpload", ".arc", false);
+        UploadFile(gameObject.name, "OnFileUpload", ".arc,.car", false);
 #elif UNITY_STANDALONE_OSX
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, false);
         FileRead(paths[0]);
@@ -89,7 +97,7 @@ public class L_FilePanelSrc : MonoBehaviour
     {
         App.Instance.OpenArcFile(path);
     }
-    
+
     public void NewStructure()
     {
         App.Instance.NewEmpty();
@@ -114,7 +122,7 @@ public class L_FilePanelSrc : MonoBehaviour
             {
                 return;
             }
-            
+
             ArcFile newArcFile = new();
             newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
             string str = newArcFile.WriteArc();
@@ -141,7 +149,7 @@ public class L_FilePanelSrc : MonoBehaviour
             {
                 return;
             }
-            
+
             string str = App.Instance.CurrentFile.WriteArc();
             File.WriteAllText(path, str);
         });

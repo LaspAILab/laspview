@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 
 public static class ArcIO
@@ -14,8 +16,13 @@ public static class ArcIO
         return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
     }
 
-    public static void ReadArc(this ArcFile arcFile, IEnumerable<string> lines, Action<int> progressCallback = null)
+    public static bool ReadArc(this ArcFile arcFile, IEnumerable<string> lines, Action<int> progressCallback = null)
     {
+#if UNITY_WEBGL
+        // Since WebGL is single-threaded, we have to limit the load time and interrupt reading to avoid freeze on large files
+        Stopwatch stopWatch = new Stopwatch();
+        stopWatch.Start();
+#endif
         ArcStructure currentStructure = new();
 
         string prevLine = null;
@@ -123,7 +130,17 @@ public static class ArcIO
             }
 
             prevLine = line;
+
+#if UNITY_WEBGL
+            if (stopWatch.Elapsed.TotalSeconds > 10)
+            {
+                stopWatch.Stop();
+                return false;
+            }
+#endif
         }
+
+        return true;
     }
 
     public static string WriteArc(this ArcFile arcFile)
