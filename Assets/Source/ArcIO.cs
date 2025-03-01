@@ -31,7 +31,7 @@ public static class ArcIO
             {
                 // TODO: Precess date
             }
-            
+
             if (tokens.Contains("Energy") || tokens.Contains("IS") ||
                 tokens.Contains("TS") ||
                 (tokens.Contains("SSW") && !tokens.Contains("Str")))
@@ -70,7 +70,7 @@ public static class ArcIO
                 currentStructure.NumStr = int.Parse(tokens[2]);
                 currentStructure.NoPathway = int.Parse(tokens[1]);
             }
-            else if (tokens[0] == "PBC")
+            else if (tokens[0] == "PBC" && tokens.Length >= 7 && tokens[1] != "=")
             {
                 try
                 {
@@ -95,7 +95,7 @@ public static class ArcIO
                 try
                 {
                     Vector3 coords = new(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3]));
-                    
+
                     currentStructure.AddAtom(tokens[0], coords, float.Parse(tokens[8]));
                 }
                 catch (FormatException e)
@@ -110,14 +110,18 @@ public static class ArcIO
 
             if (line.Trim() == "end" && prevLine.Trim() == "end")
             {
+#if UNITY_WEBGL
+                arcFile.Structures.Add(currentStructure);
+#else
                 arcFile.ListMutex.WaitOne();
                 arcFile.Structures.Add(currentStructure);
                 arcFile.ListMutex.ReleaseMutex();
-                
+#endif
+
                 progressCallback?.Invoke(arcFile.StructureCount);
                 currentStructure = new();
             }
-            
+
             prevLine = line;
         }
     }
