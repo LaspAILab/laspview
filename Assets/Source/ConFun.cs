@@ -60,7 +60,7 @@ public class ConFun : MonoBehaviour
     public static void UpdateStatusLabel(string str)
     {
         statusLabel.text = str;
-        Debug.Log(str);
+        // Debug.Log(str);
     }
 
     //public void UnityToWeb(string str)

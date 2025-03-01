@@ -110,7 +110,10 @@ public static class ArcIO
 
             if (line.Trim() == "end" && prevLine.Trim() == "end")
             {
+                arcFile.ListMutex.WaitOne();
                 arcFile.Structures.Add(currentStructure);
+                arcFile.ListMutex.ReleaseMutex();
+                
                 progressCallback?.Invoke(arcFile.StructureCount);
                 currentStructure = new();
             }
