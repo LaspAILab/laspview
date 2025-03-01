@@ -23,13 +23,16 @@ public class TranslateOperation : IOperation
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates + translation, false);
         }
 
+#if !UNITY_WEBGL
         structureView.BondMutex.WaitOne();
+#endif
         foreach (var item in targetAtoms)
         {
             structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
         }
-
+#if !UNITY_WEBGL
         structureView.BondMutex.ReleaseMutex();
+#endif
 
         return true;
     }
@@ -41,13 +44,16 @@ public class TranslateOperation : IOperation
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates - translation, false);
         }
 
+#if !UNITY_WEBGL
         structureView.BondMutex.WaitOne();
+#endif
         foreach (var item in targetAtoms)
         {
             structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
         }
-
+#if !UNITY_WEBGL
         structureView.BondMutex.ReleaseMutex();
+#endif
 
         return true;
     }

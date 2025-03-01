@@ -6,20 +6,45 @@ using System.IO;
 using System.Text;
 using System.Runtime.InteropServices;
 using SFB;
+using UnityEngine.EventSystems;
+using UnityEngine.Networking;
+
 public class L_FilePanelSrc : MonoBehaviour
 {
-    static public L_FilePanelSrc S;
+    public static L_FilePanelSrc S;
 
-    public GameObject M_LaspInWidgetPrefab;
-
-#if UNITY_WEBGL && !UNITY_EDITOR
+#if UNITY_WEBGL
     //
     // WebGL
     //
-    private string arcFile;
+    private string arcText;
 
     [DllImport("__Internal")]
     private static extern void UploadFile(string gameObjectName, string methodName, string filter, bool multiple);
+    
+    [DllImport("__Internal")]
+    private static extern void DownloadFile(string gameObjectName, string methodName, string filename, byte[] byteArray,
+        int byteArraySize);
+
+    // Called from browser
+    public void OnFileUpload(string url)
+    {
+        StartCoroutine(OutputRoutine(url));
+    }
+
+    private IEnumerator OutputRoutine(string url)
+    {
+        var loader = new UnityWebRequest(url);
+        yield return loader;
+        arcText = loader.result.ToString();
+        Debug.Log("Got text: " + arcText);
+    }
+
+    // Called from browser
+    public void OnFileDownload()
+    {
+        ConFun.UpdateStatusLabel("File Successfully Downloaded");
+    }
 #endif
 
     void Awake()
@@ -31,72 +56,43 @@ public class L_FilePanelSrc : MonoBehaviour
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
-        flButton.onClick.AddListener(() =>
-        {
-            GuiMain.S.BtnHideObject(flButton, this.gameObject);
-        });
+        flButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(flButton, this.gameObject); });
         this.gameObject.SetActive(false);
     }
-    
-    public static ExtensionFilter[] Extensions = new[] {
+
+    public static ExtensionFilter[] Extensions = new[]
+    {
         new ExtensionFilter("Arc Files", "arc", "car"),
-        new ExtensionFilter("All Files", "*" ),
+        new ExtensionFilter("All Files", "*"),
     };
-    
+
     public void FileOpen()
     {
-#if UNITY_WEBGL && !UNITY_EDITOR
-        UploadFile(gameObject.name, "FileOnFileUpload", ".arc", true);
-#else
-
         // Open file with filter
-        
-
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, true, (string[] paths) =>
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, false, (paths) =>
         {
-            if (paths.Length != 0)
+            if (paths.Length > 0)
             {
-                FileRead(paths);
+                FileRead(paths[0]);
             }
         });
+#elif UNITY_WEBGL && !UNITY_EDITOR
+        UploadFile(gameObject.name, "OnFileUpload", ".arc", false);
 #elif UNITY_STANDALONE_OSX
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, true);
-        FileRead(paths);
-#endif
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, false);
+        FileRead(paths[0]);
 #endif
     }
 
-#if UNITY_WEBGL && !UNITY_EDITOR
-    public void FileOnFileUpload(string urls)
+    private void FileRead(string path)
     {
-        StartCoroutine(OutputRoutine(urls.Split(',')));
+        App.Instance.OpenArcFile(path);
     }
-
-
-    private IEnumerator OutputRoutine(string[] urlArr)
+    
+    public void NewStructure()
     {
-        var outputText = "";
-        for (int i = 0; i < urlArr.Length; i++)
-        {
-            ConFun.UpdateStatusLabel(urlArr[i]);
-            var loader = new WWW(urlArr[i]);
-            yield return loader;
-            outputText += loader.text;
-        }
-        ////MainScr.S.AddArc(outputText);
-        //GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
-        //M_LaspInWidgetSrc.S.mainText.text = outputText;
-    }
-#endif
-    private void FileRead(string[] paths)
-    {
-        if (paths.Length == 0)
-        {
-            return;
-        }
-        
-        App.Instance.OpenArcFile(paths[0]);
+        App.Instance.NewEmpty();
     }
 
     public void FileSaveSingle()
@@ -104,25 +100,27 @@ public class L_FilePanelSrc : MonoBehaviour
         if (App.Instance.Viewport.CurrentStructureView == null)
         {
             return;
-        }   
-        
+        }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        ArcFile newArcFile = new();
+        newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
+        var bytes = Encoding.UTF8.GetBytes(newArcFile.WriteArc());
+        DownloadFile(gameObject.name, "OnFileDownload", "result.arc", bytes, bytes.Length);
+#else
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
         {
-            if (!string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path))
             {
-                ArcFile newArcFile = new();
-                newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
-                string str = newArcFile.WriteArc();
-#if !UNITY_WEBGL
-                File.WriteAllText(path, str);
-#endif
+                return;
             }
+            
+            ArcFile newArcFile = new();
+            newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
+            string str = newArcFile.WriteArc();
+            File.WriteAllText(path, str);
         });
-    }
-
-    public void NewStructure()
-    {
-        App.Instance.NewEmpty();
+#endif
     }
 
     public void FileSaveAll()
@@ -130,13 +128,23 @@ public class L_FilePanelSrc : MonoBehaviour
         if (App.Instance.CurrentFile == null)
         {
             return;
-        }   
-        
+        }
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        string str = App.Instance.CurrentFile.WriteArc();
+        var bytes = Encoding.UTF8.GetBytes(str);
+        DownloadFile(gameObject.name, "OnFileDownload", "result.arc", bytes, bytes.Length);
+#else
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+            
             string str = App.Instance.CurrentFile.WriteArc();
             File.WriteAllText(path, str);
         });
+#endif
     }
-
 }

@@ -45,14 +45,16 @@ public class App : MonoBehaviour
 
     public static Dictionary<string, ElementData> Elements;
 
+#if !UNITY_WEBGL
     // Queue for scheduling tasks on main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
+    
+    private bool loadedStructuresDirty = false, firstStructureLoaded = false;
+#endif
 
     public ViewportController Viewport;
 
     private float bondTolerance = 1.26f;
-
-    private bool loadedStructuresDirty = false, firstStructureLoaded = false;
 
     public float BondTolerance
     {
@@ -84,41 +86,39 @@ public class App : MonoBehaviour
     private void Start()
     {
 #if !UNITY_WEBGL
-        string filename = ConFun.GlobalConfig["arc_default"];
-        OpenArcFile(Path.Join(Application.dataPath, filename));
+        string filename = Path.Join(Application.dataPath, ConFun.GlobalConfig["arc_default"]);
+        if (File.Exists(filename))
+        {
+            OpenArcFile(filename);
+        }
+        else
+        {
+            string lines = Resources.Load<TextAsset>("DefaultArc").text;
+            OpenArc(lines.Split('\n'));
+        }
 #else
-        string lines = 
-@"!BIOSYM archive 2 
-PBC = ON
-     Energy           10          10  -129.895506
-!DATE
-PBC    7.6679    7.6679   15.0000   90.0000   90.0000  120.0000
-H       0.008413248     4.455233640     8.566392459 CORE    1  H H   0.0000    1
-H       6.257571388     4.243667943     6.666642087 CORE    2  H H   0.0000    2
-H       3.815253288     0.753089160     5.124217983 CORE    3  H H   0.0000    3
-H       1.342005797     4.028462789     7.451793384 CORE    4  H H   0.0000    4
-H       0.086574563     2.814818537     7.852299561 CORE    5  H H   0.0000    5
-H       2.572615996     5.887984031     5.112457470 CORE    6  H H   0.0000    6
-C       0.279671901     3.881257765     7.667971729 CORE    7  C C   0.0000    7
-O      -0.454394321     4.353730708     6.513752863 CORE    8  O O   0.0000    8
-end
-end
-";
+        string lines = Resources.Load<TextAsset>("DefaultArc").text;
         OpenArc(lines.Split('\n'));
 #endif
     }
 
     private void ReadPeriodicTable()
     {
+#if UNITY_WEBGL
+        var periodicTableJson = Resources.Load<TextAsset>("Elements").text;
+#else
         var periodicTableJson = File.ReadAllText(Path.Join(Application.dataPath, "Elements.json"));
+#endif
         var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson).Elements;
         Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
     }
 
+#if !UNITY_WEBGL
     public void ScheduleTask(Action action)
     {
         callbackQueue.Enqueue(action);
     }
+#endif
 
     public void OpenArcFile(string filename)
     {
@@ -127,18 +127,29 @@ end
 
     public void SwitchStructure(int index)
     {
+#if !UNITY_WEBGL
         CurrentFile.ListMutex.WaitOne();
+#endif
         index = Mathf.Clamp(index, 0, CurrentFile.StructureCount - 1);
         if (index == CurrentStructureIndex)
         {
+#if !UNITY_WEBGL
             CurrentFile.ListMutex.ReleaseMutex();
+#endif
             return;
         }
 
         CurrentStructureIndex = index;
         ArcStructure currentStructure = CurrentFile.Structures[index];
+#if !UNITY_WEBGL
         CurrentFile.ListMutex.ReleaseMutex();
+#endif
 
+#if UNITY_WEBGL
+        ArcStructureView structureView = new(currentStructure, bondTolerance);
+        Viewport.OpenStructureView(structureView);
+        ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
+#else
         Task.Run(() =>
         {
             ArcStructureView structureView = new(currentStructure, bondTolerance);
@@ -148,16 +159,32 @@ end
                 ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
             });
         });
+#endif
     }
 
     public void OpenArc(IEnumerable<string> content)
     {
+#if UNITY_WEBGL
+        CurrentFile = new();
+        CurrentFile.ReadArc(content);
+        CurrentStructureIndex = 0;
+
+        ConFun.UpdateStatusLabel($"Reading arc file: {CurrentFile.StructureCount} structures loaded");
+        ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
+            CurrentFile.Structures[CurrentStructureIndex].Energy);
+
+        ArcStructureView structureView =
+            new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+        Viewport.OpenStructureView(structureView);
+        Viewport.RefocusCamera();
+#else
         firstStructureLoaded = false;
         Task.Run(() =>
         {
             CurrentFile = new();
             CurrentFile.ReadArc(content, _ => { loadedStructuresDirty = true; });
         });
+#endif
     }
 
     public void NewEmpty()
@@ -179,6 +206,8 @@ end
 
     void Update()
     {
+        // WebGL build is single-threaded, these multi-threading stuff isn't needed
+#if !UNITY_WEBGL
         // Run queued actions
         if (callbackQueue.TryDequeue(out var action))
         {
@@ -209,5 +238,6 @@ end
             ConFun.UpdateStructureInfo(CurrentStructureIndex, numLoadedStructures,
                 currentStructure.Energy);
         }
+#endif
     }
 }
