@@ -48,10 +48,7 @@ var StandaloneFileBrowserWebGLPlugin = {
         }
         document.body.appendChild(fileInput);
 
-        document.onmouseup = function() {
-            fileInput.click();
-            document.onmouseup = null;
-        }
+        fileInput.click();
     },
 
     // Save file
@@ -77,13 +74,9 @@ var StandaloneFileBrowserWebGLPlugin = {
         downloader.download = filename;
         document.body.appendChild(downloader);
 
-        document.onmouseup = function() {
-            downloader.click();
-            document.body.removeChild(downloader);
-        	document.onmouseup = null;
-
-            SendMessage(gameObjectName, methodName);
-        }
+        downloader.click();
+        document.body.removeChild(downloader);
+        SendMessage(gameObjectName, methodName);
     }
 };
 

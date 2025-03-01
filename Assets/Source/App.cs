@@ -166,7 +166,12 @@ public class App : MonoBehaviour
     {
 #if UNITY_WEBGL
         CurrentFile = new();
-        CurrentFile.ReadArc(content);
+        bool readFinished = CurrentFile.ReadArc(content);
+        if (!readFinished)
+        {
+            Debug.Log("File too large, truncated");
+        }
+
         CurrentStructureIndex = 0;
 
         ConFun.UpdateStatusLabel($"Reading arc file: {CurrentFile.StructureCount} structures loaded");
