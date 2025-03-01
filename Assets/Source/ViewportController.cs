@@ -70,7 +70,7 @@ public class ViewportController : MonoBehaviour
     public ArcStructureView CurrentStructureView { get; private set; } = null;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         structureRenderer = GetComponent<StructureRenderer>();
         latticeRenderer = GetComponent<LatticeRenderer>();
