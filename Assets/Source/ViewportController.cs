@@ -15,7 +15,7 @@ internal enum ToolType
     MoveView,
     RotateView,
     MoveAtom,
-    RenameAtom
+    RotateAtom
 }
 
 public class ViewportController : MonoBehaviour
@@ -33,8 +33,9 @@ public class ViewportController : MonoBehaviour
     [NonSerialized] private Camera activeCamera;
     [NonSerialized] private SelectionBoxDrawer selectionBoxDrawer;
 
-    public GUIStyle labelStyle = new();
+    public GUIStyle selectionLabelStyle, coordinateLabelStyle;
 
+    private ScreenSpaceLineRenderer coordinatesRenderer;
     private int atomsLayer, latticeLayer;
 
     // Whether to update bonds in realtime when moving atoms
@@ -44,23 +45,25 @@ public class ViewportController : MonoBehaviour
     private int repeatA = 1, repeatB = 1, repeatC = 1;
 
     private Vector3 cameraCenter;
+    private Vector2 coordinatesOrigin;
 
     // How far the camera is from the focal center
     private float cameraDistance;
     private float cameraViewportSize = 0f;
 
-    private Vector3 prevMousePos;
+    private Vector3 prevMousePos, opStartMousePos;
     private Ray mouseRay;
     private ToolType currentTool = ToolType.Select;
 
-    private bool isDraggingAtom = false;
-
-    // Record the total translation made within one drag operation
-    private Vector3 dragTotalTranslation;
+    private Vector3 rotateCenter;
+    private bool isMovingAtom = false, isRotatingAtom = false;
 
     // Record mouse down point to draw selection box
     private Vector3 mouseDownPos;
     private float mouseDownTime = 0f;
+
+    // Position to render the text `a`, `b` and `c`
+    private Vector2 xAxisEnd, yAxisEnd, zAxisEnd;
 
     // Create a temporary selection manager for box selection, will be merged to the main selection when mouse up
     private SelectionManager temporarySelectionManager;
@@ -80,6 +83,9 @@ public class ViewportController : MonoBehaviour
 
         atomsLayer = LayerMask.NameToLayer("Default");
         latticeLayer = LayerMask.NameToLayer("TransparentFX");
+
+        coordinatesRenderer = new ScreenSpaceLineRenderer();
+        coordinatesOrigin = new(-activeCamera.aspect + 0.2f, -1 + 0.3f);
     }
 
     public void RecalculateBonds()
@@ -197,15 +203,6 @@ public class ViewportController : MonoBehaviour
         RefocusCamera();
     }
 
-    // Temporarily preview atom moving while dragging, this only affects the `AtomView` but doesn't modify the underlying `Atom`
-    void MoveAtomsPreview(IEnumerable<AtomView> atoms, Vector3 translation)
-    {
-        foreach (var item in atoms)
-        {
-            CurrentStructureView.SetAtomPosition(item, item.Position + translation, true);
-        }
-    }
-
     void ResizeViewport(float deltaViewportSize)
     {
         cameraViewportSize = Mathf.Clamp(cameraViewportSize + deltaViewportSize, 1f, 10000f);
@@ -268,6 +265,41 @@ public class ViewportController : MonoBehaviour
         return selectionChanged;
     }
 
+    void DrawCoordinates()
+    {
+        coordinatesRenderer.Clear();
+
+        var xAxis = (Vector2)(activeCamera.transform.InverseTransformDirection(Vector3.right).normalized);
+        xAxisEnd = coordinatesOrigin + xAxis * 0.2f;
+        coordinatesRenderer.SubmitLine(new LineStructure
+        {
+            start = coordinatesOrigin,
+            end = xAxisEnd,
+            color = Color.red,
+            thickness = 0.002f
+        });
+
+        var yAxis = (Vector2)(activeCamera.transform.InverseTransformDirection(Vector3.up).normalized);
+        yAxisEnd = coordinatesOrigin + yAxis * 0.2f;
+        coordinatesRenderer.SubmitLine(new LineStructure
+        {
+            start = coordinatesOrigin,
+            end = yAxisEnd,
+            color = Color.green,
+            thickness = 0.002f
+        });
+
+        var zAxis = (Vector2)(activeCamera.transform.InverseTransformDirection(Vector3.forward).normalized);
+        zAxisEnd = coordinatesOrigin + zAxis * 0.2f;
+        coordinatesRenderer.SubmitLine(new LineStructure
+        {
+            start = coordinatesOrigin,
+            end = zAxisEnd,
+            color = Color.cyan,
+            thickness = 0.002f
+        });
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -285,14 +317,14 @@ public class ViewportController : MonoBehaviour
             currentTool = ToolType.Select;
 
             // Submit operation if mouse has released
-            if (isDraggingAtom)
+            if (isMovingAtom)
             {
-                // Careful with assignment behavior: we have to copy assign the selection here! 
-                IOperation op = new TranslateOperation(new(selectionManager.Selection),
-                    dragTotalTranslation);
-                SubmitOperation(op);
+                OnMoveAtoms(activeCamera.ScreenToWorldPoint(Input.mousePosition), true);
+            }
 
-                isDraggingAtom = false;
+            if (isRotatingAtom)
+            {
+                OnRotateAtoms(Input.mousePosition, true);
             }
         }
         else
@@ -313,6 +345,7 @@ public class ViewportController : MonoBehaviour
         }
 
         HandleKeyboardEvents();
+        DrawCoordinates();
 
         if (shallUpdateLattice)
         {
@@ -381,11 +414,63 @@ public class ViewportController : MonoBehaviour
         }
     }
 
+    void OnMoveAtoms(Vector3 mouseWorldPos, bool submit = false)
+    {
+        var dragTotalTranslation = mouseWorldPos - activeCamera.ScreenToWorldPoint(opStartMousePos);
+        if (submit)
+        {
+            // Submit move
+
+            // Careful with assignment behavior: we have to copy assign the selection here! 
+            IOperation op = new TranslateAtomsOperation(new(selectionManager.Selection),
+                dragTotalTranslation);
+            SubmitOperation(op);
+
+            isMovingAtom = false;
+        }
+        else
+        {
+            // Preview, move AtomView only
+            foreach (var item in selectionManager.Selection)
+            {
+                CurrentStructureView.SetAtomPosition(item, item.SourceAtom.Coordinates + dragTotalTranslation, true);
+            }
+        }
+    }
+
+    void OnRotateAtoms(Vector3 mousePos, bool submit = false)
+    {
+        var tangent = mousePos - opStartMousePos;
+        var axis = Vector3.Cross(tangent, Vector3.forward);
+        axis = activeCamera.transform.TransformDirection(axis).normalized;
+        float angle = 50f / Screen.height * activeCamera.orthographicSize * tangent.magnitude;
+
+        if (submit)
+        {
+            // Careful with assignment behavior: we have to copy assign the selection here! 
+            IOperation op = new RotateAtomsOperation(new(selectionManager.Selection),
+                rotateCenter, axis, angle);
+            SubmitOperation(op);
+
+            isRotatingAtom = false;
+        }
+        else
+        {
+            // Preview, move AtomView only
+            var rot = Quaternion.AngleAxis(angle, axis);
+            foreach (var item in selectionManager.Selection)
+            {
+                var newPos = rot * (item.SourceAtom.Coordinates - rotateCenter) + rotateCenter;
+                CurrentStructureView.SetAtomPosition(item, newPos, true);
+            }
+        }
+    }
+
     void HandleMouseEvents(List<AtomView> raycastAtom)
     {
         AtomView clickedAtom = raycastAtom.Count > 0 ? raycastAtom[0] : null;
         bool cameraRotated = false, cameraZoomed = Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5, cameraMoved = false;
-        bool shallMoveAtom = false;
+        bool shallMoveAtom = false, shallRotateAtom = false;
         var mouseWorldPos = activeCamera.ScreenToWorldPoint(Input.mousePosition);
 
         bool shiftDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
@@ -435,14 +520,8 @@ public class ViewportController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Mouse0))
             {
-                if (currentTool != ToolType.MoveAtom)
-                {
-                    currentTool = ToolType.MoveAtom;
-                }
-                else
-                {
-                    shallMoveAtom = true;
-                }
+                currentTool = ToolType.MoveAtom;
+                shallMoveAtom = true;
             }
             else
             {
@@ -453,22 +532,16 @@ public class ViewportController : MonoBehaviour
                 }
             }
 
-            if (Input.GetKey(KeyCode.Mouse1))
+            if (Input.GetKey(KeyCode.Mouse1) && !selectionManager.IsEmpty)
             {
-                if (currentTool != ToolType.MoveView)
-                {
-                    currentTool = ToolType.MoveView;
-                }
-                else
-                {
-                    cameraMoved = true;
-                }
+                currentTool = ToolType.RotateAtom;
+                shallRotateAtom = true;
             }
             else
             {
-                if (currentTool == ToolType.MoveView)
+                if (currentTool == ToolType.RotateAtom)
                 {
-                    cameraMoved = true;
+                    shallRotateAtom = true;
                     currentTool = ToolType.Select;
                 }
             }
@@ -478,18 +551,8 @@ public class ViewportController : MonoBehaviour
             // Viewport op
             if (Input.GetKey(KeyCode.Mouse1))
             {
-                switch (currentTool)
-                {
-                    case ToolType.RenameAtom:
-                    case ToolType.MoveAtom:
-                    case ToolType.MoveView:
-                    case ToolType.Select:
-                        currentTool = ToolType.RotateView;
-                        break;
-                    case ToolType.RotateView:
-                        cameraRotated = true;
-                        break;
-                }
+                currentTool = ToolType.RotateView;
+                cameraRotated = true;
             }
             else
             {
@@ -502,14 +565,8 @@ public class ViewportController : MonoBehaviour
 
             if (Input.GetKey(KeyCode.Mouse2))
             {
-                if (currentTool != ToolType.MoveView)
-                {
-                    currentTool = ToolType.MoveView;
-                }
-                else
-                {
-                    cameraMoved = true;
-                }
+                currentTool = ToolType.MoveView;
+                cameraMoved = true;
             }
             else
             {
@@ -563,7 +620,7 @@ public class ViewportController : MonoBehaviour
                 temporarySelectionManager = null;
             }
         }
-        else if (Input.GetKey(KeyCode.Mouse0) && !isDraggingAtom && Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
+        else if (Input.GetKey(KeyCode.Mouse0) && !isMovingAtom && Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
         {
             selectionBoxDrawer.Display();
             Rect boxRect = Rect.MinMaxRect(mouseDownPos.x, mouseDownPos.y, mouseDownPos.x, mouseDownPos.y);
@@ -579,57 +636,70 @@ public class ViewportController : MonoBehaviour
             temporarySelectionManager = new SelectionManager();
         }
 
-        if (shallMoveAtom)
+        if (shallMoveAtom || shallRotateAtom)
         {
-            if (!isDraggingAtom)
-            {
-                // Reset translation
-                dragTotalTranslation = Vector3.zero;
-            }
-
-            var translation = mouseWorldPos - activeCamera.ScreenToWorldPoint(prevMousePos);
-            dragTotalTranslation += translation;
-
             // If we are dragging one atom, then we don't want to switch to another one when hovering on another atom
-            if (raycastAtom.Count > 0 && (selectionManager.IsEmpty || (selectionManager.Count == 1 && !isDraggingAtom)))
+            if (raycastAtom.Count > 0 && (selectionManager.IsEmpty || (selectionManager.Count == 1 && !isMovingAtom)))
             {
                 // If one or none atoms are selected, then the atom at cursor is moved
                 selectionManager.ReplaceSelection(clickedAtom);
             }
 
-            MoveAtomsPreview(selectionManager.Selection, translation);
+            if (shallMoveAtom)
+            {
+                if (!isMovingAtom)
+                {
+                    opStartMousePos = Input.mousePosition;
+                    isMovingAtom = true;
+                }
+
+                OnMoveAtoms(mouseWorldPos);
+            }
+            else if (shallRotateAtom)
+            {
+                if (!isRotatingAtom)
+                {
+                    opStartMousePos = Input.mousePosition;
+                    isRotatingAtom = true;
+
+                    rotateCenter = Vector3.zero;
+                    foreach (var item in selectionManager.Selection)
+                    {
+                        rotateCenter += item.Position;
+                    }
+
+                    rotateCenter /= selectionManager.Selection.Count;
+                }
+
+                OnRotateAtoms(Input.mousePosition);
+            }
+
             if (updateBondsRealtime)
             {
 #if !UNITY_WEBGL
                 CurrentStructureView.BondMutex.WaitOne();
 #endif
-
                 foreach (var item in selectionManager.Selection)
                 {
                     CurrentStructureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
                 }
-
 #if !UNITY_WEBGL
                 CurrentStructureView.BondMutex.ReleaseMutex();
 #endif
             }
 
-            isDraggingAtom = true;
             shallUpdateRenderer = true;
         }
         else
         {
             // Submit operation if mouse has released
-            if (isDraggingAtom)
+            if (isMovingAtom)
             {
-                var translation = mouseWorldPos - activeCamera.ScreenToWorldPoint(prevMousePos);
-                dragTotalTranslation += translation;
-                // Careful with assignment behavior: we have to copy assign the selection here! 
-                IOperation op = new TranslateOperation(new(selectionManager.Selection),
-                    dragTotalTranslation);
-                SubmitOperation(op);
-
-                isDraggingAtom = false;
+                OnMoveAtoms(mouseWorldPos, true);
+            }
+            else if (isRotatingAtom)
+            {
+                OnRotateAtoms(Input.mousePosition, true);
             }
         }
 
@@ -643,27 +713,38 @@ public class ViewportController : MonoBehaviour
         prevMousePos = Input.mousePosition;
     }
 
+    Vector2 GLCoordsToGUICoords(Vector2 glCoords)
+    {
+        return new Vector2((glCoords.x + activeCamera.aspect) / (2 * activeCamera.aspect) * Screen.width,
+            (1f - (glCoords.y + 1f) / 2f) * Screen.height);
+    }
+
     private void OnGUI()
     {
         if (CurrentStructureView == null)
         {
             return;
         }
-
-        if (currentTool != ToolType.RenameAtom)
+        
+        for (int i = 0; i < selectionManager.Count; i++)
         {
-            for (int i = 0; i < selectionManager.Count; i++)
+            var posScreen = activeCamera.WorldToScreenPoint(selectionManager.Selection[i].Position);
+            posScreen.y = Screen.height - posScreen.y;
+            if (!Screen.safeArea.Contains(new Vector2(posScreen.x, posScreen.y)))
             {
-                var posScreen = activeCamera.WorldToScreenPoint(selectionManager.Selection[i].Position);
-                posScreen.y = Screen.height - posScreen.y;
-                if (!Screen.safeArea.Contains(new Vector2(posScreen.x, posScreen.y)))
-                {
-                    continue;
-                }
-
-                GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100),
-                    $"[{selectionManager.Selection[i].Symbol}]", labelStyle);
+                continue;
             }
+
+            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100),
+                $"[{selectionManager.Selection[i].Symbol}]", selectionLabelStyle);
         }
+
+        Vector2 offset = new(10, -10), size = new(100, 100);
+        coordinateLabelStyle.normal.textColor = Color.red;
+        GUI.Label(new Rect(GLCoordsToGUICoords(xAxisEnd) + offset, size), "a", coordinateLabelStyle);
+        coordinateLabelStyle.normal.textColor = Color.green;
+        GUI.Label(new Rect(GLCoordsToGUICoords(yAxisEnd) + offset, size), "b", coordinateLabelStyle);
+        coordinateLabelStyle.normal.textColor = Color.cyan;
+        GUI.Label(new Rect(GLCoordsToGUICoords(zAxisEnd) + offset, size), "c", coordinateLabelStyle);
     }
 }

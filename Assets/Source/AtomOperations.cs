@@ -5,12 +5,12 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 
-public class TranslateOperation : IOperation
+public class TranslateAtomsOperation : IOperation
 {
     private List<AtomView> targetAtoms;
     private Vector3 translation;
 
-    public TranslateOperation(List<AtomView> targetAtoms, Vector3 translation)
+    public TranslateAtomsOperation(List<AtomView> targetAtoms, Vector3 translation)
     {
         this.targetAtoms = targetAtoms;
         this.translation = translation;
@@ -42,6 +42,71 @@ public class TranslateOperation : IOperation
         foreach (var item in targetAtoms)
         {
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates - translation, false);
+        }
+
+#if !UNITY_WEBGL
+        structureView.BondMutex.WaitOne();
+#endif
+        foreach (var item in targetAtoms)
+        {
+            structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
+        }
+#if !UNITY_WEBGL
+        structureView.BondMutex.ReleaseMutex();
+#endif
+
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class RotateAtomsOperation : IOperation
+{
+    private List<AtomView> targetAtoms;
+    private Vector3 center, axis;
+    private float angle;
+
+    public RotateAtomsOperation(List<AtomView> targetAtoms, Vector3 center, Vector3 axis, float angle)
+    {
+        this.targetAtoms = targetAtoms;
+        this.center = center;
+        this.axis = axis;
+        this.angle = angle;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        var rot = Quaternion.AngleAxis(angle, axis);
+        foreach (var item in targetAtoms){
+            // Clip the coordinates first to avoid strange rotation results
+            var clippedPos = AtomView.ClipAtomCoords(item.SourceAtom.Coordinates, structureView.Structure, true);
+            
+            var newPos = rot * (clippedPos - center) + center;
+            structureView.SetAtomPosition(item, newPos, false);
+        }
+
+#if !UNITY_WEBGL
+        structureView.BondMutex.WaitOne();
+#endif
+        foreach (var item in targetAtoms)
+        {
+            structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
+        }
+#if !UNITY_WEBGL
+        structureView.BondMutex.ReleaseMutex();
+#endif
+
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        var rot = Quaternion.AngleAxis(-angle, axis);
+        foreach (var item in targetAtoms)
+        {
+            var newPos = rot * (item.SourceAtom.Coordinates - center) + center;
+            structureView.SetAtomPosition(item, newPos, false);
         }
 
 #if !UNITY_WEBGL
