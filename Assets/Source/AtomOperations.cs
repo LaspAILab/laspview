@@ -61,29 +61,25 @@ public class TranslateAtomsOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
-public class RotateAtomsOperation : IOperation
+public class RepositionAtomsOperation : IOperation
 {
     private List<AtomView> targetAtoms;
-    private Vector3 center, axis;
-    private float angle;
+    private List<Vector3> newPositions, oldPositions;
 
-    public RotateAtomsOperation(List<AtomView> targetAtoms, Vector3 center, Vector3 axis, float angle)
+    public RepositionAtomsOperation(List<AtomView> targetAtoms, List<Vector3> newPositions)
     {
         this.targetAtoms = targetAtoms;
-        this.center = center;
-        this.axis = axis;
-        this.angle = angle;
+        this.newPositions = newPositions;
+        Assert.AreEqual(newPositions.Count, targetAtoms.Count);
     }
 
     protected override bool DoImpl(ArcStructureView structureView)
     {
-        var rot = Quaternion.AngleAxis(angle, axis);
-        foreach (var item in targetAtoms){
-            // Clip the coordinates first to avoid strange rotation results
-            var clippedPos = AtomView.ClipAtomCoords(item.SourceAtom.Coordinates, structureView.Structure, true);
-            
-            var newPos = rot * (clippedPos - center) + center;
-            structureView.SetAtomPosition(item, newPos, false);
+        oldPositions = new List<Vector3>(targetAtoms.Count);
+        for (int i = 0; i < targetAtoms.Count; i++)
+        {
+            oldPositions.Add(targetAtoms[i].SourceAtom.Coordinates);
+            structureView.SetAtomPosition(targetAtoms[i], newPositions[i], false);
         }
 
 #if !UNITY_WEBGL
@@ -102,11 +98,9 @@ public class RotateAtomsOperation : IOperation
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
-        var rot = Quaternion.AngleAxis(-angle, axis);
-        foreach (var item in targetAtoms)
+        for (int i = 0; i < targetAtoms.Count; i++)
         {
-            var newPos = rot * (item.SourceAtom.Coordinates - center) + center;
-            structureView.SetAtomPosition(item, newPos, false);
+            structureView.SetAtomPosition(targetAtoms[i], oldPositions[i], false);
         }
 
 #if !UNITY_WEBGL
