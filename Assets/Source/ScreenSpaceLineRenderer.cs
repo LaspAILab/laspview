@@ -16,7 +16,7 @@ public class ScreenSpaceLineRenderer
     private bool zTest = false;
     private float depth;
 
-    private List<LineStructure> lines = new List<LineStructure>();
+    private List<LineStructure> lines = new();
 
     public ScreenSpaceLineRenderer(bool zTest = false)
     {

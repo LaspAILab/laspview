@@ -5,8 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
-using UnityEngine.Serialization;
 
 internal enum ToolType
 {
@@ -43,6 +41,7 @@ public class ViewportController : MonoBehaviour
     private bool bondRecalculationRunning = false, bondDirtyFlag = false;
 
     private int repeatA = 1, repeatB = 1, repeatC = 1;
+    private Vector3 latticeCorner;
 
     private Vector3 cameraCenter;
     private Vector2 coordinatesOrigin;
@@ -148,6 +147,7 @@ public class ViewportController : MonoBehaviour
         // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
         structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
+        latticeCorner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
     }
 
     public void SubmitOperation(IOperation op)
@@ -200,6 +200,8 @@ public class ViewportController : MonoBehaviour
 
         structureRenderer.SetLatticeRepeat(this.repeatA, this.repeatB, this.repeatC);
         latticeRenderer.SetLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
+        latticeCorner =
+            CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
         RefocusCamera();
     }
 
@@ -218,21 +220,20 @@ public class ViewportController : MonoBehaviour
         activeCamera.transform.Translate(translation, Space.Self);
     }
 
-    void RotateCamera()
+    void RotateCamera(Vector3 mousePos)
     {
-        Vector3 corner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
         if (Physics.Raycast(mouseRay, out _, activeCamera.farClipPlane, 1 << latticeLayer))
         {
-            Vector3 deltaMouse = Input.mousePosition - prevMousePos;
-            float rotateSpeed = 360f / Screen.height * activeCamera.orthographicSize / corner.magnitude;
+            Vector3 deltaMouse = mousePos - prevMousePos;
+            float rotateSpeed = 360f / Screen.height * activeCamera.orthographicSize / latticeCorner.magnitude;
             activeCamera.transform.RotateAround(cameraCenter, activeCamera.transform.up, deltaMouse.x * rotateSpeed);
             activeCamera.transform.RotateAround(cameraCenter, activeCamera.transform.right,
                 -deltaMouse.y * rotateSpeed);
         }
         else
         {
-            Vector3 centerScreen = activeCamera.WorldToScreenPoint(0.5f * corner);
-            Vector3 a = centerScreen - Input.mousePosition;
+            Vector3 centerScreen = activeCamera.WorldToScreenPoint(0.5f * latticeCorner);
+            Vector3 a = centerScreen - mousePos;
             Vector3 b = centerScreen - prevMousePos;
             float degree = Mathf.Sign(Vector3.Cross(a, b).z) * Vector3.Angle(a, b);
             activeCamera.transform.RotateAround(cameraCenter, activeCamera.transform.forward, degree);
@@ -351,6 +352,8 @@ public class ViewportController : MonoBehaviour
         {
             structureRenderer.SetLatticeRepeat(repeatA, repeatB, repeatC);
             latticeRenderer.SetLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
+            latticeCorner =
+                CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
             shallUpdateLattice = false;
         }
 
@@ -440,16 +443,11 @@ public class ViewportController : MonoBehaviour
 
     void OnRotateAtoms(Vector3 mousePos, bool submit = false)
     {
-        var tangent = mousePos - opStartMousePos;
-        var axis = Vector3.Cross(tangent, Vector3.forward);
-        axis = activeCamera.transform.TransformDirection(axis).normalized;
-        float angle = 50f / Screen.height * activeCamera.orthographicSize * tangent.magnitude;
-
         if (submit)
         {
+            var newPositions = selectionManager.Selection.Select(x => x.Position).ToList();
             // Careful with assignment behavior: we have to copy assign the selection here! 
-            IOperation op = new RotateAtomsOperation(new(selectionManager.Selection),
-                rotateCenter, axis, angle);
+            IOperation op = new RepositionAtomsOperation(new(selectionManager.Selection), newPositions);
             SubmitOperation(op);
 
             isRotatingAtom = false;
@@ -457,11 +455,67 @@ public class ViewportController : MonoBehaviour
         else
         {
             // Preview, move AtomView only
-            var rot = Quaternion.AngleAxis(angle, axis);
-            foreach (var item in selectionManager.Selection)
+
+            // Area for drag rotation
+            Vector3 boxExtend = new(200, 200, 0);
+            Vector3 boxCenter = activeCamera.WorldToScreenPoint(rotateCenter);
+
+            Rect rect = Rect.MinMaxRect(boxCenter.x - boxExtend.x, boxCenter.y - boxExtend.y, boxCenter.x + boxExtend.x,
+                boxCenter.y + boxExtend.y);
+
+            bool rotationIsValid = true;
+            List<Vector3> newPositions = new List<Vector3>(selectionManager.Selection.Count);
+
+            if (rect.Contains(mousePos))
             {
-                var newPos = rot * (item.SourceAtom.Coordinates - rotateCenter) + rotateCenter;
-                CurrentStructureView.SetAtomPosition(item, newPos, true);
+                Vector3 deltaMouse = mousePos - prevMousePos;
+                float rotateSpeed = 100f / Screen.height * activeCamera.orthographicSize;
+                
+                // Vertical rotation
+                Quaternion rot = Quaternion.AngleAxis(deltaMouse.y * rotateSpeed, activeCamera.transform.right);
+                // Horizontal rotation
+                rot *= Quaternion.AngleAxis(-deltaMouse.x * rotateSpeed, activeCamera.transform.up);
+
+                foreach (var item in selectionManager.Selection)
+                {
+                    var relPos = item.Position - rotateCenter;
+                    newPositions.Add(rot * relPos + rotateCenter);
+
+                    if (!CurrentStructureView.IsPositionInLattice(newPositions[^1]))
+                    {
+                        rotationIsValid = false;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Vector3 centerScreen = activeCamera.WorldToScreenPoint(rotateCenter);
+                Vector3 a = centerScreen - mousePos;
+                Vector3 b = centerScreen - prevMousePos;
+                float degree = Mathf.Sign(Vector3.Cross(a, b).z) * Vector3.Angle(a, b);
+                Quaternion rot = Quaternion.AngleAxis(-degree, activeCamera.transform.forward);
+
+                foreach (var item in selectionManager.Selection)
+                {
+                    var relPos = item.Position - rotateCenter;
+                    newPositions.Add(rot * relPos + rotateCenter);
+
+                    if (!CurrentStructureView.IsPositionInLattice(newPositions[^1]))
+                    {
+                        rotationIsValid = false;
+                        break;
+                    }
+                }
+            }
+
+            // Prevent some of the atoms moved out of the lattice
+            if (rotationIsValid)
+            {
+                for (var i = 0; i < selectionManager.Selection.Count; i++)
+                {
+                    CurrentStructureView.SetAtomPosition(selectionManager.Selection[i], newPositions[i], true);
+                }
             }
         }
     }
@@ -591,7 +645,7 @@ public class ViewportController : MonoBehaviour
 
         if (cameraRotated)
         {
-            RotateCamera();
+            RotateCamera(Input.mousePosition);
         }
 
         if (currentTool == ToolType.BoxSelect)
@@ -725,7 +779,7 @@ public class ViewportController : MonoBehaviour
         {
             return;
         }
-        
+
         for (int i = 0; i < selectionManager.Count; i++)
         {
             var posScreen = activeCamera.WorldToScreenPoint(selectionManager.Selection[i].Position);
@@ -739,6 +793,7 @@ public class ViewportController : MonoBehaviour
                 $"[{selectionManager.Selection[i].Symbol}]", selectionLabelStyle);
         }
 
+        // Draw coordinates text
         Vector2 offset = new(10, -10), size = new(100, 100);
         coordinateLabelStyle.normal.textColor = Color.red;
         GUI.Label(new Rect(GLCoordsToGUICoords(xAxisEnd) + offset, size), "a", coordinateLabelStyle);
