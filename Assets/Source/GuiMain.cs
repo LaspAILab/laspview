@@ -70,9 +70,9 @@ public class GuiMain : MonoBehaviour
         GameObject l_FilePanel = Instantiate(L_FilePanelPrefab);
         GameObject l_DisplayPanel = Instantiate(L_DisplayPanelPrefab);
 #if !UNITY_WEBGL
-        GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
-        //GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
-        //GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
+        // GameObject r_ServerPanel = Instantiate(R_ServerPanelPrefab);
+        // GameObject r_LASPPanel = Instantiate(R_LASPPanelPrefab);
+        // GameObject m_LaspInWidget = Instantiate(M_LaspInWidgetPrefab);
 #endif
         GameObject l_AtomPanel = Instantiate(R_AtomEditPanelPrefab);
         GameObject l_EditPanel = Instantiate(R_LatticeEditPanelPrefab);

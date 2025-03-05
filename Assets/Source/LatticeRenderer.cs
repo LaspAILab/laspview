@@ -7,12 +7,6 @@ public class LatticeRenderer : MonoBehaviour
 
     private BoxCollider boxCollider;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        boxCollider = LatticeLineParent.GetComponent<BoxCollider>();
-    }
-
     private void AddLine(Vector3 from, Vector3 to, float thickness = 0.2f)
     {
         LineRenderer line = Instantiate(LatticeLinePrefab, LatticeLineParent.transform).GetComponent<LineRenderer>();
@@ -25,6 +19,11 @@ public class LatticeRenderer : MonoBehaviour
 
     public void SetLattice(ArcStructure structure, int repeatA, int repeatB, int repeatC)
     {
+        if (boxCollider is null)
+        {
+            boxCollider = LatticeLineParent.GetComponent<BoxCollider>();
+        }
+
         // Remove existing children
         for (int i = LatticeLineParent.transform.childCount - 1; i >= 0; i--)
         {
@@ -67,5 +66,13 @@ public class LatticeRenderer : MonoBehaviour
         // Set bounding box
         boxCollider.center = furthestPoint / 2;
         boxCollider.size = furthestPoint;
+    }
+
+    public void SetDisplay(bool show)
+    {
+        foreach (var line in LatticeLineParent.GetComponentsInChildren<LineRenderer>())
+        {
+            line.enabled = show;
+        }
     }
 }

@@ -777,7 +777,7 @@ Canvas:
   serializedVersion: 3
   m_RenderMode: 1
   m_Camera: {fileID: 1505343037}
-  m_PlaneDistance: 100
+  m_PlaneDistance: 0.6
   m_PixelPerfect: 1
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -832,8 +832,6 @@ MonoBehaviour:
   R_LatticeEditPanelPrefab: {fileID: 3118757465854220619, guid: bac7eea144ff11041b9c5b7c84652eb2,
     type: 3}
   R_AtomEditPanelPrefab: {fileID: 3118757465854220619, guid: b108c353e328cd548a9a5ac22f8e2191,
-    type: 3}
-  R_ServerPanelPrefab: {fileID: 1061375235224783102, guid: 074ef9b03177749438e8c530df4fe809,
     type: 3}
   statusPanel: {fileID: 0}
   leftCanvas: {fileID: 0}
