@@ -9,6 +9,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
     static public syfPanelPara displayPanelPara;
     public static Dictionary<string, float> defaultModelPara;
 
+    public Toggle showLatticeToggle;
+
     void Awake()
     {
         S = this;
@@ -40,6 +42,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"], (int)modelPara["lat range c"]);
         viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
         viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
+        viewport.latticeRenderer.SetDisplay(showLatticeToggle.isOn);
         App.Instance.BondTolerance = modelPara["tolerance"];
         // MainScr.S.CurrentStructure().DrawModel();
         // GuiMain.S.FocusCameraCenter();
