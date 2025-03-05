@@ -289,6 +289,8 @@ public class ArcStructureView
         {
             UpdateAtomBondsNoLock(Atoms[i], BondTolerance, false, true);
         }
+        
+        SortBonds();
 #if !UNITY_WEBGL
         BondMutex.ReleaseMutex();
 #endif
@@ -380,9 +382,14 @@ public class ArcStructureView
     /// Sort atom and bond list for more efficient draw cell batching
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SortLists()
+    public void SortAtoms()
     {
         Atoms.Sort((a, b) => a.RenderMat.CompareTo(b.RenderMat));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void SortBonds()
+    {
         Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
     }
 
@@ -432,6 +439,84 @@ public class ArcStructureView
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
+    // Alternative implementation
+    private void __ToSuperCell(int repeatA, int repeatB, int repeatC)
+    {
+        int originalAtomCount = Atoms.Count, originalBondCount = Bonds.Count;
+        var mats = new Matrix4x4[repeatA, repeatB, repeatC];
+
+        Dictionary<AtomView, int> reverseTable = new();
+        for (int i = 0; i < Atoms.Count; i++)
+        {
+            reverseTable[Atoms[i]] = i;
+        }
+        
+        for (int i = 0; i < repeatA; i++)
+        {
+            for (int j = 0; j < repeatB; j++)
+            {
+                for (int k = 0; k < repeatC; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0)
+                    {
+                        continue;
+                    }
+
+                    mats[i, j, k] = GetLatticeTransform(i, j, k);
+                }
+            }
+        }
+
+        Structure.SetLattice(new[]
+        {
+            Structure.LatticeParams[0] * repeatA, Structure.LatticeParams[1] * repeatB,
+            Structure.LatticeParams[2] * repeatC,
+            Structure.LatticeParams[3], Structure.LatticeParams[4], Structure.LatticeParams[5]
+        });
+
+        translationVectorsCartesian =
+            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
+        
+        Atoms.Capacity = Atoms.Count * (repeatA + repeatB + repeatC);
+        Bonds.Capacity = Bonds.Count * (repeatA + repeatB + repeatC);
+
+        var copyIndex = 1;
+        for (int i = 0; i < repeatA; i++)
+        {
+            for (int j = 0; j < repeatB; j++)
+            {
+                for (int k = 0; k < repeatC; k++)
+                {
+                    if (i == 0 && j == 0 && k == 0)
+                    {
+                        continue;
+                    }
+
+                    var latticeTransform = mats[i, j, k];
+                    for (int index = 0; index < originalAtomCount; index++)
+                    {
+                        var item = Atoms[index];
+                        Vector3 prevPos = item.SourceAtom.Coordinates;
+                        AddAtom(item.SourceAtom.Symbol,
+                            latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1), item.SourceAtom.Charge,
+                            false);
+                    }
+
+                    int offset = originalAtomCount * copyIndex;
+                    for (var index = 0; index < originalBondCount; index++)
+                    {
+                        var item = Bonds[index];
+                        var fromAtomIndex = reverseTable[item.FromAtom];
+                        var toAtomIndex = reverseTable[item.ToAtom];
+                        AddBond(Atoms[fromAtomIndex + offset], Atoms[toAtomIndex + offset], item.Theta, item.Rate);
+                    }
+
+                    copyIndex++;
+                }
+            }
+        }
+    }
+    
     public void ToSuperCell(int repeatA, int repeatB, int repeatC)
     {
         List<Atom> newAtoms = new(Atoms.Count * (repeatA + repeatB + repeatC - 1));
@@ -493,7 +578,7 @@ public class ArcStructureView
 
         return newAtomView;
     }
-
+    
     public AtomView AddAtom(Atom atom, bool updateBonds = true)
     {
         var newAtom = Structure.AddAtom(atom);

@@ -105,7 +105,7 @@ public class AtomView : ITransform
         }
     }
 
-    public Atom SourceAtom { get; private set; }
+    public Atom SourceAtom { get; }
 
     public Vector3 Position
     {
@@ -136,6 +136,16 @@ public class AtomView : ITransform
 
             return transformCache.Value;
         }
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is AtomView other && SourceAtom.Index == other.SourceAtom.Index;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(SourceAtom.Index);
     }
 }
 

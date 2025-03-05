@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using ViewerNetwork;
 using System.Threading.Tasks;
+
 public class L_ServerPanelSrc : MonoBehaviour
 {
 #if !UNITY_WEBGL
@@ -12,6 +13,7 @@ public class L_ServerPanelSrc : MonoBehaviour
 
     // Start is called before the first frame update
     public bool lclSrvrListening = false;
+
     void Awake()
     {
         S = this;
@@ -21,23 +23,27 @@ public class L_ServerPanelSrc : MonoBehaviour
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         //print default remote ip on ServerIP inputfield;
-        
+
         //check local IP   
         GuiMain.S.SetUIInteract(this.transform.GetChild(2).GetChild(0).GetComponent<Button>(), false);
         Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
         svrButton.onClick.AddListener(() =>
         {
+            if (!gameObject.activeSelf)
+            {
+                GuiMain.S.ClearLeftPanel();
+            }
+            
             GuiMain.S.BtnHideObject(svrButton, this.gameObject);
-
         });
         this.gameObject.SetActive(false);
     }
 
 
-
     private void Start()
     {
-        this.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text = ConFun.GlobalConfig["remote_ip"];
+        this.transform.GetChild(1).GetChild(1).gameObject.GetComponent<InputField>().text =
+            ConFun.GlobalConfig["remote_ip"];
         Button svrButton = GameObject.Find("ServerBtn").GetComponent<Button>();
         svrButton.onClick.AddListener(() =>
         {
@@ -50,10 +56,10 @@ public class L_ServerPanelSrc : MonoBehaviour
                 {
                     addDrop.Add(new Dropdown.OptionData(str));
                 }
+
                 Dp.options = addDrop;
                 NetCheckIP2Remote();
             }
-
         });
 
         Dropdown localAddrDp = this.GetComponentInChildren<Dropdown>();
@@ -63,9 +69,9 @@ public class L_ServerPanelSrc : MonoBehaviour
         {
             addrDrop.Add(new Dropdown.OptionData(str));
         }
+
         localAddrDp.options = addrDrop;
         NetCheckIP2Remote();
-
     }
 
     //**************************** Server Panel **************************************
@@ -101,8 +107,8 @@ public class L_ServerPanelSrc : MonoBehaviour
             NetLocalBtnChange();
             //NetLocalBtnChange is called in LocalServer.Quit(), like a callback function
         }
-
     }
+
     public void NetLocalBtn2()
     {
         //Btn of StartListening
@@ -117,6 +123,7 @@ public class L_ServerPanelSrc : MonoBehaviour
             NetLocalBtnChange();
         }
     }
+
     public void NetLocalBtnChange()
     {
         Button Btn1 = this.transform.GetChild(2).GetChild(0).GetComponent<Button>();
@@ -149,7 +156,7 @@ public class L_ServerPanelSrc : MonoBehaviour
         string remoteip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
         string localip = this.transform.GetChild(0).GetComponentInChildren<Dropdown>().captionText.text;
-        
+
 
         await Task.Run(() =>
         {
@@ -159,12 +166,11 @@ public class L_ServerPanelSrc : MonoBehaviour
                 msgList = client.AddTag(msgList, "sig");
                 msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.GlobalConfig["user"]);
                 str = client.SynSendMsg(msgList.ToString());
-
             }
         });
         if (str == null)
         {
-            ConFun.UpdateStatusLabel("Local IP of "+ ConFun.GlobalConfig["user"] + " has been sent.");
+            ConFun.UpdateStatusLabel("Local IP of " + ConFun.GlobalConfig["user"] + " has been sent.");
         }
         else
         {
@@ -173,7 +179,6 @@ public class L_ServerPanelSrc : MonoBehaviour
 
         Object.Destroy(client);
         GuiMain.S.SetUIInteract(serverBtn, true);
-
     }
     //public void CheckIP2RemoteAsyn1()
     //{
@@ -199,13 +204,12 @@ public class L_ServerPanelSrc : MonoBehaviour
         string ip = this.transform.GetChild(1).GetComponentInChildren<InputField>().text;
         string str = null;
         string attr = string.Format("name={0:d5}-{1:d}.arc", Random.Range(10000, 99999),
-                     System.DateTime.Now.ToString("MMddhhmmss"));
+            System.DateTime.Now.ToString("MMddhhmmss"));
         await Task.Run(() =>
         {
-
             if (client.StartClient(ip) == true)
             {
-                StringBuilder msgList = new StringBuilder(/*text*/);
+                StringBuilder msgList = new StringBuilder( /*text*/);
                 msgList = client.AddTag(msgList, "file", attr);
                 msgList = client.AddTag(msgList, "laspview", "user=" + ConFun.GlobalConfig["user"]);
 
@@ -223,7 +227,6 @@ public class L_ServerPanelSrc : MonoBehaviour
 
         Object.Destroy(client);
         GuiMain.S.SetUIInteract(serverBtn, true);
-
     }
 
     //public void NetEditLaspIn()

@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class L_ProjectPanelSrc : MonoBehaviour
 {
     static public L_ProjectPanelSrc S;
 
     public GameObject listCellPrefab;
     static public GameObject fileList;
+
     void Awake()
     {
         S = this;
@@ -19,7 +21,12 @@ public class L_ProjectPanelSrc : MonoBehaviour
         Button pjButton = GameObject.Find("ProjectBtn").GetComponent<Button>();
         pjButton.onClick.AddListener(() =>
         {
-           GuiMain.S.BtnHideObject(pjButton, this.gameObject);
+            if (!gameObject.activeSelf)
+            {
+                GuiMain.S.ClearLeftPanel();
+            }
+            
+            GuiMain.S.BtnHideObject(pjButton, this.gameObject);
         });
 
         fileList = this.transform.GetChild(0).GetChild(0).GetChild(0).gameObject;
@@ -34,6 +41,7 @@ public class L_ProjectPanelSrc : MonoBehaviour
         newCell.GetComponentInChildren<Text>().text = filename;
         newCell.GetComponent<Button>().onClick.AddListener(() => ProjectListChangeArc(newCell));
     }
+
     public void ProjectListPopCell(int i)
     {
         GameObject popCell = fileList.transform.GetChild(i).gameObject;
@@ -45,9 +53,5 @@ public class L_ProjectPanelSrc : MonoBehaviour
         //called by 
         int index = obj.transform.GetSiblingIndex();
         // MainScr.S.DrawArc(index);
-
     }
-
-
-
 }

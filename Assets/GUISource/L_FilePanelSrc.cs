@@ -64,7 +64,15 @@ public class L_FilePanelSrc : MonoBehaviour
         this.transform.SetAsFirstSibling();
         this.transform.localScale = Vector3.one;
         Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
-        flButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(flButton, gameObject); });
+        flButton.onClick.AddListener(() =>
+        {
+            if (!gameObject.activeSelf)
+            {
+                GuiMain.S.ClearLeftPanel();
+            }
+            
+            GuiMain.S.BtnHideObject(flButton, gameObject);
+        });
         this.gameObject.SetActive(false);
     }
 

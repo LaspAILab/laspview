@@ -47,7 +47,24 @@ public class GuiMain : MonoBehaviour
         SetMenuBtn();
     }
 
-    //relate Button with GameObjects, mainly panels, that can be hidden.
+    public void ClearLeftPanel()
+    {
+        
+        GameObject.Find("ProjectBtn").GetComponent<Button>().image.color = UiUnPressedColor;
+        GameObject.Find("FileBtn").GetComponent<Button>().image.color = UiUnPressedColor;
+        GameObject.Find("DisplayBtn").GetComponent<Button>().image.color = UiUnPressedColor;
+        
+        for (int i = 0; i < leftCanvas.transform.childCount; i++)
+        {
+            var go = leftCanvas.transform.GetChild(i).gameObject;
+            if (go.name != "PlaceholderBlock")
+            {
+                go.SetActive(false);
+            }
+        }
+    }
+
+    // Relate Button with GameObjects, mainly panels, that can be hidden.
     public void BtnHideObject(Button btn, GameObject go = null)
     {
         if (go == null) return;

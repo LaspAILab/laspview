@@ -96,7 +96,7 @@ public class ViewportController : MonoBehaviour
 
 #if UNITY_WEBGL
         CurrentStructureView.GenerateBonds();
-        CurrentStructureView.SortLists();
+        CurrentStructureView.SortAtoms();
         shallUpdateRenderer = true;
 #else
         if (bondRecalculationRunning)
@@ -111,7 +111,6 @@ public class ViewportController : MonoBehaviour
             Task.Run(() =>
             {
                 CurrentStructureView.GenerateBonds();
-                CurrentStructureView.SortLists();
 
                 App.Instance.ScheduleTask(() =>
                 {
@@ -354,6 +353,7 @@ public class ViewportController : MonoBehaviour
             latticeRenderer.SetLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
             latticeCorner =
                 CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
+            RefocusCamera();
             shallUpdateLattice = false;
         }
 
