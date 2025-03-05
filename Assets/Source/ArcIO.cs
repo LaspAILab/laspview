@@ -86,15 +86,15 @@ public static class ArcIO
                 }
                 catch (FormatException e)
                 {
-                    Debug.Log($"Expected a number for lattice parameters, got: {e.Message}");
+                    Debug.LogError($"Expected a number for lattice parameters, got: {e.Message}");
                 }
                 catch (ArgumentException e)
                 {
-                    Debug.Log($"Invalid PBC line: {e.Message}");
+                    Debug.LogError($"Invalid PBC line: {e.Message}");
                 }
                 catch (Exception e)
                 {
-                    Debug.Log($"Unknown exception: {e.Message}");
+                    Debug.LogError($"Unknown exception: {e.Message}");
                 }
             }
             else if (tokens.Contains("CORE"))
@@ -107,15 +107,15 @@ public static class ArcIO
                 }
                 catch (FormatException e)
                 {
-                    Debug.Log($"Expected a number for atom parameters, got: {e.Message}");
+                    Debug.LogError($"Expected a number for atom parameters, got: {e.Message}");
                 }
                 catch (ArgumentException e)
                 {
-                    Debug.Log($"Invalid atom: {e.Message}");
+                    Debug.LogError($"Invalid atom: {e.Message}");
                 }
             }
 
-            if (line.Trim() == "end" && prevLine.Trim() == "end")
+            if (line.Trim().ToLower() == "end" && prevLine.Trim().ToLower() == "end")
             {
 #if UNITY_WEBGL
                 arcFile.Structures.Add(currentStructure);

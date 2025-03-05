@@ -144,7 +144,7 @@ public class SetPositionOperation : IOperation
     {
         structureView.SetAtomPosition(targetAtom, oldPosition, false);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
-
+        
         return true;
     }
 
@@ -166,7 +166,6 @@ public class SetElementOperation : IOperation
     {
         oldSymbol = targetAtom.Symbol;
         structureView.SetAtomElement(targetAtom, newSymbol);
-
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         return true;
     }
@@ -174,7 +173,6 @@ public class SetElementOperation : IOperation
     protected override bool UndoImpl(ArcStructureView structureView)
     {
         structureView.SetAtomElement(targetAtom, oldSymbol);
-
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         return true;
     }

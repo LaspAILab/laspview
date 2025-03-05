@@ -195,7 +195,8 @@ public class StructureRenderer : MonoBehaviour
         Profiler.BeginSample("Collect draw batch");
         if (doSort)
         {
-            CurrentStructureView.SortLists();
+            CurrentStructureView.SortAtoms();
+            CurrentStructureView.SortBonds();
         }
 
         // We create a new dictionary here to potentially support running this function on another thread

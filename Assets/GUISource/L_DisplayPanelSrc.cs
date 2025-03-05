@@ -30,6 +30,11 @@ public class L_DisplayPanelSrc : MonoBehaviour
         Button dspButton = GameObject.Find("DisplayBtn").GetComponent<Button>();
         dspButton.onClick.AddListener(() =>
         {
+            if (!gameObject.activeSelf)
+            {
+                GuiMain.S.ClearLeftPanel();
+            }
+            
             GuiMain.S.BtnHideObject(dspButton, this.gameObject);
         });
         this.gameObject.SetActive(false);
