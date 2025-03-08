@@ -796,10 +796,10 @@ public class ViewportController : MonoBehaviour
         // Draw coordinates text
         Vector2 offset = new(10, -10), size = new(100, 100);
         coordinateLabelStyle.normal.textColor = Color.red;
-        GUI.Label(new Rect(GLCoordsToGUICoords(xAxisEnd) + offset, size), "a", coordinateLabelStyle);
+        GUI.Label(new Rect(GLCoordsToGUICoords(xAxisEnd) + offset, size), "x", coordinateLabelStyle);
         coordinateLabelStyle.normal.textColor = Color.green;
-        GUI.Label(new Rect(GLCoordsToGUICoords(yAxisEnd) + offset, size), "b", coordinateLabelStyle);
+        GUI.Label(new Rect(GLCoordsToGUICoords(yAxisEnd) + offset, size), "y", coordinateLabelStyle);
         coordinateLabelStyle.normal.textColor = Color.cyan;
-        GUI.Label(new Rect(GLCoordsToGUICoords(zAxisEnd) + offset, size), "c", coordinateLabelStyle);
+        GUI.Label(new Rect(GLCoordsToGUICoords(zAxisEnd) + offset, size), "z", coordinateLabelStyle);
     }
 }
