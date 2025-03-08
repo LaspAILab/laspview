@@ -103,7 +103,7 @@ public class L_FilePanelSrc : MonoBehaviour
 
     private void FileRead(string path)
     {
-        App.Instance.OpenArcFile(path);
+        App.Instance.OpenArc(File.ReadLines(path));
     }
 
     public void NewStructure()

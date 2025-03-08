@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using Application = UnityEngine.Application;
@@ -119,11 +120,54 @@ public class App : MonoBehaviour
         callbackQueue.Enqueue(action);
     }
 #endif
+    
+#if UNITY_WEBGL
+    // Write arc
+    [DllImport("__Internal")]
+    private static extern void SendResultToJS(int errCode, string result);
 
-    public void OpenArcFile(string filename)
+    // For javascript invocation
+    public void OpenArcString(string content)
     {
-        OpenArc(File.ReadLines(filename));
+        Debug.Log("OpenArcString: " + content);
+        OpenArc(content.Split('\n'));
     }
+
+    public void SaveCurrentStructure()
+    {
+        int errCode = 0;
+        string str;
+        try
+        {
+            ArcFile newArcFile = new();
+            newArcFile.Structures.Add(Viewport.CurrentStructureView.Structure);
+            str = newArcFile.WriteArc();
+        }
+        catch (Exception e)
+        {
+            str = e.Message;
+            errCode = -1;
+        }
+        
+        SendResultToJS(errCode, str);
+    }
+
+    public void SaveAllStructures()
+    {
+        int errCode = 0;
+        string str;
+        try
+        {
+            str = CurrentFile.WriteArc();
+        }
+        catch (Exception e)
+        {
+            str = e.Message;
+            errCode = -1;
+        }
+        SendResultToJS(errCode, str);
+    }
+#endif
 
     public void SwitchStructure(int index)
     {
@@ -174,14 +218,22 @@ public class App : MonoBehaviour
 
         CurrentStructureIndex = 0;
 
-        ConFun.UpdateStatusLabel($"Reading arc file: {CurrentFile.StructureCount} structures loaded");
-        ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
-            CurrentFile.Structures[CurrentStructureIndex].Energy);
+        if (CurrentFile.StructureCount > 0)
+        {
+            ConFun.UpdateStatusLabel($"Reading arc file: {CurrentFile.StructureCount} structures loaded");
+            ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
+                CurrentFile.Structures[CurrentStructureIndex].Energy);
 
-        ArcStructureView structureView =
-            new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
-        Viewport.OpenStructureView(structureView);
-        Viewport.RefocusCamera();
+            ArcStructureView structureView =
+                new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+            Viewport.OpenStructureView(structureView);
+            Viewport.RefocusCamera();
+        }
+        else
+        {
+            ConFun.UpdateStatusLabel($"Cannot open empty file");
+        }
+        
 #else
         firstStructureLoaded = false;
         Task.Run(() =>
