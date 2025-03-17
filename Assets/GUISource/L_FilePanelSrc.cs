@@ -43,8 +43,7 @@ public class L_FilePanelSrc : MonoBehaviour
         }
         else
         {
-            arcText = loader.downloadHandler.text;
-            App.Instance.OpenArc(arcText.Split('\n'));
+            App.Instance.OpenArcString(loader.downloadHandler.text);
         }
     }
 
@@ -60,9 +59,9 @@ public class L_FilePanelSrc : MonoBehaviour
         S = this;
 
         //Set FilePanel
-        this.transform.SetParent(GuiMain.S.leftCanvas.transform, false);
-        this.transform.SetAsFirstSibling();
-        this.transform.localScale = Vector3.one;
+        transform.SetParent(GuiMain.S.leftCanvas.transform, false);
+        transform.SetAsFirstSibling();
+        transform.localScale = Vector3.one;
         Button flButton = GameObject.Find("FileBtn").GetComponent<Button>();
         flButton.onClick.AddListener(() =>
         {
@@ -73,7 +72,7 @@ public class L_FilePanelSrc : MonoBehaviour
             
             GuiMain.S.BtnHideObject(flButton, gameObject);
         });
-        this.gameObject.SetActive(false);
+        // gameObject.SetActive(false);
     }
 
     public static ExtensionFilter[] Extensions = new[]
@@ -103,7 +102,7 @@ public class L_FilePanelSrc : MonoBehaviour
 
     private void FileRead(string path)
     {
-        App.Instance.OpenArc(File.ReadLines(path));
+        App.Instance.OpenArc(File.ReadLines(path), Path.GetFileName(path));
     }
 
     public void NewStructure()

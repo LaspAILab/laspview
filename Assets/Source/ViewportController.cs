@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using RuntimeSceneGizmo;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -33,7 +34,6 @@ public class ViewportController : MonoBehaviour
 
     public GUIStyle selectionLabelStyle, coordinateLabelStyle;
 
-    private ScreenSpaceLineRenderer coordinatesRenderer;
     private int atomsLayer, latticeLayer;
 
     // Whether to update bonds in realtime when moving atoms
@@ -61,9 +61,6 @@ public class ViewportController : MonoBehaviour
     private Vector3 mouseDownPos;
     private float mouseDownTime = 0f;
 
-    // Position to render the text `a`, `b` and `c`
-    private Vector2 xAxisEnd, yAxisEnd, zAxisEnd;
-
     // Create a temporary selection manager for box selection, will be merged to the main selection when mouse up
     private SelectionManager temporarySelectionManager;
 
@@ -83,7 +80,6 @@ public class ViewportController : MonoBehaviour
         atomsLayer = LayerMask.NameToLayer("Default");
         latticeLayer = LayerMask.NameToLayer("TransparentFX");
 
-        coordinatesRenderer = new ScreenSpaceLineRenderer();
         coordinatesOrigin = new(-activeCamera.aspect + 0.2f, -1 + 0.3f);
     }
 
@@ -155,16 +151,6 @@ public class ViewportController : MonoBehaviour
         OnOperationDone(op);
     }
 
-    public void RefocusCamera()
-    {
-        cameraCenter = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)) / 2;
-        cameraViewportSize = cameraCenter.magnitude + 3.5f;
-        activeCamera.orthographicSize = cameraViewportSize;
-        cameraDistance = 4 * cameraCenter.magnitude;
-
-        UpdateCameraPos();
-    }
-
     /// <summary>
     /// Set the repeat count of the lattice, along 3 axis
     /// </summary>
@@ -203,6 +189,50 @@ public class ViewportController : MonoBehaviour
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
         RefocusCamera();
     }
+    
+    public void RefocusCamera()
+    {
+        cameraCenter = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)) / 2;
+        cameraViewportSize = cameraCenter.magnitude + 3.5f;
+        activeCamera.orthographicSize = cameraViewportSize;
+        cameraDistance = 4 * cameraCenter.magnitude;
+
+        UpdateCameraPos();
+    }
+
+    public void SetCameraViewport(GizmoComponent direction)
+    {
+        Vector3 forward = Vector3.forward, up = Vector3.up;
+        switch (direction)
+        {
+            case GizmoComponent.None:
+            case GizmoComponent.Center:
+                break;
+            case GizmoComponent.XPositive:
+                forward = Vector3.left;
+                break;
+            case GizmoComponent.XNegative:
+                forward = Vector3.right;
+                break;
+            case GizmoComponent.YPositive:
+                forward = Vector3.down;
+                up = Vector3.forward;
+                break;
+            case GizmoComponent.YNegative:
+                forward = Vector3.up;
+                up = Vector3.back;
+                break;
+            case GizmoComponent.ZPositive:
+                forward = Vector3.back;
+                break;
+            case GizmoComponent.ZNegative:
+                forward = Vector3.up;
+                break;
+        }
+        
+        activeCamera.transform.localRotation = Quaternion.LookRotation(forward, up);
+        UpdateCameraPos();
+    }
 
     void ResizeViewport(float deltaViewportSize)
     {
@@ -210,6 +240,8 @@ public class ViewportController : MonoBehaviour
         activeCamera.orthographicSize = cameraViewportSize;
     }
 
+    // Call after changing the size or rotation of the camera, 
+    // this function will adjust the position of camera to look at the given center
     void UpdateCameraPos()
     {
         Vector3 translation = activeCamera.transform.worldToLocalMatrix *
@@ -265,41 +297,6 @@ public class ViewportController : MonoBehaviour
         return selectionChanged;
     }
 
-    void DrawCoordinates()
-    {
-        coordinatesRenderer.Clear();
-
-        var xAxis = (Vector2)(activeCamera.transform.InverseTransformDirection(Vector3.right).normalized);
-        xAxisEnd = coordinatesOrigin + xAxis * 0.2f;
-        coordinatesRenderer.SubmitLine(new LineStructure
-        {
-            start = coordinatesOrigin,
-            end = xAxisEnd,
-            color = Color.red,
-            thickness = 0.002f
-        });
-
-        var yAxis = (Vector2)(activeCamera.transform.InverseTransformDirection(Vector3.up).normalized);
-        yAxisEnd = coordinatesOrigin + yAxis * 0.2f;
-        coordinatesRenderer.SubmitLine(new LineStructure
-        {
-            start = coordinatesOrigin,
-            end = yAxisEnd,
-            color = Color.green,
-            thickness = 0.002f
-        });
-
-        var zAxis = (Vector2)(activeCamera.transform.InverseTransformDirection(Vector3.forward).normalized);
-        zAxisEnd = coordinatesOrigin + zAxis * 0.2f;
-        coordinatesRenderer.SubmitLine(new LineStructure
-        {
-            start = coordinatesOrigin,
-            end = zAxisEnd,
-            color = Color.cyan,
-            thickness = 0.002f
-        });
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -345,7 +342,6 @@ public class ViewportController : MonoBehaviour
         }
 
         HandleKeyboardEvents();
-        DrawCoordinates();
 
         if (shallUpdateLattice)
         {
@@ -792,14 +788,5 @@ public class ViewportController : MonoBehaviour
             GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100),
                 $"[{selectionManager.Selection[i].Symbol}]", selectionLabelStyle);
         }
-
-        // Draw coordinates text
-        Vector2 offset = new(10, -10), size = new(100, 100);
-        coordinateLabelStyle.normal.textColor = Color.red;
-        GUI.Label(new Rect(GLCoordsToGUICoords(xAxisEnd) + offset, size), "x", coordinateLabelStyle);
-        coordinateLabelStyle.normal.textColor = Color.green;
-        GUI.Label(new Rect(GLCoordsToGUICoords(yAxisEnd) + offset, size), "y", coordinateLabelStyle);
-        coordinateLabelStyle.normal.textColor = Color.cyan;
-        GUI.Label(new Rect(GLCoordsToGUICoords(zAxisEnd) + offset, size), "z", coordinateLabelStyle);
     }
 }

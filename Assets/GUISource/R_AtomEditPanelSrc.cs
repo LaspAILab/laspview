@@ -39,6 +39,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         textLabel = label.GetComponent<Text>();
         coordsInput.SetOnChangeCallback(UpdateCoords);
         chargeInput.SetOnChangeCallback(UpdateCharge);
+        
+        gameObject.SetActive(false);
     }
 
     public void SetCurrentStructure(ArcStructure arcStructure)
@@ -49,6 +51,11 @@ public class R_AtomEditPanelSrc : MonoBehaviour
 
     public void OnNoSelection()
     {
+        if (!gameObject.activeSelf)
+        {
+            return;
+        }
+        
         label.SetActive(true);
         edits.SetActive(true);
         button.SetActive(true);

@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 public class L_ProjectPanelSrc : MonoBehaviour
 {
@@ -33,10 +35,24 @@ public class L_ProjectPanelSrc : MonoBehaviour
         this.gameObject.SetActive(false);
     }
 
+    public void OnEnable()
+    {
+        // Update file list
+        for (int i = 0; i < fileList.transform.childCount; i++)
+        {
+            Destroy(fileList.transform.GetChild(i).gameObject);
+        }
+        
+        foreach (var kv in App.Instance.OpenFileList)
+        {
+            ProjectListAddCell(kv.Key);
+        }
+    }
+
     public void ProjectListAddCell(string filename)
     {
         GameObject newCell = Instantiate(listCellPrefab);
-        newCell.transform.SetParent(fileList.transform);
+        newCell.transform.SetParent(fileList.transform, false);
         newCell.transform.localScale = Vector3.one;
         newCell.GetComponentInChildren<Text>().text = filename;
         newCell.GetComponent<Button>().onClick.AddListener(() => ProjectListChangeArc(newCell));
@@ -51,7 +67,8 @@ public class L_ProjectPanelSrc : MonoBehaviour
     public void ProjectListChangeArc(GameObject obj)
     {
         //called by 
-        int index = obj.transform.GetSiblingIndex();
-        // MainScr.S.DrawArc(index);
+        string filename = obj.GetComponentInChildren<Text>().text;
+
+        App.Instance.SetArcFile(filename);
     }
 }

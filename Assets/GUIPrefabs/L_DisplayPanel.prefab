@@ -661,7 +661,7 @@ PrefabInstance:
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
       propertyPath: m_Options.m_Options.Array.size
-      value: 3
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
@@ -671,11 +671,16 @@ PrefabInstance:
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[1].m_Text
-      value: Gray
+      value: Blue
       objectReference: {fileID: 0}
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[2].m_Text
+      value: Gray
+      objectReference: {fileID: 0}
+    - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
+        type: 3}
+      propertyPath: m_Options.m_Options.Array.data[3].m_Text
       value: White
       objectReference: {fileID: 0}
     - target: {fileID: 5504875691742477930, guid: 17bcf4a13c3c12243a5d86635ee866c1,
