@@ -20,7 +20,8 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         this.transform.localScale = Vector3.one;
         Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
         edButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(edButton, this.gameObject); });
-        // gameObject.SetActive(false);
+        
+        gameObject.SetActive(false);
     }
 
     public void UpdateLattice(ArcStructure structure)

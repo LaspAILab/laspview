@@ -18,11 +18,14 @@ public class L_DisplayPanelSrc : MonoBehaviour
         displayPanelPara.SetParaDict();
         //this.DisplayModelPara();
 
-        defaultModelPara = new Dictionary<string, float> { { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
-                                                            { "display style", 0.0f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
-                                                             { "ball radius type", 0.0f },{ "ball scale", 1f },{ "ball radius", 1.0f },{"background", 0.0f  } };
+        defaultModelPara = new Dictionary<string, float>
+        {
+            { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
+            { "display style", 0.0f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
+            { "ball radius type", 0.0f }, { "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
+        };
         DisplayLoadModelPara();
-        
+
         //Set DisplayPanel
         this.transform.SetParent(GuiMain.S.leftCanvas.transform, false);
         this.transform.SetAsFirstSibling();
@@ -34,7 +37,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
             {
                 GuiMain.S.ClearLeftPanel();
             }
-            
+
             GuiMain.S.BtnHideObject(dspButton, this.gameObject);
         });
         this.gameObject.SetActive(false);
@@ -44,13 +47,35 @@ public class L_DisplayPanelSrc : MonoBehaviour
     {
         var modelPara = DisplayModelPara();
         var viewport = Camera.main.GetComponent<ViewportController>();
-        viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"], (int)modelPara["lat range c"]);
+        viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"],
+            (int)modelPara["lat range c"]);
         viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
         viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
         viewport.latticeRenderer.SetDisplay(showLatticeToggle.isOn);
         App.Instance.BondTolerance = modelPara["tolerance"];
+
+        SetBackground((int)modelPara["background"]);
         // MainScr.S.CurrentStructure().DrawModel();
         // GuiMain.S.FocusCameraCenter();
+    }
+
+    private void SetBackground(int type)
+    {
+        switch (type)
+        {
+            case 0:
+                Camera.main.backgroundColor = Color.black;
+                break;
+            case 1:
+                Camera.main.backgroundColor = new Color32(0, 0, 139, 255);
+                break;
+            case 2:
+                Camera.main.backgroundColor = Color.grey;
+                break;
+            case 3:
+                Camera.main.backgroundColor = Color.white;
+                break;
+        }
     }
 
     public void DisplayLoadModelPara()
@@ -66,20 +91,22 @@ public class L_DisplayPanelSrc : MonoBehaviour
             else if (kvp.Value.GetComponent<InputField>())
             {
                 string str = string.Format("{0:f3}", arcPara[kvp.Key].ToString());
-                kvp.Value.GetComponent<InputField>().SetTextWithoutNotify( str);
+                kvp.Value.GetComponent<InputField>().SetTextWithoutNotify(str);
             }
             else if (kvp.Value.GetComponent<Slider>())
             {
                 float f = arcPara[kvp.Key];
                 //if (kvp.Value.GetComponent<Slider>().onValueChanged.lis)
-                kvp.Value.GetComponent<Slider>().onValueChanged.SetPersistentListenerState(1,UnityEngine.Events.UnityEventCallState.Off);
+                kvp.Value.GetComponent<Slider>().onValueChanged
+                    .SetPersistentListenerState(1, UnityEngine.Events.UnityEventCallState.Off);
                 kvp.Value.GetComponent<Slider>().value = f;
                 //print(kvp.Value.transform.parent.GetComponent<syfSliderValueText>());
                 //kvp.Value.transform.parent.GetComponent<syfSliderValueText>().ChangeText("N0");
-                kvp.Value.GetComponent<Slider>().onValueChanged.SetPersistentListenerState(1, UnityEngine.Events.UnityEventCallState.EditorAndRuntime);
-                
+                kvp.Value.GetComponent<Slider>().onValueChanged
+                    .SetPersistentListenerState(1, UnityEngine.Events.UnityEventCallState.EditorAndRuntime);
             }
         }
+
         DisplayOnSytleChange();
     }
 
@@ -102,9 +129,11 @@ public class L_DisplayPanelSrc : MonoBehaviour
             {
                 v = kvp.Value.GetComponent<Slider>().value;
             }
+
             modelPara.Add(kvp.Key, v);
             //print((kvp.Key, v));
         }
+
         return modelPara;
     }
 
@@ -137,6 +166,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
                 displayPanelPara.paraDict["stick radius"].transform.parent.gameObject.SetActive(true);
                 displayPanelPara.paraDict["tolerance"].transform.parent.gameObject.SetActive(true);
             }
+
             DisplayOnBallStyleChange();
         }
     }
@@ -155,8 +185,5 @@ public class L_DisplayPanelSrc : MonoBehaviour
             displayPanelPara.paraDict["ball scale"].transform.parent.gameObject.SetActive(false);
             displayPanelPara.paraDict["ball radius"].transform.parent.gameObject.SetActive(true);
         }
-
     }
-
 }
-

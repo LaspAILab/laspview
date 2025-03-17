@@ -62,15 +62,4 @@ public class ConFun : MonoBehaviour
         statusLabel.text = str;
         // Debug.Log(str);
     }
-
-    //public void UnityToWeb(string str)
-    //{
-    //    //参数一：Web里面接收数据的方法，参数二：Unity传递的数据（我这里是输入就传递）
-    //    Application.ExternalCall("GetFromUnity", str);
-    //}
-
-    public string WebToUnity(string s)
-    {
-        return s;
-    }
 }
