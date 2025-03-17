@@ -5,9 +5,17 @@ public class LatticeRenderer : MonoBehaviour
     public GameObject LatticeLinePrefab;
     public GameObject LatticeLineParent;
 
+    public float LineWidth;
+    
     private BoxCollider boxCollider;
+    private Camera activeCamera;
 
-    private void AddLine(Vector3 from, Vector3 to, float thickness = 0.2f)
+    void Awake()
+    {
+        activeCamera = Camera.main;
+    }
+
+    private void AddLine(Vector3 from, Vector3 to, float thickness)
     {
         LineRenderer line = Instantiate(LatticeLinePrefab, LatticeLineParent.transform).GetComponent<LineRenderer>();
         line.startWidth = thickness;
@@ -43,21 +51,21 @@ public class LatticeRenderer : MonoBehaviour
                     {
                         Vector3 to = structure.FractionalToCartesian(new Vector3(repeatA, j, k));
                         furthestPoint = Vector3.Max(furthestPoint, to);
-                        AddLine(from, to);
+                        AddLine(from, to, LineWidth);
                     }
 
                     if (j == 0)
                     {
                         Vector3 to = structure.FractionalToCartesian(new Vector3(i, repeatB, k));
                         furthestPoint = Vector3.Max(furthestPoint, to);
-                        AddLine(from, to);
+                        AddLine(from, to, LineWidth);
                     }
 
                     if (k == 0)
                     {
                         Vector3 to = structure.FractionalToCartesian(new Vector3(i, j, repeatC));
                         furthestPoint = Vector3.Max(furthestPoint, to);
-                        AddLine(from, to);
+                        AddLine(from, to, LineWidth);
                     }
                 }
             }

@@ -108,8 +108,8 @@ Thumbs.db
 #=============#
 #Test File#
 #=============#
-1.arc
-2.arc
+/*.arc
+/*.car
 UserAddress.log
 LASP4WIN*
 newPj/SSW*

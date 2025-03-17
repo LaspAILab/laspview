@@ -73,6 +73,8 @@ public class App : MonoBehaviour
         }
     }
 
+    public Dictionary<string, ArcFile> OpenFileList { get; } = new ();
+    
     public ArcFile CurrentFile { get; private set; }
 
     public int CurrentStructureIndex { get; private set; }
@@ -98,8 +100,8 @@ public class App : MonoBehaviour
             OpenArc(lines.Split('\n'));
         }
 #else
-        string lines = Resources.Load<TextAsset>("DefaultArc").text;
-        OpenArc(lines.Split('\n'));
+        // string lines = Resources.Load<TextAsset>("DefaultArc").text;
+        // OpenArc(lines.Split('\n'));
 #endif
     }
 
@@ -130,7 +132,7 @@ public class App : MonoBehaviour
     public void OpenArcString(string content)
     {
         Debug.Log("OpenArcString: " + content);
-        OpenArc(content.Split('\n'));
+        OpenArc(content.Split('\n'), OpenFileList.Count.ToString());
     }
 
     public void SaveCurrentStructure()
@@ -206,10 +208,23 @@ public class App : MonoBehaviour
 #endif
     }
 
-    public void OpenArc(IEnumerable<string> content)
+    public void AddFile(ArcFile arc, string filename)
+    {
+        if (OpenFileList.ContainsValue(arc) || OpenFileList.ContainsKey(filename))
+        {
+            return;
+        }
+        
+        OpenFileList.Add(filename, arc);
+        L_ProjectPanelSrc.S.ProjectListAddCell(filename);
+    }
+
+    public void OpenArc(IEnumerable<string> content, string filename)
     {
 #if UNITY_WEBGL
         CurrentFile = new();
+        AddFile(CurrentFile, filename);
+        
         bool readFinished = CurrentFile.ReadArc(content);
         if (!readFinished)
         {
@@ -239,9 +254,28 @@ public class App : MonoBehaviour
         Task.Run(() =>
         {
             CurrentFile = new();
+            AddFile(CurrentFile, filename);
             CurrentFile.ReadArc(content, _ => { loadedStructuresDirty = true; });
         });
 #endif
+    }
+
+    public void SetArcFile(string filename)
+    {
+        if (!OpenFileList.ContainsKey(filename))
+        {
+            ConFun.UpdateStatusLabel("Requested file {filename} not found");
+            return;
+        }
+        
+        CurrentFile = OpenFileList[filename];
+        CurrentStructureIndex = 0;
+        
+        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+        Viewport.OpenStructureView(structureView);
+        ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
+            CurrentFile.Structures[CurrentStructureIndex].Energy);
+        Viewport.RefocusCamera();
     }
 
     public void NewEmpty()
