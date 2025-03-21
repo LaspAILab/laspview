@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class R_AtomEditPanelSrc : MonoBehaviour
@@ -13,11 +14,12 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     public Toggle fractionalToggle;
     public ScalarInputController chargeInput;
 
-    public GameObject label, edits, button;
+    public GameObject label, edits;
+    public GameObject addAtomButton, fixAtomPanel;
 
     private Text textLabel;
     private AtomView activeAtom;
-    
+
     private ArcStructure currentArc;
 
     void Start()
@@ -35,11 +37,11 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         {
             elementDropdown.options.Add(new Dropdown.OptionData(kv.Key));
         }
-        
+
         textLabel = label.GetComponent<Text>();
         coordsInput.SetOnChangeCallback(UpdateCoords);
         chargeInput.SetOnChangeCallback(UpdateCharge);
-        
+
         gameObject.SetActive(false);
     }
 
@@ -55,15 +57,17 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         {
             return;
         }
-        
+
         label.SetActive(true);
         edits.SetActive(true);
-        button.SetActive(true);
-        
+        addAtomButton.SetActive(true);
+        fixAtomPanel.SetActive(false);
+
         if (currentArc != null)
         {
             textLabel.text = $"{currentArc.Atoms.Count} atoms within single lattice";
         }
+
         coordsInput.SetValue(0.5f, 0.5f, 0.5f);
         chargeInput.SetValue(0);
         activeAtom = null;
@@ -77,12 +81,13 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             return;
         }
 
+        fixAtomPanel.SetActive(true);
         if (selection.Count > 1)
         {
             label.SetActive(true);
             textLabel.text = $"{selection.Count} atoms selected";
             edits.SetActive(false);
-            button.SetActive(false);
+            addAtomButton.SetActive(false);
             activeAtom = null;
             return;
         }
@@ -91,7 +96,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         activeAtom = selection[0];
         label.SetActive(false);
         edits.SetActive(true);
-        button.SetActive(false);
+        addAtomButton.SetActive(false);
         DisplayActiveAtomProperties();
     }
 
@@ -102,7 +107,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             textLabel.text = $"{currentArc.Atoms.Count} atoms within single lattice";
             return;
         }
-        
+
         elementDropdown.value = elementDropdown.options.FindIndex(x => x.text == activeAtom.SourceAtom.Symbol);
 
         coordsInput.SetValue(fractionalToggle.isOn
@@ -130,7 +135,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         {
             return;
         }
-        
+
         Vector3? coords = coordsInput.GetValue();
         if (coords == null)
         {
@@ -155,8 +160,19 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             ConFun.UpdateStatusLabel("Invalid charge");
             return;
         }
-        
+
         App.Instance.Viewport.SubmitOperation(new SetChargeOperation(activeAtom, charge));
+    }
+
+    public void FixAtoms(bool isFixed)
+    {
+        if (App.Instance.Viewport.CurrentStructureView == null)
+        {
+            return;
+        }
+        
+        Assert.IsFalse(App.Instance.Viewport.selectionManager.IsEmpty);
+        App.Instance.Viewport.SubmitOperation(new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectionClone, isFixed));
     }
 
     public void ToggleFractionalCoordinates()
@@ -172,13 +188,13 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             ConFun.UpdateStatusLabel("Invalid position");
             return;
         }
-        
+
         if (!float.TryParse(chargeInput.GetValue(), out float charge))
         {
             ConFun.UpdateStatusLabel("Invalid charge");
             return;
         }
-        
+
         string element = elementDropdown.options[elementDropdown.value].text;
         Assert.IsTrue(App.Elements.ContainsKey(element));
 
