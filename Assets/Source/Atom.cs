@@ -13,6 +13,8 @@ public class Atom
     public float Charge;
     public Vector3 Coordinates;
     public string Symbol;
+    // Flags about whether the atom is fixed, 1 means fixed
+    public float FixedFlags;
 }
 
 interface ITransform
@@ -52,13 +54,12 @@ public class AtomView : ITransform
 
         return structure.FractionalToCartesian(fract);
     }
-
+    
     public AtomView(Atom atom, ArcStructure structure)
     {
         SourceAtom = atom;
         Symbol = atom.Symbol;
         RenderMat = atom.Symbol;
-        Charge = atom.Charge;
         Position = ClipAtomCoords(atom.Coordinates, structure, true);
         Radius = App.Elements[atom.Symbol].Radius;
         transformCache = null;
@@ -119,8 +120,9 @@ public class AtomView : ITransform
     // A string that marks which material the atom is rendered with, 
     // this is used to batch render atoms with the same material
     public string RenderMat;
-    public float Charge;
     public float Radius;
+
+    public bool InLattice = true;
 
     public ColliderScript Collider;
     private Matrix4x4? transformCache;

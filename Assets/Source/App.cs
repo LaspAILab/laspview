@@ -49,7 +49,7 @@ public class App : MonoBehaviour
 #if !UNITY_WEBGL
     // Queue for scheduling tasks on main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
-    
+
     private bool loadedStructuresDirty = false, firstStructureLoaded = false;
 #endif
 
@@ -73,8 +73,8 @@ public class App : MonoBehaviour
         }
     }
 
-    public Dictionary<string, ArcFile> OpenFileList { get; } = new ();
-    
+    public Dictionary<string, ArcFile> OpenFileList { get; } = new();
+
     public ArcFile CurrentFile { get; private set; }
 
     public int CurrentStructureIndex { get; private set; }
@@ -92,12 +92,12 @@ public class App : MonoBehaviour
         string filename = Path.Join(Application.dataPath, ConFun.GlobalConfig["arc_default"]);
         if (File.Exists(filename))
         {
-            OpenArcFile(filename);
+            OpenArc(File.ReadAllLines(filename), "Default");
         }
         else
         {
             string lines = Resources.Load<TextAsset>("DefaultArc").text;
-            OpenArc(lines.Split('\n'));
+            OpenArc(lines.Split('\n'), "Default");
         }
 #else
         // string lines = Resources.Load<TextAsset>("DefaultArc").text;
@@ -122,7 +122,7 @@ public class App : MonoBehaviour
         callbackQueue.Enqueue(action);
     }
 #endif
-    
+
 #if UNITY_WEBGL
     // Write arc
     [DllImport("__Internal")]
@@ -214,9 +214,13 @@ public class App : MonoBehaviour
         {
             return;
         }
-        
+
         OpenFileList.Add(filename, arc);
+#if UNITY_WEBGL
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
+#else
+        ScheduleTask(() => L_ProjectPanelSrc.S.ProjectListAddCell(filename));
+#endif
     }
 
     public void OpenArc(IEnumerable<string> content, string filename)
@@ -248,14 +252,21 @@ public class App : MonoBehaviour
         {
             ConFun.UpdateStatusLabel($"Cannot open empty file");
         }
-        
+
 #else
         firstStructureLoaded = false;
         Task.Run(() =>
         {
             CurrentFile = new();
-            AddFile(CurrentFile, filename);
-            CurrentFile.ReadArc(content, _ => { loadedStructuresDirty = true; });
+            try
+            {
+                AddFile(CurrentFile, filename);
+                CurrentFile.ReadArc(content, _ => { loadedStructuresDirty = true; });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to read arc file: {e.Message}");
+            }
         });
 #endif
     }
@@ -267,10 +278,10 @@ public class App : MonoBehaviour
             ConFun.UpdateStatusLabel("Requested file {filename} not found");
             return;
         }
-        
+
         CurrentFile = OpenFileList[filename];
         CurrentStructureIndex = 0;
-        
+
         ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
         Viewport.OpenStructureView(structureView);
         ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
