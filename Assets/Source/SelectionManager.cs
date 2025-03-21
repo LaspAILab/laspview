@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 public class SelectionManager
@@ -107,4 +108,13 @@ public class SelectionManager
         
         onSelectionChanged?.Invoke(Selection);
     }
+
+    // Remove inactive atoms from selection
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Validate()
+    {
+        Selection.RemoveAll(x => !x.InLattice);
+    }
+
+    public List<AtomView> SelectionClone => new(Selection);
 }

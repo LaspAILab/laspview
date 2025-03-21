@@ -207,23 +207,69 @@ public class SetChargeOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.None;
 }
 
-public class AddAtomOperation : IOperation
+public class SetFixedOperation : IOperation
 {
-    private AtomView addedAtom;
-    private Vector3 position;
-    private string symbol;
-    private float charge;
+    private List<AtomView> targetAtoms;
+    private float[] oldFixedFlags;
+    private bool isFixed;
 
-    public AddAtomOperation(Vector3 position, string symbol, float charge = 0)
+    public SetFixedOperation(List<AtomView> targetAtoms, bool isFixed)
     {
-        this.position = position;
-        this.symbol = symbol;
-        this.charge = charge;
+        this.targetAtoms = targetAtoms;
+        this.isFixed = isFixed;
     }
 
     protected override bool DoImpl(ArcStructureView structureView)
     {
-        addedAtom = structureView.AddAtom(symbol, position, charge);
+        oldFixedFlags = new float[targetAtoms.Count];
+        for (int i = 0; i < targetAtoms.Count; i++)
+        {
+            oldFixedFlags[i] = targetAtoms[i].SourceAtom.FixedFlags;
+            targetAtoms[i].SourceAtom.FixedFlags = isFixed ? 1f : 0f;
+        }
+
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        for (int i = 0; i < targetAtoms.Count; i++)
+        {
+            targetAtoms[i].SourceAtom.FixedFlags = oldFixedFlags[i];
+        }
+
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.None;
+}
+
+public class AddAtomOperation : IOperation
+{
+    private AtomView addedAtom = null;
+    private Atom atomToAdd;
+
+    public AddAtomOperation(Vector3 position, string symbol, float charge = 0)
+    {
+        atomToAdd = new Atom
+        {
+            Symbol = symbol,
+            Charge = charge,
+            Coordinates = position
+        };
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        if (addedAtom == null)
+        {
+            addedAtom = structureView.AddAtom(atomToAdd);
+        }
+        else
+        {
+            structureView.ReviveAtom(addedAtom);
+        }
+        
         return true;
     }
 
@@ -239,7 +285,6 @@ public class AddAtomOperation : IOperation
 public class RemoveAtomsOperation : IOperation
 {
     private List<AtomView> removedAtoms;
-    private List<Atom> removedAtomsCopy;
     private Vector3 position;
     private string symbol;
     private float charge;
@@ -251,23 +296,19 @@ public class RemoveAtomsOperation : IOperation
 
     protected override bool DoImpl(ArcStructureView structureView)
     {
-        removedAtomsCopy = removedAtoms.Select(x => x.SourceAtom).ToList();
-
         foreach (var item in removedAtoms)
         {
             structureView.RemoveAtom(item);
         }
-
-        removedAtoms.Clear();
 
         return true;
     }
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
-        foreach (var item in removedAtomsCopy)
+        foreach (var item in removedAtoms)
         {
-            removedAtoms.Add(structureView.AddAtom(item.Symbol, item.Coordinates, item.Charge));
+            structureView.ReviveAtom(item);
         }
 
         return true;

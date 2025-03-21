@@ -208,6 +208,7 @@ public class ArcStructureView
         Atoms.Add(atomView);
         accelerationOctree.Add(atomView, atomView.Position);
         maxAtomRadius = Mathf.Max(maxAtomRadius, atomView.Radius);
+        atomView.InLattice = true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -215,6 +216,7 @@ public class ArcStructureView
     {
         Atoms.Remove(atomView);
         accelerationOctree.Remove(atomView);
+        atomView.InLattice = false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -564,19 +566,15 @@ public class ArcStructureView
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public AtomView AddAtom(string elemSymbol, Vector3 coords, float charge, bool updateBonds = true)
     {
-        var newAtom = Structure.AddAtom(elemSymbol, coords, charge);
-        var newAtomView = new AtomView(newAtom, Structure);
-        AddAtomView(newAtomView);
-
-        newAtomView.CreateCollider();
-        if (updateBonds)
+        return AddAtom(new Atom
         {
-            UpdateAtomBonds(newAtomView, BondTolerance);
-        }
-
-        return newAtomView;
+            Symbol = elemSymbol,
+            Charge = charge,
+            Coordinates = coords,
+        });
     }
     
     public AtomView AddAtom(Atom atom, bool updateBonds = true)
@@ -594,6 +592,15 @@ public class ArcStructureView
         return newAtomView;
     }
 
+    // Revive a deleted atom, keeping existing references valid
+    public void ReviveAtom(AtomView atomView)
+    {
+        Structure.AddAtom(atomView.SourceAtom);
+        AddAtomView(atomView);
+        
+        UpdateAtomBonds(atomView, BondTolerance);
+    }
+
     public void RemoveAtom(AtomView atomView)
     {
         // Remove bonds
@@ -602,9 +609,11 @@ public class ArcStructureView
         Structure.RemoveAtom(atomView.SourceAtom);
         // Remove atom view
         atomView.DestroyCollider();
+        atomView.InvalidateTransform();
         RemoveAtomView(atomView);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsPositionInLattice(Vector3 positionCartesian)
     {
         Vector3 fractional = Structure.CartesianToFractional(positionCartesian);

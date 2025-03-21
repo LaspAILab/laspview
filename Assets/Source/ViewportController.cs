@@ -377,6 +377,8 @@ public class ViewportController : MonoBehaviour
                 shallUpdateLattice = true;
                 break;
         }
+        
+        selectionManager.Validate();
     }
 
     void HandleKeyboardEvents()
@@ -421,7 +423,7 @@ public class ViewportController : MonoBehaviour
             // Submit move
 
             // Careful with assignment behavior: we have to copy assign the selection here! 
-            IOperation op = new TranslateAtomsOperation(new(selectionManager.Selection),
+            IOperation op = new TranslateAtomsOperation(selectionManager.SelectionClone,
                 dragTotalTranslation);
             SubmitOperation(op);
 
@@ -443,7 +445,7 @@ public class ViewportController : MonoBehaviour
         {
             var newPositions = selectionManager.Selection.Select(x => x.Position).ToList();
             // Careful with assignment behavior: we have to copy assign the selection here! 
-            IOperation op = new RepositionAtomsOperation(new(selectionManager.Selection), newPositions);
+            IOperation op = new RepositionAtomsOperation(selectionManager.SelectionClone, newPositions);
             SubmitOperation(op);
 
             isRotatingAtom = false;
@@ -755,7 +757,7 @@ public class ViewportController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Delete) && !selectionManager.IsEmpty)
         {
-            IOperation op = new RemoveAtomsOperation(new(selectionManager.Selection));
+            IOperation op = new RemoveAtomsOperation(selectionManager.SelectionClone);
             selectionManager.ClearSelection();
             SubmitOperation(op);
         }
