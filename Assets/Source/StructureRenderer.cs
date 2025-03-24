@@ -39,7 +39,7 @@ public class StructureRenderer : MonoBehaviour
 
     public void SetBondStyle(float stickRadius)
     {
-        if (this.stickRadius == stickRadius)
+        if (Mathf.Approximately(this.stickRadius, stickRadius))
         {
             return;
         }
@@ -71,27 +71,9 @@ public class StructureRenderer : MonoBehaviour
         RecollectDrawBatches();
     }
 
-    public void SetLatticeRepeat(int repeatA, int repeatB, int repeatC)
+    public void SetLatticeTransforms(Matrix4x4[,,] newLatticeTransforms)
     {
-        if (repeatA == 1 && repeatB == 1 && repeatC == 1)
-        {
-            latticeTransforms = null;
-            RecollectDrawBatches();
-            return;
-        }
-
-        latticeTransforms = new Matrix4x4[repeatA, repeatB, repeatC];
-        for (int i = 0; i < repeatA; i++)
-        {
-            for (int j = 0; j < repeatB; j++)
-            {
-                for (int k = 0; k < repeatC; k++)
-                {
-                    latticeTransforms[i, j, k] = CurrentStructureView.GetLatticeTransform(i, j, k);
-                }
-            }
-        }
-
+        latticeTransforms = newLatticeTransforms;
         RecollectDrawBatches();
     }
 
@@ -182,9 +164,12 @@ public class StructureRenderer : MonoBehaviour
         };
     }
 
-    internal void SetStructureView(ArcStructureView structureView)
+    internal void SetStructureView(ArcStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
     {
         CurrentStructureView = structureView;
+        
+        // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
+        SetLatticeTransforms(newLatticeTransforms);
 
         // Recollect the draw batches
         RecollectDrawBatches(true);

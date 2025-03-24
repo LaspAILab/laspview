@@ -83,7 +83,7 @@ public class App : MonoBehaviour
     {
         ReadPeriodicTable();
         Instance = this;
-        Viewport = Camera.main.GetComponent<ViewportController>();
+        Viewport = GetComponent<ViewportController>();
     }
 
     private void Start()
