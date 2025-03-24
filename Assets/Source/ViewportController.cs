@@ -52,6 +52,11 @@ public class ViewportController : MonoBehaviour
     private ToolType currentTool = ToolType.Select;
 
     private Vector3 rotateCenter;
+
+    // Position of selected atoms relative to the rotational center
+    private Vector3[] rotationalRelativePos;
+    private SelectionItem[] rotatedAtoms;
+
     private bool isMovingAtom = false, isRotatingAtom = false;
 
     // Record mouse down point to draw selection box
@@ -299,26 +304,37 @@ public class ViewportController : MonoBehaviour
     bool UpdateBoxSelection(Rect currentRect)
     {
         bool selectionChanged = false;
-        foreach (var item in CurrentStructureView.Atoms)
+        foreach (var item in colliderManager.colliderRegistry)
         {
-            Vector3 pos = activeCamera.WorldToScreenPoint(item.Position);
-            bool isSelected = temporarySelectionManager.IsSelected(item);
-            bool isInRect = currentRect.Contains(pos);
-
-            if (isInRect && !isSelected)
+            bool isSelected = temporarySelectionManager.IsSelected(item.Key);
+            bool anyColliderInBox = false;
+            ColliderScript colliderInBox = null;
+            
+            foreach (var col in item.Value)
+            {
+                Vector3 pos = activeCamera.WorldToScreenPoint(col.ActualPosition);
+                if (currentRect.Contains(pos))
+                {
+                    colliderInBox = col;
+                    anyColliderInBox = true;
+                    break;
+                }
+            }
+            
+            if (!isSelected && anyColliderInBox)
             {
                 temporarySelectionManager.Select(new SelectionItem
                 {
-                    Atom = item,
-                    Coords = item.Position
+                    Atom = item.Key,
+                    LatticeOffset = colliderInBox.latticeOffset,
                 });
                 selectionChanged = true;
                 continue;
             }
 
-            if (!isInRect && isSelected)
+            if (!anyColliderInBox && isSelected)
             {
-                temporarySelectionManager.Deselect(item);
+                temporarySelectionManager.Deselect(item.Key);
                 selectionChanged = true;
             }
         }
@@ -362,8 +378,8 @@ public class ViewportController : MonoBehaviour
                 if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
                 {
                     raycastResult.Add(new SelectionItem
-                        { Atom = colliderScript.Atom, Coords = colliderScript.actualPosition });
-                    structureRenderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.actualPosition,
+                        { Atom = colliderScript.Atom, LatticeOffset = colliderScript.latticeOffset });
+                    structureRenderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.ActualPosition,
                         colliderScript.Atom.Radius + 0.5f);
                 }
             }
@@ -395,7 +411,7 @@ public class ViewportController : MonoBehaviour
     void OnOperationDone(IOperation op)
     {
         selectionManager.RemoveInvalid();
-        
+
         switch (op.Flags)
         {
             case UpdateFlags.UpdateAtom:
@@ -474,50 +490,40 @@ public class ViewportController : MonoBehaviour
 
     void OnRotateAtoms(Vector3 mousePos, bool submit = false)
     {
+        if (rotationalRelativePos.Length != selectionManager.Selection.Count)
+        {
+            Debug.LogWarning("Selection count shouldn't have changed during rotation. ");
+            isRotatingAtom = false;
+            return;
+        }
+
         if (submit)
         {
-            var newPositions = selectionManager.Selection.Select(x => x.Atom.Position).ToList();
+            var newPositions = rotationalRelativePos.Select(x => rotateCenter + x).ToList();
             // Careful with assignment behavior: we have to copy assign the selection here! 
-            IOperation op = new RepositionAtomsOperation(selectionManager.SelectedAtoms, newPositions);
+            IOperation op = new RepositionAtomsOperation(rotatedAtoms.Select(x => x.Atom).ToList(), newPositions);
             SubmitOperation(op);
 
             isRotatingAtom = false;
         }
         else
         {
-            // Preview, move AtomView only
-
             // Area for drag rotation
             Vector3 boxExtend = new(200, 200, 0);
             Vector3 boxCenter = activeCamera.WorldToScreenPoint(rotateCenter);
-
             Rect rect = Rect.MinMaxRect(boxCenter.x - boxExtend.x, boxCenter.y - boxExtend.y, boxCenter.x + boxExtend.x,
                 boxCenter.y + boxExtend.y);
 
-            bool rotationIsValid = true;
-            List<Vector3> newPositions = new List<Vector3>(selectionManager.Selection.Count);
-
+            Quaternion rot;
             if (rect.Contains(mousePos))
             {
                 Vector3 deltaMouse = mousePos - prevMousePos;
                 float rotateSpeed = 100f / Screen.height * activeCamera.orthographicSize;
 
                 // Vertical rotation
-                Quaternion rot = Quaternion.AngleAxis(deltaMouse.y * rotateSpeed, activeCamera.transform.right);
+                rot = Quaternion.AngleAxis(deltaMouse.y * rotateSpeed, activeCamera.transform.right);
                 // Horizontal rotation
                 rot *= Quaternion.AngleAxis(-deltaMouse.x * rotateSpeed, activeCamera.transform.up);
-
-                foreach (var item in selectionManager.Selection)
-                {
-                    var relPos = item.Atom.Position - rotateCenter;
-                    newPositions.Add(rot * relPos + rotateCenter);
-
-                    if (!CurrentStructureView.IsPositionInLattice(newPositions[^1]))
-                    {
-                        rotationIsValid = false;
-                        break;
-                    }
-                }
             }
             else
             {
@@ -525,29 +531,14 @@ public class ViewportController : MonoBehaviour
                 Vector3 a = centerScreen - mousePos;
                 Vector3 b = centerScreen - prevMousePos;
                 float degree = Mathf.Sign(Vector3.Cross(a, b).z) * Vector3.Angle(a, b);
-                Quaternion rot = Quaternion.AngleAxis(-degree, activeCamera.transform.forward);
-
-                foreach (var item in selectionManager.Selection)
-                {
-                    var relPos = item.Atom.Position - rotateCenter;
-                    newPositions.Add(rot * relPos + rotateCenter);
-
-                    if (!CurrentStructureView.IsPositionInLattice(newPositions[^1]))
-                    {
-                        rotationIsValid = false;
-                        break;
-                    }
-                }
+                rot = Quaternion.AngleAxis(-degree, activeCamera.transform.forward);
             }
 
-            // Prevent some of the atoms moved out of the lattice
-            if (rotationIsValid)
+            for (var i = 0; i < rotationalRelativePos.Length; i++)
             {
-                var selectedAtoms = selectionManager.SelectedAtoms;
-                for (var i = 0; i < selectionManager.Selection.Count; i++)
-                {
-                    CurrentStructureView.SetAtomPosition(selectedAtoms[i], newPositions[i], true);
-                }
+                rotationalRelativePos[i] = rot * rotationalRelativePos[i];
+                CurrentStructureView.SetAtomPosition(rotatedAtoms[i].Atom, rotateCenter + rotationalRelativePos[i],
+                    true);
             }
         }
     }
@@ -560,38 +551,41 @@ public class ViewportController : MonoBehaviour
         }
 
         var sortedSelection = selectionManager.Selection.ToList();
-        sortedSelection.Sort((a,b) => a.SelectIndex.CompareTo(b.SelectIndex));
-        
+        sortedSelection.Sort((a, b) => a.SelectIndex.CompareTo(b.SelectIndex));
+
         if (selectionManager.SelectedAtoms.Count == 2)
         {
-            var length = Vector3.Distance(sortedSelection[0].Coords, sortedSelection[1].Coords);
-            ConFun.UpdateStatusLabel($"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} Bond length: {length} A");
+            var length = Vector3.Distance(sortedSelection[0].Position, sortedSelection[1].Position);
+            ConFun.UpdateStatusLabel(
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} Bond length: {length} A");
         }
         else if (selectionManager.SelectedAtoms.Count == 3)
         {
-            Vector3 vec1 = sortedSelection[0].Coords - sortedSelection[1].Coords;
-            Vector3 vec2 = sortedSelection[2].Coords - sortedSelection[1].Coords;
+            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
+            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
 
             var angle = Vector3.Angle(vec1, vec2);
-            ConFun.UpdateStatusLabel($"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} Bond angle: {angle:f3} degrees");
+            ConFun.UpdateStatusLabel(
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} Bond angle: {angle:f3} degrees");
         }
         else if (selectionManager.SelectedAtoms.Count == 4)
         {
-            Vector3 vec1 = sortedSelection[0].Coords - sortedSelection[1].Coords;
-            Vector3 vec2 = sortedSelection[2].Coords - sortedSelection[1].Coords;
-            Vector3 vec3 = sortedSelection[3].Coords - sortedSelection[2].Coords;
-            
+            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
+            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
+            Vector3 vec3 = sortedSelection[3].Position - sortedSelection[2].Position;
+
             Vector3 normal1 = Vector3.Cross(vec1, vec2);
             Vector3 normal2 = Vector3.Cross(-vec2, vec3);
 
             var angle = Vector3.Angle(normal1, normal2);
-            ConFun.UpdateStatusLabel($"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} Dihedral angle: {angle:f3} degrees");
+            ConFun.UpdateStatusLabel(
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} Dihedral angle: {angle:f3} degrees");
         }
     }
 
     void HandleMouseEvents(List<SelectionItem> raycastAtom)
     {
-        SelectionItem hoveredAtom = raycastAtom.Count > 0 ? raycastAtom[0] : new SelectionItem{Atom = null};
+        SelectionItem hoveredAtom = raycastAtom.Count > 0 ? raycastAtom[0] : new SelectionItem { Atom = null };
         bool cameraRotated = false, cameraZoomed = Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5, cameraMoved = false;
         bool shallMoveAtom = false, shallRotateAtom = false;
         var mouseWorldPos = activeCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -786,13 +780,21 @@ public class ViewportController : MonoBehaviour
                     opStartMousePos = Input.mousePosition;
                     isRotatingAtom = true;
 
+                    rotatedAtoms = selectionManager.Selection.ToArray();
+                    rotationalRelativePos = new Vector3[rotatedAtoms.Length];
+
                     rotateCenter = Vector3.zero;
-                    foreach (var item in selectionManager.Selection)
+                    foreach (var item in rotatedAtoms)
                     {
-                        rotateCenter += item.Coords;
+                        rotateCenter += item.Position;
                     }
 
                     rotateCenter /= selectionManager.Selection.Count;
+
+                    for (var i = 0; i < rotatedAtoms.Length; i++)
+                    {
+                        rotationalRelativePos[i] = rotatedAtoms[i].Position - rotateCenter;
+                    }
                 }
 
                 OnRotateAtoms(Input.mousePosition);
@@ -846,7 +848,7 @@ public class ViewportController : MonoBehaviour
 
         foreach (var sel in selectionManager.Selection)
         {
-            var posScreen = activeCamera.WorldToScreenPoint(sel.Coords);
+            var posScreen = activeCamera.WorldToScreenPoint(sel.Position);
             posScreen.y = Screen.height - posScreen.y;
             if (!Screen.safeArea.Contains(new Vector2(posScreen.x, posScreen.y)))
             {

@@ -5,8 +5,10 @@ public class ColliderScript : MonoBehaviour
 {
     public bool isUsed = false;
     public AtomView Atom = null;
-    public Vector3 actualPosition;
-    
+
+    public Vector3 latticeOffset;
+    public Vector3 ActualPosition => Atom.Position + latticeOffset;
+
     private SphereCollider colliderComponent;
 
     public void Init()
@@ -15,17 +17,17 @@ public class ColliderScript : MonoBehaviour
         isUsed = true;
     }
 
-    public void SetAtom(AtomView atom, Vector3 coords, float radius)
+    public void SetAtom(AtomView atom, Vector3 position, float radius)
     {
         Atom = atom;
-        actualPosition = coords;
-        colliderComponent.center = coords;
+        latticeOffset = position - Atom.Position;
+        colliderComponent.center = position;
         colliderComponent.radius = radius / 2;
     }
-    
-    public void SetPosition(Vector3 coords)
+
+    public void SetPosition(Vector3 position)
     {
-        actualPosition = coords;
-        colliderComponent.center = coords;
+        latticeOffset = position - Atom.Position;
+        colliderComponent.center = position;
     }
 }
