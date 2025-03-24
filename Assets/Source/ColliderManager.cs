@@ -12,15 +12,14 @@ public class ColliderManager : MonoBehaviour
     public GameObject colliderPrefab;
     public GameObject colliderParent;
 
-    public ColliderPool colliderPool;
+    private ColliderPool colliderPool;
 
-    private Dictionary<AtomView, ColliderScript[,,]> colliderRegistry = new();
+    public Dictionary<AtomView, ColliderScript[,,]> colliderRegistry = new();
 
     // To keep track of possible leaks
     private int collidersAlive;
     private Matrix4x4[,,] latticeTransforms = null;
     private int repeatA, repeatB, repeatC;
-
 
     void Awake()
     {
@@ -103,12 +102,12 @@ public class ColliderManager : MonoBehaviour
     public void CreateCollidersForStructure(ArcStructureView arcStructureView)
     {
         DropAll();
-        
+
         foreach (var atomView in arcStructureView.Atoms)
         {
             CreateColliderForAtom(atomView);
         }
-        
+
         colliderPool.ShrinkCapacity();
     }
 

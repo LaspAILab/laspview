@@ -10,10 +10,11 @@ public struct SelectionItem : IEquatable<SelectionItem>
 
     // Order of selection
     public int SelectIndex;
-
+    
     // An atom may have multiple copies in the viewport, 
     // so we have to clarify which copy did we select
-    public Vector3 Coords;
+    public Vector3 LatticeOffset;
+    public Vector3 Position => Atom.Position + LatticeOffset;
     
     public bool Equals(SelectionItem other)
     {
@@ -37,6 +38,8 @@ public class SelectionManager
 
     private Action<List<SelectionItem>> onSelectionChanged;
 
+    private int selectionIndex;
+    
     public bool IsEmpty => Selection.Count == 0;
 
     public int Count => Selection.Count;
@@ -44,6 +47,7 @@ public class SelectionManager
     public SelectionManager(Action<List<SelectionItem>> onSelectionChanged = null)
     {
         Selection = new();
+        selectionIndex = 0;
         this.onSelectionChanged = onSelectionChanged;
         this.onSelectionChanged?.Invoke(Selection.ToList());
     }
@@ -58,7 +62,7 @@ public class SelectionManager
     public bool Select(SelectionItem item)
     {
         item.Atom.RenderMat = StructureRenderer.RENDERMAT_SELECTION;
-        item.SelectIndex = Selection.Count;
+        item.SelectIndex = selectionIndex++;
         bool result = Selection.Add(item);
 
         if (result)
@@ -113,6 +117,7 @@ public class SelectionManager
 
     public bool ClearSelection()
     {
+        selectionIndex = 0;
         if (Selection.Count == 0)
         {
             return false;
