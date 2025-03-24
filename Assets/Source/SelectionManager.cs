@@ -1,79 +1,111 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEngine;
+
+public struct SelectionItem : IEquatable<SelectionItem>
+{
+    public AtomView Atom;
+
+    // Order of selection
+    public int SelectIndex;
+
+    // An atom may have multiple copies in the viewport, 
+    // so we have to clarify which copy did we select
+    public Vector3 Coords;
+    
+    public bool Equals(SelectionItem other)
+    {
+        return Atom.Equals(other.Atom);
+    }
+    
+    public override bool Equals(object obj)
+    {
+        return obj is SelectionItem other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return Atom.GetHashCode();
+    }
+}
 
 public class SelectionManager
 {
-    public List<AtomView> Selection { get; private set; }
-    
-    private Action<List<AtomView>> onSelectionChanged;
-    
+    public HashSet<SelectionItem> Selection { get; private set; }
+
+    private Action<List<SelectionItem>> onSelectionChanged;
+
     public bool IsEmpty => Selection.Count == 0;
-    
+
     public int Count => Selection.Count;
 
-    public SelectionManager(Action<List<AtomView>> onSelectionChanged = null)
+    public SelectionManager(Action<List<SelectionItem>> onSelectionChanged = null)
     {
         Selection = new();
         this.onSelectionChanged = onSelectionChanged;
-        this.onSelectionChanged?.Invoke(Selection);
+        this.onSelectionChanged?.Invoke(Selection.ToList());
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSelected(AtomView atomView)
     {
-        return Selection.Contains(atomView);
+        return Selection.Contains(new SelectionItem { Atom = atomView });
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Select(AtomView atomView)
+    public bool Select(SelectionItem item)
     {
-        atomView.RenderMat = StructureRenderer.RENDERMAT_SELECTION;
-        Selection.Add(atomView);
+        item.Atom.RenderMat = StructureRenderer.RENDERMAT_SELECTION;
+        item.SelectIndex = Selection.Count;
+        bool result = Selection.Add(item);
+
+        if (result)
+        {
+            onSelectionChanged?.Invoke(Selection.ToList());
+        }
+        else
+        {
+            Debug.LogWarning("Atom attempting to select is already selected");
+        }
         
-        onSelectionChanged?.Invoke(Selection);
+        return result;
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Select(IEnumerable<AtomView> atomViews)
+    public void Select(IEnumerable<SelectionItem> atomViews)
     {
         foreach (var item in atomViews)
         {
             Select(item);
         }
-        
-        onSelectionChanged?.Invoke(Selection);
-    }
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ReplaceSelection(AtomView atomView)
-    {
-        ClearSelection();
-        Select(atomView);
-        
-        onSelectionChanged?.Invoke(Selection);
+
+        onSelectionChanged?.Invoke(Selection.ToList());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ReplaceSelection(IEnumerable<AtomView> atomViews)
+    public void ReplaceSelection(SelectionItem item)
     {
         ClearSelection();
-        Select(atomViews);
-        
-        onSelectionChanged?.Invoke(Selection);
+        Select(item);
+
+        onSelectionChanged?.Invoke(Selection.ToList());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Deselect(AtomView atomView)
     {
         atomView.RenderMat = atomView.Symbol;
-        bool result = Selection.Remove(atomView);
+        bool result = Selection.Remove(new SelectionItem { Atom = atomView });
 
         if (result)
         {
-            onSelectionChanged?.Invoke(Selection);
+            onSelectionChanged?.Invoke(Selection.ToList());
+        }
+        else
+        {
+            Debug.LogWarning("Atom to be deselected isn't found");
         }
         
         return result;
@@ -88,11 +120,11 @@ public class SelectionManager
 
         foreach (var item in Selection)
         {
-            item.RenderMat = item.Symbol;
+            item.Atom.RenderMat = item.Atom.Symbol;
         }
 
         Selection.Clear();
-        onSelectionChanged?.Invoke(Selection);
+        onSelectionChanged?.Invoke(Selection.ToList());
         return true;
     }
 
@@ -100,21 +132,18 @@ public class SelectionManager
     {
         foreach (var item in other.Selection)
         {
-            if (!IsSelected(item))
-            {
-                Selection.Add(item);
-            }
+            Selection.Add(item);
         }
-        
-        onSelectionChanged?.Invoke(Selection);
+
+        onSelectionChanged?.Invoke(Selection.ToList());
     }
 
     // Remove inactive atoms from selection
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Validate()
+    public void RemoveInvalid()
     {
-        Selection.RemoveAll(x => !x.InLattice);
+        Selection.RemoveWhere(x => !x.Atom.InLattice);
     }
 
-    public List<AtomView> SelectionClone => new(Selection);
+    public List<AtomView> SelectedAtoms => Selection.Select(x => x.Atom).ToList();
 }

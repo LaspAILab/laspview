@@ -21,6 +21,7 @@ public class TranslateAtomsOperation : IOperation
         foreach (var item in targetAtoms)
         {
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates + translation, false);
+            ColliderManager.Instance.UpdateColliderForAtom(item);
         }
 
 #if !UNITY_WEBGL
@@ -42,6 +43,7 @@ public class TranslateAtomsOperation : IOperation
         foreach (var item in targetAtoms)
         {
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates - translation, false);
+            ColliderManager.Instance.UpdateColliderForAtom(item);
         }
 
 #if !UNITY_WEBGL
@@ -80,6 +82,7 @@ public class RepositionAtomsOperation : IOperation
         {
             oldPositions.Add(targetAtoms[i].SourceAtom.Coordinates);
             structureView.SetAtomPosition(targetAtoms[i], newPositions[i], false);
+            ColliderManager.Instance.UpdateColliderForAtom(targetAtoms[i]);
         }
 
 #if !UNITY_WEBGL
@@ -101,6 +104,7 @@ public class RepositionAtomsOperation : IOperation
         for (int i = 0; i < targetAtoms.Count; i++)
         {
             structureView.SetAtomPosition(targetAtoms[i], oldPositions[i], false);
+            ColliderManager.Instance.UpdateColliderForAtom(targetAtoms[i]);
         }
 
 #if !UNITY_WEBGL
@@ -135,6 +139,7 @@ public class SetPositionOperation : IOperation
     {
         oldPosition = targetAtom.Position;
         structureView.SetAtomPosition(targetAtom, newPosition, false);
+        ColliderManager.Instance.UpdateColliderForAtom(targetAtom);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
 
         return true;
@@ -143,6 +148,7 @@ public class SetPositionOperation : IOperation
     protected override bool UndoImpl(ArcStructureView structureView)
     {
         structureView.SetAtomPosition(targetAtom, oldPosition, false);
+        ColliderManager.Instance.UpdateColliderForAtom(targetAtom);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         
         return true;
@@ -269,12 +275,14 @@ public class AddAtomOperation : IOperation
         {
             structureView.ReviveAtom(addedAtom);
         }
-        
+
+        ColliderManager.Instance.CreateColliderForAtom(addedAtom);
         return true;
     }
 
     protected override bool UndoImpl(ArcStructureView structureView)
     {
+        ColliderManager.Instance.DropColliderForAtom(addedAtom);
         structureView.RemoveAtom(addedAtom);
         return true;
     }
@@ -298,6 +306,7 @@ public class RemoveAtomsOperation : IOperation
     {
         foreach (var item in removedAtoms)
         {
+            ColliderManager.Instance.DropColliderForAtom(item);
             structureView.RemoveAtom(item);
         }
 
@@ -309,6 +318,7 @@ public class RemoveAtomsOperation : IOperation
         foreach (var item in removedAtoms)
         {
             structureView.ReviveAtom(item);
+            ColliderManager.Instance.CreateColliderForAtom(item);
         }
 
         return true;

@@ -46,7 +46,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
     public void DisplayOnParaChange()
     {
         var modelPara = DisplayModelPara();
-        var viewport = Camera.main.GetComponent<ViewportController>();
+        var viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"],
             (int)modelPara["lat range c"]);
         viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
