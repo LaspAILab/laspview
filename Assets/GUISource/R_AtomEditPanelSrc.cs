@@ -73,7 +73,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         activeAtom = null;
     }
 
-    public void UpdateSelection(List<AtomView> selection)
+    public void UpdateSelection(List<SelectionItem> selection)
     {
         if (selection.Count == 0)
         {
@@ -93,7 +93,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         }
 
         // One selection
-        activeAtom = selection[0];
+        activeAtom = selection[0].Atom;
         label.SetActive(false);
         edits.SetActive(true);
         addAtomButton.SetActive(false);
@@ -172,7 +172,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         }
         
         Assert.IsFalse(App.Instance.Viewport.selectionManager.IsEmpty);
-        App.Instance.Viewport.SubmitOperation(new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectionClone, isFixed));
+        App.Instance.Viewport.SubmitOperation(new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, isFixed));
     }
 
     public void ToggleFractionalCoordinates()

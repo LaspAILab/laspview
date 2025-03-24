@@ -22,7 +22,7 @@ interface ITransform
     public Matrix4x4 Transform { get; }
 }
 
-public class AtomView : ITransform
+public class AtomView : ITransform, IEquatable<AtomView>
 {
     /// <summary>
     /// Clip the position of the atom
@@ -75,37 +75,7 @@ public class AtomView : ITransform
     {
         transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CreateCollider()
-    {
-        Collider = ColliderPool.GlobalPool.BorrowCollider();
-        Collider.SetAtom(this, Position, Radius);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void DestroyCollider()
-    {
-        if (Collider is not null)
-        {
-            ColliderPool.GlobalPool.DropCollider(Collider);
-            Collider = null;
-        }
-    }
-
-    ~AtomView()
-    {
-        // Destructor is not called on the main thread, so we have to schedule task
-        if (Collider is not null)
-        {
-#if UNITY_WEBGL
-            ColliderPool.GlobalPool.DropCollider(Collider);
-#else
-            App.Instance.ScheduleTask(() => ColliderPool.GlobalPool.DropCollider(Collider));
-#endif
-        }
-    }
-
+    
     public Atom SourceAtom { get; }
 
     public Vector3 Position
@@ -139,15 +109,30 @@ public class AtomView : ITransform
             return transformCache.Value;
         }
     }
+    
+    public bool Equals(AtomView other)
+    {
+        if (other == null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+        
+        return SourceAtom.Index == other.SourceAtom.Index;
+    }
 
     public override bool Equals(object obj)
     {
-        return obj is AtomView other && SourceAtom.Index == other.SourceAtom.Index;
+        return obj is AtomView other && Equals(other);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(SourceAtom.Index);
+        return SourceAtom.Index.GetHashCode();
     }
 }
 

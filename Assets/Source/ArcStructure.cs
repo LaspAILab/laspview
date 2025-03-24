@@ -395,24 +395,6 @@ public class ArcStructureView
         Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CreateColliders()
-    {
-        foreach (var item in Atoms)
-        {
-            item.CreateCollider();
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void ReleaseColliders()
-    {
-        foreach (var item in Atoms)
-        {
-            item.DestroyCollider();
-        }
-    }
-
     public void ChangeLattice(float[] latticeParams, bool keepCartesian = true)
     {
         if (keepCartesian)
@@ -583,7 +565,6 @@ public class ArcStructureView
         var newAtomView = new AtomView(newAtom, Structure);
         AddAtomView(newAtomView);
 
-        newAtomView.CreateCollider();
         if (updateBonds)
         {
             UpdateAtomBonds(newAtomView, BondTolerance);
@@ -607,8 +588,6 @@ public class ArcStructureView
         Bonds.RemoveAll(bond => bond.FromAtom == atomView || bond.ToAtom == atomView);
         // Remove source atom
         Structure.RemoveAtom(atomView.SourceAtom);
-        // Remove atom view
-        atomView.DestroyCollider();
         atomView.InvalidateTransform();
         RemoveAtomView(atomView);
     }
