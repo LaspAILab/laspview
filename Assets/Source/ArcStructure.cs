@@ -291,7 +291,7 @@ public class ArcStructureView
         {
             UpdateAtomBondsNoLock(Atoms[i], BondTolerance, false, true);
         }
-        
+
         SortBonds();
 #if !UNITY_WEBGL
         BondMutex.ReleaseMutex();
@@ -434,7 +434,7 @@ public class ArcStructureView
         {
             reverseTable[Atoms[i]] = i;
         }
-        
+
         for (int i = 0; i < repeatA; i++)
         {
             for (int j = 0; j < repeatB; j++)
@@ -460,7 +460,7 @@ public class ArcStructureView
 
         translationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
-        
+
         Atoms.Capacity = Atoms.Count * (repeatA + repeatB + repeatC);
         Bonds.Capacity = Bonds.Count * (repeatA + repeatB + repeatC);
 
@@ -481,9 +481,12 @@ public class ArcStructureView
                     {
                         var item = Atoms[index];
                         Vector3 prevPos = item.SourceAtom.Coordinates;
-                        AddAtom(item.SourceAtom.Symbol,
-                            latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1), item.SourceAtom.Charge,
-                            false);
+                        AddAtom(
+                            new Atom
+                            {
+                                Symbol = item.SourceAtom.Symbol, Charge = item.SourceAtom.Charge,
+                                Coordinates = latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1)
+                            }, false);
                     }
 
                     int offset = originalAtomCount * copyIndex;
@@ -500,7 +503,7 @@ public class ArcStructureView
             }
         }
     }
-    
+
     public void ToSuperCell(int repeatA, int repeatB, int repeatC)
     {
         List<Atom> newAtoms = new(Atoms.Count * (repeatA + repeatB + repeatC - 1));
@@ -549,17 +552,6 @@ public class ArcStructureView
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public AtomView AddAtom(string elemSymbol, Vector3 coords, float charge, bool updateBonds = true)
-    {
-        return AddAtom(new Atom
-        {
-            Symbol = elemSymbol,
-            Charge = charge,
-            Coordinates = coords,
-        });
-    }
-    
     public AtomView AddAtom(Atom atom, bool updateBonds = true)
     {
         var newAtom = Structure.AddAtom(atom);
@@ -579,7 +571,7 @@ public class ArcStructureView
     {
         Structure.AddAtom(atomView.SourceAtom);
         AddAtomView(atomView);
-        
+
         UpdateAtomBonds(atomView, BondTolerance);
     }
 
