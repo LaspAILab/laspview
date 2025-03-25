@@ -116,7 +116,6 @@ public class ViewportController : MonoBehaviour
 
 #if UNITY_WEBGL
         CurrentStructureView.GenerateBonds();
-        CurrentStructureView.SortAtoms();
         shallUpdateRenderer = true;
 #else
         if (bondRecalculationRunning)

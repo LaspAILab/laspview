@@ -369,6 +369,7 @@ public class SuperCellOperation : IOperation
     protected override bool DoImpl(ArcStructureView structureView)
     {
         structureView.ToSuperCell(repeatA, repeatB, repeatC);
+        ColliderManager.Instance.CreateCollidersForStructure(structureView);
         return true;
     }
 
