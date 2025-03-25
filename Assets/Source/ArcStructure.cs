@@ -520,7 +520,8 @@ public class ArcStructureView
                     var latticeTransform = GetLatticeTransform(i, j, k);
                     foreach (var item in Atoms)
                     {
-                        Vector3 prevPos = item.SourceAtom.Coordinates;
+                        item.SourceAtom.Coordinates = item.Position;
+                        Vector3 prevPos = item.Position;
                         newAtoms.Add(new Atom
                         {
                             Charge = item.SourceAtom.Charge,
