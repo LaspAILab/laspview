@@ -67,6 +67,15 @@ public class ViewportController : MonoBehaviour
     private SelectionManager temporarySelectionManager;
 
     private bool shallUpdateRenderer = false, shallUpdateLattice = false;
+    
+    public enum LabelType
+    {
+        Symbol,
+        Charge,
+        FixedFlags
+    }
+    
+    private LabelType labelType = LabelType.Symbol;
 
     private Matrix4x4[,,] latticeTransforms = null;
 
@@ -218,6 +227,11 @@ public class ViewportController : MonoBehaviour
         latticeCorner =
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
         RefocusCamera();
+    }
+    
+    public void SetLabelType(LabelType newLabelType)
+    {
+        labelType = newLabelType;
     }
 
     public void RefocusCamera()
@@ -855,8 +869,16 @@ public class ViewportController : MonoBehaviour
                 continue;
             }
 
+            string text = labelType switch
+            {
+                LabelType.Symbol => sel.Atom.Symbol,
+                LabelType.Charge => sel.Atom.SourceAtom.Charge.ToString("0.00"),
+                LabelType.FixedFlags => sel.Atom.SourceAtom.FixedFlags.ToString("0.0"),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            
             GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100),
-                $"[{sel.Atom.Symbol}]", selectionLabelStyle);
+                $"[{text}]", selectionLabelStyle);
         }
     }
 }
