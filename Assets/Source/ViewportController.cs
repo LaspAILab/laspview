@@ -67,15 +67,18 @@ public class ViewportController : MonoBehaviour
     private SelectionManager temporarySelectionManager;
 
     private bool shallUpdateRenderer = false, shallUpdateLattice = false;
-    
+
+    private static readonly Vector3 pasteOffset = new(1f, 1f, 0f);
+    private List<Atom> clipboard = new ();
+
     public enum LabelType
     {
+        None,
         Symbol,
-        Charge,
         FixedFlags
     }
-    
-    private LabelType labelType = LabelType.Symbol;
+
+    private LabelType labelType = LabelType.None;
 
     private Matrix4x4[,,] latticeTransforms = null;
 
@@ -227,7 +230,7 @@ public class ViewportController : MonoBehaviour
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
         RefocusCamera();
     }
-    
+
     public void SetLabelType(LabelType newLabelType)
     {
         labelType = newLabelType;
@@ -322,7 +325,7 @@ public class ViewportController : MonoBehaviour
             bool isSelected = temporarySelectionManager.IsSelected(item.Key);
             bool anyColliderInBox = false;
             ColliderScript colliderInBox = null;
-            
+
             foreach (var col in item.Value)
             {
                 Vector3 pos = activeCamera.WorldToScreenPoint(col.ActualPosition);
@@ -333,7 +336,7 @@ public class ViewportController : MonoBehaviour
                     break;
                 }
             }
-            
+
             if (!isSelected && anyColliderInBox)
             {
                 temporarySelectionManager.Select(new SelectionItem
@@ -442,40 +445,6 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void HandleKeyboardEvents()
-    {
-        var move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
-        if (move.magnitude > 1e-5)
-        {
-            var deltaCenter = activeCamera.transform.TransformDirection(PAN_SPEED * move);
-            cameraCenter += deltaCenter;
-            UpdateCameraPos();
-        }
-
-        bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        if (ctrlDown)
-        {
-            IOperation op = null;
-
-            if (Input.GetKeyUp(KeyCode.Z))
-            {
-                // Undo
-                ConFun.UpdateStatusLabel("Undo!");
-                op = undoManager.Undo();
-            }
-            else if (Input.GetKeyUp(KeyCode.Y))
-            {
-                ConFun.UpdateStatusLabel("Redo!");
-                op = undoManager.Redo();
-            }
-
-            if (op != null)
-            {
-                OnOperationDone(op);
-            }
-        }
-    }
-
     void OnMoveAtoms(Vector3 mouseWorldPos, bool submit = false)
     {
         var dragTotalTranslation = mouseWorldPos - activeCamera.ScreenToWorldPoint(opStartMousePos);
@@ -556,9 +525,9 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void UpdateBondingInfoDisplay()
+    void UpdateBondingInfoDisplay(bool isClickSelect=true)
     {
-        if (selectionManager.SelectedAtoms.Count is < 2 or > 4)
+        if (selectionManager.SelectedAtoms.Count is 0 or > 4)
         {
             return;
         }
@@ -566,13 +535,19 @@ public class ViewportController : MonoBehaviour
         var sortedSelection = selectionManager.Selection.ToList();
         sortedSelection.Sort((a, b) => a.SelectIndex.CompareTo(b.SelectIndex));
 
-        if (selectionManager.SelectedAtoms.Count == 2)
+        if (selectionManager.SelectedAtoms.Count == 1)
+        {
+            string fixedState = sortedSelection[0].Atom.SourceAtom.FixedFlags > 0 ? "Fixed" : "Unfixed";
+            ConFun.UpdateStatusLabel(
+                $"{sortedSelection[0].Atom.Symbol} {sortedSelection[0].Atom.SourceAtom.Coordinates} ({fixedState})");
+        }
+        else if (selectionManager.SelectedAtoms.Count == 2)
         {
             var length = Vector3.Distance(sortedSelection[0].Position, sortedSelection[1].Position);
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} Bond length: {length} A");
         }
-        else if (selectionManager.SelectedAtoms.Count == 3)
+        else if (isClickSelect && selectionManager.SelectedAtoms.Count == 3)
         {
             Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
             Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
@@ -581,7 +556,7 @@ public class ViewportController : MonoBehaviour
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} Bond angle: {angle:f3} degrees");
         }
-        else if (selectionManager.SelectedAtoms.Count == 4)
+        else if (isClickSelect && selectionManager.SelectedAtoms.Count == 4)
         {
             Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
             Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
@@ -593,6 +568,102 @@ public class ViewportController : MonoBehaviour
             var angle = Vector3.Angle(normal1, normal2);
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} Dihedral angle: {angle:f3} degrees");
+        }
+    }
+
+    Vector3 GetGeometryCenter(IEnumerable<SelectionItem> atoms)
+    {
+        Vector3 center = Vector3.zero;
+        int count = 0;
+        foreach (var item in atoms)
+        {
+            center += item.Position;
+            count++;
+        }
+        
+        return center / count;
+    }
+
+    void SaveCurrentSelectionToClipboard()
+    {
+        // Caution: avoid copying by reference here
+        // We don't wish editing copied atoms after copying will affect the clipboard
+        clipboard = selectionManager.Selection.Select(x => new Atom
+        {
+            Charge = x.Atom.SourceAtom.Charge,
+            Coordinates = x.Atom.SourceAtom.Coordinates,
+            FixedFlags = x.Atom.SourceAtom.FixedFlags,
+            Symbol = x.Atom.SourceAtom.Symbol
+        }).ToList();
+    }
+    
+    void HandleKeyboardEvents()
+    {
+        var move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
+        
+#if UNITY_STANDALONE_OSX
+        move.y = -move.y;
+#endif
+        
+        if (move.magnitude > 1e-5)
+        {
+            var deltaCenter = activeCamera.transform.TransformDirection(PAN_SPEED * move);
+            cameraCenter += deltaCenter;
+            UpdateCameraPos();
+        }
+        
+        if ((Input.GetKeyUp(KeyCode.Delete) || Input.GetKeyUp(KeyCode.Backspace)) && !selectionManager.IsEmpty)
+        {
+            IOperation op = new RemoveAtomsOperation(selectionManager.SelectedAtoms);
+            selectionManager.ClearSelection();
+            SubmitOperation(op);
+        }
+
+        bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        if (ctrlDown)
+        {
+            IOperation op = null;
+
+            if (Input.GetKeyUp(KeyCode.Z))
+            {
+                // Undo
+                ConFun.UpdateStatusLabel("Undo!");
+                op = undoManager.Undo();
+            }
+            else if (Input.GetKeyUp(KeyCode.Y))
+            {
+                ConFun.UpdateStatusLabel("Redo!");
+                op = undoManager.Redo();
+            }
+            else if (Input.GetKeyUp(KeyCode.X))
+            {
+                ConFun.UpdateStatusLabel("Cut!");
+                SaveCurrentSelectionToClipboard();
+                SubmitOperation(new RemoveAtomsOperation(selectionManager.SelectedAtoms));
+                selectionManager.ClearSelection();
+            }
+            else if (Input.GetKeyUp(KeyCode.C))
+            {
+                ConFun.UpdateStatusLabel("Copy!");
+                SaveCurrentSelectionToClipboard();
+                selectionManager.ClearSelection();
+            }
+            else if (Input.GetKeyUp(KeyCode.V))
+            {
+                ConFun.UpdateStatusLabel("Paste!");
+                // Apply a offset before paste
+                foreach (var item in clipboard)
+                {
+                    item.Coordinates += pasteOffset;
+                }
+                
+                SubmitOperation(new AddAtomsOperation(clipboard));
+            }
+
+            if (op != null)
+            {
+                OnOperationDone(op);
+            }
         }
     }
 
@@ -633,8 +704,8 @@ public class ViewportController : MonoBehaviour
                     }
 
                     selectionManager.Select(hoveredAtom);
-                    UpdateBondingInfoDisplay();
                 }
+                UpdateBondingInfoDisplay();
 
                 shallUpdateRenderer = true;
             }
@@ -740,6 +811,7 @@ public class ViewportController : MonoBehaviour
                 Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
                 selectionBoxDrawer.DrawBox(boxRect);
                 shallUpdateRenderer = shallUpdateRenderer || UpdateBoxSelection(boxRect);
+                UpdateBondingInfoDisplay(false);
             }
             else
             {
@@ -796,13 +868,7 @@ public class ViewportController : MonoBehaviour
                     rotatedAtoms = selectionManager.Selection.ToArray();
                     rotationalRelativePos = new Vector3[rotatedAtoms.Length];
 
-                    rotateCenter = Vector3.zero;
-                    foreach (var item in rotatedAtoms)
-                    {
-                        rotateCenter += item.Position;
-                    }
-
-                    rotateCenter /= selectionManager.Selection.Count;
+                    rotateCenter = GetGeometryCenter(rotatedAtoms);
 
                     for (var i = 0; i < rotatedAtoms.Length; i++)
                     {
@@ -842,19 +908,17 @@ public class ViewportController : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyUp(KeyCode.Delete) && !selectionManager.IsEmpty)
-        {
-            IOperation op = new RemoveAtomsOperation(selectionManager.SelectedAtoms);
-            selectionManager.ClearSelection();
-            SubmitOperation(op);
-        }
-
         prevMousePos = Input.mousePosition;
     }
 
     private void OnGUI()
     {
         if (CurrentStructureView == null)
+        {
+            return;
+        }
+
+        if (labelType == LabelType.None)
         {
             return;
         }
@@ -870,14 +934,12 @@ public class ViewportController : MonoBehaviour
 
             string text = labelType switch
             {
-                LabelType.Symbol => sel.Atom.Symbol,
-                LabelType.Charge => sel.Atom.SourceAtom.Charge.ToString("0.00"),
-                LabelType.FixedFlags => sel.Atom.SourceAtom.FixedFlags.ToString("0.0"),
+                LabelType.Symbol => $"[{sel.Atom.Symbol}]",
+                LabelType.FixedFlags => sel.Atom.SourceAtom.FixedFlags > 0 ? "f" : "t",
                 _ => throw new ArgumentOutOfRangeException()
             };
-            
-            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100),
-                $"[{text}]", selectionLabelStyle);
+
+            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), text, selectionLabelStyle);
         }
     }
 }

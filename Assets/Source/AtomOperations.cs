@@ -290,6 +290,63 @@ public class AddAtomOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
+public class AddAtomsOperation : IOperation
+{
+    private List<Atom> atomsToAdd;
+    private AtomView[] addedAtoms = null;
+    private Vector3 position;
+    private string symbol;
+    private float charge;
+
+    public AddAtomsOperation(List<Atom> atomsToAdd)
+    {
+        this.atomsToAdd = atomsToAdd;
+    }
+
+    protected override bool DoImpl(ArcStructureView structureView)
+    {
+        if (addedAtoms != null)
+        {
+            foreach (var item in addedAtoms)
+            {
+                structureView.ReviveAtom(item);
+                ColliderManager.Instance.CreateColliderForAtom(item);
+            }
+        }
+        else
+        {
+            addedAtoms = new AtomView[atomsToAdd.Count];
+
+            for (var i = 0; i < atomsToAdd.Count; i++)
+            {
+                addedAtoms[i] = structureView.AddAtom(atomsToAdd[i]);
+                ColliderManager.Instance.CreateColliderForAtom(addedAtoms[i]);
+            }
+        }
+
+        App.Instance.Viewport.selectionManager.ReplaceSelection(addedAtoms.Select(x => new SelectionItem
+        {
+            Atom = x,
+            LatticeOffset = Vector3.zero
+        }));
+
+        return true;
+    }
+
+    protected override bool UndoImpl(ArcStructureView structureView)
+    {
+        foreach (var item in addedAtoms)
+        {
+            ColliderManager.Instance.DropColliderForAtom(item);
+            structureView.RemoveAtom(item);
+        }
+
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
 public class RemoveAtomsOperation : IOperation
 {
     private List<AtomView> removedAtoms;

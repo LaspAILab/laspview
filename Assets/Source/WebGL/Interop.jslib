@@ -1,11 +1,11 @@
 ﻿mergeInto(LibraryManager.library, {
-    SendResultToJS: function(errCode, result) {
+    SendJSEvent: function(eventName, result) {
         var resultStr = UTF8ToString(result);
+        var eventNameStr = UTF8ToString(eventName);
 
         // 创建自定义事件
-        var event = new CustomEvent('UnityMessage', {
+        var event = new CustomEvent(eventNameStr, {
             detail: {
-                err: errCode,
                 result: resultStr
             }
         });

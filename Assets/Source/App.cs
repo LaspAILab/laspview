@@ -88,20 +88,21 @@ public class App : MonoBehaviour
 
     private void Start()
     {
-#if !UNITY_WEBGL
-        string filename = Path.Join(Application.dataPath, ConFun.GlobalConfig["arc_default"]);
-        if (File.Exists(filename))
+#if UNITY_WEBGL && !UNITY_EDITOR
+        // string lines = Resources.Load<TextAsset>("DefaultArc").text;
+        // OpenArc(lines.Split('\n'));
+        SendJSEvent("OnUnityLoad", "");
+#else
+        bool hasConfigFileName = ConFun.GlobalConfig.TryGetValue("arc_default", out string filename);
+        if (hasConfigFileName && File.Exists(Path.Join(Application.dataPath, filename)))
         {
-            OpenArc(File.ReadAllLines(filename), "Default");
+            OpenArc(File.ReadAllLines(Path.Join(Application.dataPath, filename)), "Default");
         }
         else
         {
             string lines = Resources.Load<TextAsset>("DefaultArc").text;
             OpenArc(lines.Split('\n'), "Default");
         }
-#else
-        // string lines = Resources.Load<TextAsset>("DefaultArc").text;
-        // OpenArc(lines.Split('\n'));
 #endif
     }
 
@@ -126,7 +127,7 @@ public class App : MonoBehaviour
 #if UNITY_WEBGL
     // Write arc
     [DllImport("__Internal")]
-    private static extern void SendResultToJS(int errCode, string result);
+    private static extern void SendJSEvent(string eventName, string result);
 
     // For javascript invocation
     public void OpenArcString(string content)
@@ -137,37 +138,31 @@ public class App : MonoBehaviour
 
     public void SaveCurrentStructure()
     {
-        int errCode = 0;
-        string str;
         try
         {
             ArcFile newArcFile = new();
             newArcFile.Structures.Add(Viewport.CurrentStructureView.Structure);
-            str = newArcFile.WriteArc();
+            string str = newArcFile.WriteArc();
+            SendJSEvent("ArcFileRecv", str);
         }
         catch (Exception e)
         {
-            str = e.Message;
-            errCode = -1;
+            SendJSEvent("ArcFileFail", e.Message);
         }
-        
-        SendResultToJS(errCode, str);
     }
 
     public void SaveAllStructures()
     {
-        int errCode = 0;
-        string str;
         try
         {
-            str = CurrentFile.WriteArc();
+            string str = CurrentFile.WriteArc();
+            SendJSEvent("ArcFileRecv", str);
         }
         catch (Exception e)
         {
-            str = e.Message;
-            errCode = -1;
+            SendJSEvent("ArcFileFail", e.Message);
         }
-        SendResultToJS(errCode, str);
+        
     }
 #endif
 
