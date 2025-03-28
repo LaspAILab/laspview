@@ -96,6 +96,15 @@ public class SelectionManager
 
         onSelectionChanged?.Invoke(Selection.ToList());
     }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void ReplaceSelection(IEnumerable<SelectionItem> item)
+    {
+        ClearSelection();
+        Select(item);
+
+        onSelectionChanged?.Invoke(Selection.ToList());
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Deselect(AtomView atomView)
