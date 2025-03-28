@@ -52,11 +52,11 @@ public class L_DisplayPanelSrc : MonoBehaviour
         
         if (modelPara["label type"] == 0)
         {
-            viewport.SetLabelType(ViewportController.LabelType.Symbol);
+            viewport.SetLabelType(ViewportController.LabelType.None);
         }
         else if (Mathf.Approximately(modelPara["label type"], 1f))
         {
-            viewport.SetLabelType(ViewportController.LabelType.Charge);
+            viewport.SetLabelType(ViewportController.LabelType.Symbol);
         }
         else if (Mathf.Approximately(modelPara["label type"], 2f))
         {
