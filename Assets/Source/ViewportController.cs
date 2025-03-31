@@ -397,7 +397,7 @@ public class ViewportController : MonoBehaviour
                 {
                     raycastResult.Add(new SelectionItem
                         { Atom = colliderScript.Atom, LatticeOffset = colliderScript.latticeOffset });
-                    structureRenderer.RenderSingleAtom(colliderScript.Atom.RenderMat, colliderScript.ActualPosition,
+                    structureRenderer.RenderSingleAtom(colliderScript.Atom, colliderScript.ActualPosition,
                         colliderScript.Atom.Radius + 0.5f);
                 }
             }
@@ -420,7 +420,7 @@ public class ViewportController : MonoBehaviour
 
         if (shallUpdateRenderer)
         {
-            structureRenderer.RecollectDrawBatches(true);
+            structureRenderer.RecollectDrawBatches();
             shallUpdateRenderer = false;
         }
     }
@@ -591,7 +591,6 @@ public class ViewportController : MonoBehaviour
         // We don't wish editing copied atoms after copying will affect the clipboard
         clipboard = selectionManager.Selection.Select(x => new Atom
         {
-            Charge = x.Atom.SourceAtom.Charge,
             Coordinates = x.Atom.SourceAtom.Coordinates,
             FixedFlags = x.Atom.SourceAtom.FixedFlags,
             Symbol = x.Atom.SourceAtom.Symbol
@@ -686,7 +685,10 @@ public class ViewportController : MonoBehaviour
     void HandleMouseEvents(List<SelectionItem> raycastAtom)
     {
         SelectionItem hoveredAtom = raycastAtom.Count > 0 ? raycastAtom[0] : new SelectionItem { Atom = null };
-        bool cameraRotated = false, cameraZoomed = Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5, cameraMoved = false;
+        // Forbid zooming when right key is pressed
+        bool cameraRotated = false,
+            cameraZoomed = !Input.GetKey(KeyCode.Mouse0) && Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5,
+            cameraMoved = false;
         bool shallMoveAtom = false, shallRotateAtom = false;
         var mouseWorldPos = activeCamera.ScreenToWorldPoint(Input.mousePosition);
 
@@ -695,6 +697,7 @@ public class ViewportController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
+            cameraZoomed = false;
             mouseDownTime = Time.time;
             mouseDownPos = Input.mousePosition;
             Debug.Log("Record pointer down");
@@ -877,7 +880,7 @@ public class ViewportController : MonoBehaviour
 
                 OnMoveAtoms(mouseWorldPos);
             }
-            else if (shallRotateAtom)
+            else
             {
                 if (!isRotatingAtom)
                 {

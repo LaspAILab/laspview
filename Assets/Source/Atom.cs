@@ -10,9 +10,10 @@ using UnityEngine;
 public class Atom
 {
     public int Index;
-    public float Charge;
     public Vector3 Coordinates;
+
     public string Symbol;
+
     // Flags about whether the atom is fixed, 1 means fixed
     public float FixedFlags;
 }
@@ -54,12 +55,12 @@ public class AtomView : ITransform, IEquatable<AtomView>
 
         return structure.FractionalToCartesian(fract);
     }
-    
+
     public AtomView(Atom atom, ArcStructure structure)
     {
         SourceAtom = atom;
         Symbol = atom.Symbol;
-        RenderMat = atom.Symbol;
+        IsSelected = false;
         Position = ClipAtomCoords(atom.Coordinates, structure, true);
         Radius = App.Elements[atom.Symbol].Radius;
         transformCache = null;
@@ -75,7 +76,7 @@ public class AtomView : ITransform, IEquatable<AtomView>
     {
         transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
-    
+
     public Atom SourceAtom { get; }
 
     public Vector3 Position
@@ -85,11 +86,9 @@ public class AtomView : ITransform, IEquatable<AtomView>
         set;
     }
 
-    public string Symbol;
+    public bool IsSelected { get; set; }
 
-    // A string that marks which material the atom is rendered with, 
-    // this is used to batch render atoms with the same material
-    public string RenderMat;
+    public string Symbol;
     public float Radius;
 
     public bool InLattice = true;
@@ -109,7 +108,7 @@ public class AtomView : ITransform, IEquatable<AtomView>
             return transformCache.Value;
         }
     }
-    
+
     public bool Equals(AtomView other)
     {
         if (other == null)
@@ -121,7 +120,7 @@ public class AtomView : ITransform, IEquatable<AtomView>
         {
             return true;
         }
-        
+
         return SourceAtom.Index == other.SourceAtom.Index;
     }
 

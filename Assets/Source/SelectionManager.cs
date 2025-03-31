@@ -61,7 +61,7 @@ public class SelectionManager
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Select(SelectionItem item)
     {
-        item.Atom.RenderMat = StructureRenderer.RENDERMAT_SELECTION;
+        item.Atom.IsSelected = true;
         item.SelectIndex = selectionIndex++;
         bool result = Selection.Add(item);
 
@@ -109,7 +109,7 @@ public class SelectionManager
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Deselect(AtomView atomView)
     {
-        atomView.RenderMat = atomView.Symbol;
+        atomView.IsSelected = false;
         bool result = Selection.Remove(new SelectionItem { Atom = atomView });
 
         if (result)
@@ -134,7 +134,7 @@ public class SelectionManager
 
         foreach (var item in Selection)
         {
-            item.Atom.RenderMat = item.Atom.Symbol;
+            item.Atom.IsSelected = false;
         }
 
         Selection.Clear();
