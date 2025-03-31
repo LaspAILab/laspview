@@ -12,7 +12,7 @@ public class SelectionBoxDrawer : MonoBehaviour
     void Start()
     {
         mainCamera = Camera.main;
-        depth = mainCamera.nearClipPlane + 1e-5f;
+        depth = mainCamera.nearClipPlane + 1e-2f;
         lineRenderers = new LineRenderer[4];
         for (int i = 0; i < transform.childCount; i++)
         {

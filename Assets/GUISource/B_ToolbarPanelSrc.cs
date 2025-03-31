@@ -44,7 +44,7 @@ public class B_ToolbarPanelSrc : MonoBehaviour
 
     public void OnPlayerFocusBtnClicked()
     {
-        Camera.main.GetComponent<ViewportController>().RefocusCamera();
+        GameObject.Find("App Container").GetComponent<ViewportController>().RefocusCamera();
     }
 
     public void OnPlayerHeadBtnClicked()
