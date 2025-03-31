@@ -45,7 +45,7 @@ public class ArcStructure
         Atoms = new();
     }
 
-    public Atom AddAtom(string elemSymbol, Vector3 coords, float charge)
+    public Atom AddAtom(string elemSymbol, Vector3 coords, float fixedFlags = 0)
     {
         if (!App.Elements.ContainsKey(elemSymbol))
         {
@@ -57,7 +57,7 @@ public class ArcStructure
             Index = AtomIndex++,
             Symbol = elemSymbol,
             Coordinates = coords,
-            Charge = charge
+            FixedFlags = fixedFlags
         };
         Atoms.Add(newAtom);
         return newAtom;
@@ -245,15 +245,7 @@ public class ArcStructureView
     {
         atomView.SourceAtom.Symbol = newSymbol;
         atomView.Radius = App.Elements[atomView.SourceAtom.Symbol].Radius;
-
-        if (atomView.RenderMat == atomView.Symbol)
-        {
-            atomView.RenderMat = atomView.Symbol = newSymbol;
-        }
-        else
-        {
-            atomView.Symbol = newSymbol;
-        }
+        atomView.Symbol = newSymbol;
 
         // Since the radius has changed, we have to renew the transform cache
         atomView.InvalidateTransform();
@@ -292,7 +284,6 @@ public class ArcStructureView
             UpdateAtomBondsNoLock(Atoms[i], BondTolerance, false, true);
         }
 
-        SortBonds();
 #if !UNITY_WEBGL
         BondMutex.ReleaseMutex();
 #endif
@@ -378,21 +369,6 @@ public class ArcStructureView
     {
         Vector3 translateCart = Structure.FractionalToCartesian(new Vector3(aIndex, bIndex, cIndex));
         return Matrix4x4.Translate(translateCart);
-    }
-
-    /// <summary>
-    /// Sort atom and bond list for more efficient draw cell batching
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SortAtoms()
-    {
-        Atoms.Sort((a, b) => a.RenderMat.CompareTo(b.RenderMat));
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SortBonds()
-    {
-        Bonds.Sort((a, b) => a.FromAtom.RenderMat.CompareTo(b.FromAtom.RenderMat));
     }
 
     public void ChangeLattice(float[] latticeParams, bool keepCartesian = true)
@@ -484,7 +460,7 @@ public class ArcStructureView
                         AddAtom(
                             new Atom
                             {
-                                Symbol = item.SourceAtom.Symbol, Charge = item.SourceAtom.Charge,
+                                Symbol = item.SourceAtom.Symbol,
                                 Coordinates = latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1)
                             }, false);
                     }
@@ -527,7 +503,6 @@ public class ArcStructureView
                         Vector3 prevPos = item.Position;
                         newAtoms.Add(new Atom
                         {
-                            Charge = item.SourceAtom.Charge,
                             Coordinates = latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1),
                             Symbol = item.SourceAtom.Symbol,
                         });

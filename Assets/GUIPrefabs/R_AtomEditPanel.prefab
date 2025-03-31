@@ -276,7 +276,6 @@ MonoBehaviour:
   coordsInput: {fileID: 8635414707356851842}
   elementDropdown: {fileID: 1744569518281500074}
   fractionalToggle: {fileID: 1156392014592831490}
-  chargeInput: {fileID: 7725324026223711407}
   label: {fileID: 4360890346958903977}
   edits: {fileID: 4596330712184232578}
   addAtomButton: {fileID: 1279695815741666488}
@@ -1852,7 +1851,7 @@ PrefabInstance:
     - target: {fileID: 880452721539277030, guid: 6c875605fe4ace249b6b350316c3842f,
         type: 3}
       propertyPath: m_Text
-      value: Charge
+      value: Fixed flags
       objectReference: {fileID: 0}
     - target: {fileID: 880452721539277030, guid: 6c875605fe4ace249b6b350316c3842f,
         type: 3}
@@ -2069,18 +2068,6 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 6936245681220483261}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &7725324026223711407 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 826309338067971090, guid: 6c875605fe4ace249b6b350316c3842f,
-    type: 3}
-  m_PrefabInstance: {fileID: 6936245681220483261}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dbbdd328fff90bb47951be2f95bc1439, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &7339564177197065403
 PrefabInstance:
   m_ObjectHideFlags: 0

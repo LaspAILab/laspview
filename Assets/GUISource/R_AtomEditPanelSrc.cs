@@ -12,7 +12,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     public VectorInputController coordsInput;
     public Dropdown elementDropdown;
     public Toggle fractionalToggle;
-    public ScalarInputController chargeInput;
 
     public GameObject label, edits;
     public GameObject addAtomButton, fixAtomPanel;
@@ -40,7 +39,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
 
         textLabel = label.GetComponent<Text>();
         coordsInput.SetOnChangeCallback(UpdateCoords);
-        chargeInput.SetOnChangeCallback(UpdateCharge);
 
         gameObject.SetActive(false);
     }
@@ -69,7 +67,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         }
 
         coordsInput.SetValue(0.5f, 0.5f, 0.5f);
-        chargeInput.SetValue(0);
         activeAtom = null;
     }
 
@@ -113,8 +110,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         coordsInput.SetValue(fractionalToggle.isOn
             ? currentArc.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
             : activeAtom.SourceAtom.Coordinates);
-
-        chargeInput.SetValue(activeAtom.SourceAtom.Charge);
     }
 
     public void UpdateElement()
@@ -148,22 +143,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             : coords.Value));
     }
 
-    public void UpdateCharge()
-    {
-        if (activeAtom == null)
-        {
-            return;
-        }
-
-        if (!float.TryParse(chargeInput.GetValue(), out float charge))
-        {
-            ConFun.UpdateStatusLabel("Invalid charge");
-            return;
-        }
-
-        App.Instance.Viewport.SubmitOperation(new SetChargeOperation(activeAtom, charge));
-    }
-
     public void FixAtoms(bool isFixed)
     {
         if (App.Instance.Viewport.CurrentStructureView == null)
@@ -189,17 +168,11 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             return;
         }
 
-        if (!float.TryParse(chargeInput.GetValue(), out float charge))
-        {
-            ConFun.UpdateStatusLabel("Invalid charge");
-            return;
-        }
-
         string element = elementDropdown.options[elementDropdown.value].text;
         Assert.IsTrue(App.Elements.ContainsKey(element));
 
         App.Instance.Viewport.SubmitOperation(new AddAtomOperation(fractionalToggle.isOn
             ? currentArc.FractionalToCartesian(coords.Value)
-            : coords.Value, element, charge));
+            : coords.Value, element, 0));
     }
 }

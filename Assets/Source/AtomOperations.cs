@@ -186,33 +186,6 @@ public class SetElementOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
-public class SetChargeOperation : IOperation
-{
-    private AtomView targetAtom;
-    private float newCharge, oldCharge;
-
-    public SetChargeOperation(AtomView targetAtom, float newCharge)
-    {
-        this.targetAtom = targetAtom;
-        this.newCharge = newCharge;
-    }
-
-    protected override bool DoImpl(ArcStructureView structureView)
-    {
-        oldCharge = targetAtom.SourceAtom.Charge;
-        targetAtom.SourceAtom.Charge = newCharge;
-        return true;
-    }
-
-    protected override bool UndoImpl(ArcStructureView structureView)
-    {
-        targetAtom.SourceAtom.Charge = oldCharge;
-        return true;
-    }
-
-    public override UpdateFlags Flags => UpdateFlags.None;
-}
-
 public class SetFixedOperation : IOperation
 {
     private List<AtomView> targetAtoms;
@@ -255,13 +228,13 @@ public class AddAtomOperation : IOperation
     private AtomView addedAtom = null;
     private Atom atomToAdd;
 
-    public AddAtomOperation(Vector3 position, string symbol, float charge = 0)
+    public AddAtomOperation(Vector3 position, string symbol, float fixedFlags = 0)
     {
         atomToAdd = new Atom
         {
             Symbol = symbol,
-            Charge = charge,
-            Coordinates = position
+            Coordinates = position,
+            FixedFlags = fixedFlags
         };
     }
 
