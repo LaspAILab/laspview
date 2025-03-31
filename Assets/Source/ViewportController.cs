@@ -69,7 +69,7 @@ public class ViewportController : MonoBehaviour
     private bool shallUpdateRenderer = false, shallUpdateLattice = false;
 
     private static readonly Vector3 pasteOffset = new(1f, 1f, 0f);
-    private List<Atom> clipboard = new ();
+    private List<Atom> clipboard = new();
 
     public enum LabelType
     {
@@ -280,6 +280,7 @@ public class ViewportController : MonoBehaviour
         UpdateCameraPos();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ResizeViewport(float deltaViewportSize)
     {
         cameraViewportSize = Mathf.Clamp(cameraViewportSize + deltaViewportSize, 1f, 10000f);
@@ -288,6 +289,7 @@ public class ViewportController : MonoBehaviour
 
     // Call after changing the size or rotation of the camera, 
     // this function will adjust the position of camera to look at the given center
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void UpdateCameraPos()
     {
         Vector3 translation = activeCamera.transform.worldToLocalMatrix *
@@ -372,7 +374,7 @@ public class ViewportController : MonoBehaviour
         if (raycastOnUI)
         {
             // Cancel any ongoing mouse operations
-            currentTool = ToolType.Select;
+            ReplaceCurrentTool(ToolType.Select);
 
             // Submit operation if mouse has released
             if (isMovingAtom)
@@ -404,7 +406,6 @@ public class ViewportController : MonoBehaviour
         }
 
         HandleKeyboardEvents();
-
         if (shallUpdateLattice)
         {
             latticeTransforms = null;
@@ -525,7 +526,7 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void UpdateBondingInfoDisplay(bool isClickSelect=true)
+    void UpdateBondingInfoDisplay(bool isClickSelect = true)
     {
         if (selectionManager.SelectedAtoms.Count is 0 or > 4)
         {
@@ -580,7 +581,7 @@ public class ViewportController : MonoBehaviour
             center += item.Position;
             count++;
         }
-        
+
         return center / count;
     }
 
@@ -596,22 +597,37 @@ public class ViewportController : MonoBehaviour
             Symbol = x.Atom.SourceAtom.Symbol
         }).ToList();
     }
-    
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ReplaceCurrentTool(ToolType newTool)
+    {
+        switch (currentTool)
+        {
+            case ToolType.BoxSelect:
+                selectionBoxDrawer.Hide();
+                mouseDownTime = -1;
+                break;
+            // Add any tool that may require manual canceling
+        }
+
+        currentTool = newTool;
+    }
+
     void HandleKeyboardEvents()
     {
         var move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
-        
+
 #if UNITY_STANDALONE_OSX
         move.y = -move.y;
 #endif
-        
+
         if (move.magnitude > 1e-5)
         {
             var deltaCenter = activeCamera.transform.TransformDirection(PAN_SPEED * move);
             cameraCenter += deltaCenter;
             UpdateCameraPos();
         }
-        
+
         if ((Input.GetKeyUp(KeyCode.Delete) || Input.GetKeyUp(KeyCode.Backspace)) && !selectionManager.IsEmpty)
         {
             IOperation op = new RemoveAtomsOperation(selectionManager.SelectedAtoms);
@@ -656,7 +672,7 @@ public class ViewportController : MonoBehaviour
                 {
                     item.Coordinates += pasteOffset;
                 }
-                
+
                 SubmitOperation(new AddAtomsOperation(clipboard));
             }
 
@@ -681,6 +697,7 @@ public class ViewportController : MonoBehaviour
         {
             mouseDownTime = Time.time;
             mouseDownPos = Input.mousePosition;
+            Debug.Log("Record pointer down");
         }
 
         if (Input.GetKeyUp(KeyCode.Mouse0) && currentTool == ToolType.Select)
@@ -705,6 +722,7 @@ public class ViewportController : MonoBehaviour
 
                     selectionManager.Select(hoveredAtom);
                 }
+
                 UpdateBondingInfoDisplay();
 
                 shallUpdateRenderer = true;
@@ -722,7 +740,7 @@ public class ViewportController : MonoBehaviour
         {
             if (Input.GetKey(KeyCode.Mouse0))
             {
-                currentTool = ToolType.MoveAtom;
+                ReplaceCurrentTool(ToolType.MoveAtom);
                 shallMoveAtom = true;
             }
             else
@@ -730,13 +748,13 @@ public class ViewportController : MonoBehaviour
                 if (currentTool == ToolType.MoveAtom)
                 {
                     shallMoveAtom = true;
-                    currentTool = ToolType.Select;
+                    ReplaceCurrentTool(ToolType.Select);
                 }
             }
 
             if (Input.GetKey(KeyCode.Mouse1) && !selectionManager.IsEmpty)
             {
-                currentTool = ToolType.RotateAtom;
+                ReplaceCurrentTool(ToolType.RotateAtom);
                 shallRotateAtom = true;
             }
             else
@@ -744,7 +762,7 @@ public class ViewportController : MonoBehaviour
                 if (currentTool == ToolType.RotateAtom)
                 {
                     shallRotateAtom = true;
-                    currentTool = ToolType.Select;
+                    ReplaceCurrentTool(ToolType.Select);
                 }
             }
         }
@@ -753,7 +771,7 @@ public class ViewportController : MonoBehaviour
             // Viewport op
             if (Input.GetKey(KeyCode.Mouse1))
             {
-                currentTool = ToolType.RotateView;
+                ReplaceCurrentTool(ToolType.RotateView);
                 cameraRotated = true;
             }
             else
@@ -761,13 +779,13 @@ public class ViewportController : MonoBehaviour
                 if (currentTool == ToolType.RotateView)
                 {
                     cameraRotated = true;
-                    currentTool = ToolType.Select;
+                    ReplaceCurrentTool(ToolType.Select);
                 }
             }
 
             if (Input.GetKey(KeyCode.Mouse2))
             {
-                currentTool = ToolType.MoveView;
+                ReplaceCurrentTool(ToolType.MoveView);
                 cameraMoved = true;
             }
             else
@@ -775,7 +793,7 @@ public class ViewportController : MonoBehaviour
                 if (currentTool == ToolType.MoveView)
                 {
                     cameraMoved = true;
-                    currentTool = ToolType.Select;
+                    ReplaceCurrentTool(ToolType.Select);
                 }
             }
         }
@@ -816,15 +834,16 @@ public class ViewportController : MonoBehaviour
             else
             {
                 // End box select
-                selectionBoxDrawer.Hide();
-                currentTool = ToolType.Select;
-
+                ReplaceCurrentTool(ToolType.Select);
                 selectionManager.MergeSelection(temporarySelectionManager);
                 temporarySelectionManager = null;
             }
         }
-        else if (Input.GetKey(KeyCode.Mouse0) && !isMovingAtom && Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
+        else if (Input.GetKey(KeyCode.Mouse0) && !isMovingAtom && !isRotatingAtom && mouseDownTime > 0 &&
+                 Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
         {
+            mouseDownTime = Time.time;
+            Debug.Log("Begin box select");
             selectionBoxDrawer.Display();
             Rect boxRect = Rect.MinMaxRect(mouseDownPos.x, mouseDownPos.y, mouseDownPos.x, mouseDownPos.y);
             selectionBoxDrawer.DrawBox(boxRect);

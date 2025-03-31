@@ -36,6 +36,13 @@ public class StructureRenderer : MonoBehaviour
 
     private float stickRadius = 0.35f, radiusScale = 1f;
     private Matrix4x4[,,] latticeTransforms = null;
+    private bool renderAtoms = true, renderBonds = true;
+
+    public void SetDisplayType(bool showBalls = true, bool showSticks = true)
+    {
+        renderAtoms = showBalls;
+        renderBonds = showSticks;
+    }
 
     public void SetBondStyle(float stickRadius)
     {
@@ -167,7 +174,7 @@ public class StructureRenderer : MonoBehaviour
     internal void SetStructureView(ArcStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
     {
         CurrentStructureView = structureView;
-        
+
         // Since the new lattice may have different size as the old one, we have to recalculate lattice translations
         SetLatticeTransforms(newLatticeTransforms);
 
@@ -259,8 +266,12 @@ public class StructureRenderer : MonoBehaviour
         foreach (var item in ElementDrawBatches)
         {
             var renderParams = ElementMaterials[item.Key].Params;
-            Graphics.RenderMeshInstanced(renderParams, AtomMesh, 0, item.Value.AtomTransforms);
-            if (item.Value.BondTransforms != null && item.Value.BondTransforms.Count > 0)
+            if (renderAtoms)
+            {
+                Graphics.RenderMeshInstanced(renderParams, AtomMesh, 0, item.Value.AtomTransforms);
+            }
+
+            if (renderBonds && item.Value.BondTransforms != null && item.Value.BondTransforms.Count > 0)
             {
                 Graphics.RenderMeshInstanced(renderParams, BondMesh, 0, item.Value.BondTransforms);
             }

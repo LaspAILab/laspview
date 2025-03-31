@@ -21,7 +21,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         defaultModelPara = new Dictionary<string, float>
         {
             { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
-            { "display style", 0.0f }, {"label type", 0.0f}, { "stick radius", 0.35f }, { "tolerance", 1.26f },
+            { "display style", 0.0f }, { "label type", 0.0f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
             { "ball radius type", 0.0f }, { "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
         };
         DisplayLoadModelPara();
@@ -49,7 +49,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         var viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"],
             (int)modelPara["lat range c"]);
-        
+
         if (modelPara["label type"] == 0)
         {
             viewport.SetLabelType(ViewportController.LabelType.None);
@@ -62,9 +62,23 @@ public class L_DisplayPanelSrc : MonoBehaviour
         {
             viewport.SetLabelType(ViewportController.LabelType.FixedFlags);
         }
-        
+
         viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
         viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
+
+        if (modelPara["display style"] == 0)
+        {
+            viewport.structureRenderer.SetDisplayType(true, true);
+        }
+        else if (Mathf.Approximately(modelPara["display style"], 1f))
+        {
+            viewport.structureRenderer.SetDisplayType(true, false);
+        }
+        else if (Mathf.Approximately(modelPara["display style"], 2f))
+        {
+            viewport.structureRenderer.SetDisplayType(false, true);
+        }
+
         viewport.latticeRenderer.SetDisplay(showLatticeToggle.isOn);
         App.Instance.BondTolerance = modelPara["tolerance"];
 

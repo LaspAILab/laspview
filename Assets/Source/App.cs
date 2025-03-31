@@ -89,6 +89,7 @@ public class App : MonoBehaviour
     private void Start()
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
+        WebGLInput.captureAllKeyboardInput = false;
         // string lines = Resources.Load<TextAsset>("DefaultArc").text;
         // OpenArc(lines.Split('\n'));
         SendJSEvent("OnUnityLoad", "");
