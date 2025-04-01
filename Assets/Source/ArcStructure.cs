@@ -231,24 +231,15 @@ public class ArcStructureView
         atomView.InvalidateTransform();
         accelerationOctree.Remove(atomView);
         accelerationOctree.Add(atomView, atomView.Position);
-
-        // A faster way for null check since Unity uses a slow overload for ==
-        if (!viewOnly && atomView.Collider is not null)
-        {
-            // Move collider
-            atomView.Collider.SetAtom(atomView, atomView.Position, atomView.Radius);
-        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetAtomElement(AtomView atomView, string newSymbol)
     {
         atomView.SourceAtom.Symbol = newSymbol;
-        atomView.Radius = App.Elements[atomView.SourceAtom.Symbol].Radius;
         atomView.Symbol = newSymbol;
-
-        // Since the radius has changed, we have to renew the transform cache
-        atomView.InvalidateTransform();
+        atomView.Radius = App.Elements[atomView.SourceAtom.Symbol].Radius;
+        atomView.DisplayColor = App.Elements[atomView.SourceAtom.Symbol].Color;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

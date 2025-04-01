@@ -24,10 +24,4 @@ public class ColliderScript : MonoBehaviour
         colliderComponent.center = position;
         colliderComponent.radius = radius / 2;
     }
-
-    public void SetPosition(Vector3 position)
-    {
-        latticeOffset = position - Atom.Position;
-        colliderComponent.center = position;
-    }
 }
