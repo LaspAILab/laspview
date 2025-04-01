@@ -7,6 +7,7 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
 {
     public static R_LatticeEditPanelSrc S;
 
+    public Text textLabel;
     public VectorInputController lengthsInput, anglesInput, repeatsInput;
     public Toggle keepFractionalToggle;
 
@@ -28,6 +29,11 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
     {
         lengthsInput.SetValue(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
         anglesInput.SetValue(structure.LatticeParams[3], structure.LatticeParams[4], structure.LatticeParams[5]);
+    }
+
+    public void UpdateAtomsCount(int newCount)
+    {
+        textLabel.text = $"{newCount} atoms within single lattice";
     }
 
     public void ChangeLattice()

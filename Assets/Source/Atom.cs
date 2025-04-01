@@ -62,20 +62,29 @@ public class AtomView : ITransform, IEquatable<AtomView>
         Symbol = atom.Symbol;
         IsSelected = false;
         Position = ClipAtomCoords(atom.Coordinates, structure, true);
-        Radius = App.Elements[atom.Symbol].Radius;
+        radius = App.Elements[atom.Symbol].Radius;
+        DisplayColor = App.Elements[atom.Symbol].Color;
         transformCache = null;
-        Collider = null;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void InvalidateTransform()
     {
         transformCache = null;
     }
 
-    public void CreateTransformCache(float radiusScale = 1f)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Matrix4x4 CreateTransformCache(float radiusScale = 1f)
     {
-        transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
+        return Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
+
+    public string Symbol;
+    public bool InLattice = true;
+    public Color DisplayColor;
+
+    private Matrix4x4? transformCache;
+    private float radius;
 
     public Atom SourceAtom { get; }
 
@@ -83,28 +92,26 @@ public class AtomView : ITransform, IEquatable<AtomView>
     {
         get;
         // Be careful calling this, use `SetPosition` instead
-        set;
+        internal set;
     }
 
     public bool IsSelected { get; set; }
 
-    public string Symbol;
-    public float Radius;
-
-    public bool InLattice = true;
-
-    public ColliderScript Collider;
-    private Matrix4x4? transformCache;
+    public float Radius
+    {
+        get => radius;
+        set
+        {
+            InvalidateTransform();
+            radius = value;
+        }
+    }
 
     public Matrix4x4 Transform
     {
         get
         {
-            if (transformCache == null)
-            {
-                CreateTransformCache();
-            }
-
+            transformCache ??= CreateTransformCache();
             return transformCache.Value;
         }
     }
@@ -148,13 +155,14 @@ public class BondView : ITransform
     // Fraction of the whole bond length taken by `fromAtom`
     public float Rate;
 
-    public void CreateTransformCache(float stickRadius = 0.35f)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Matrix4x4 CreateTransformCache(float stickRadius = 0.35f)
     {
         Vector3 bondCenter = Origin + 0.5f * Rate * Theta;
         Quaternion rotation =
             Quaternion.AngleAxis(-Vector3.Angle(Vector3.up, Theta), new Vector3(-Theta.z, 0, Theta.x));
         Vector3 scale = new(stickRadius, Theta.magnitude * Rate * 0.5f, stickRadius);
-        transformCache = Matrix4x4.TRS(bondCenter, rotation, scale);
+        return Matrix4x4.TRS(bondCenter, rotation, scale);
     }
 
     private Matrix4x4? transformCache;
@@ -163,11 +171,7 @@ public class BondView : ITransform
     {
         get
         {
-            if (transformCache == null)
-            {
-                CreateTransformCache();
-            }
-
+            transformCache ??= CreateTransformCache();
             return transformCache.Value;
         }
     }

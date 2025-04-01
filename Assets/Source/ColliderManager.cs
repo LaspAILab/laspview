@@ -7,6 +7,8 @@ using UnityEngine.Assertions;
 
 public class ColliderManager : MonoBehaviour
 {
+    const float MinColliderRadius = 1f;
+
     public static ColliderManager Instance;
 
     public GameObject colliderPrefab;
@@ -56,7 +58,7 @@ public class ColliderManager : MonoBehaviour
                     collidersAlive++;
                     var atomPos = new Vector4(atomView.Position.x, atomView.Position.y, atomView.Position.z, 1);
                     atomColliders[i, j, k].SetAtom(atomView, latticeTransforms[i, j, k] * atomPos,
-                        Mathf.Max(atomView.Radius, 1.0f));
+                        Mathf.Max(atomView.Radius, MinColliderRadius));
                 }
             }
         }
@@ -75,7 +77,8 @@ public class ColliderManager : MonoBehaviour
                 for (int k = 0; k < repeatC; k++)
                 {
                     var atomPos = new Vector4(atomView.Position.x, atomView.Position.y, atomView.Position.z, 1);
-                    atomColliders[i, j, k].SetPosition(latticeTransforms[i, j, k] * atomPos);
+                    atomColliders[i, j, k].SetAtom(atomView, latticeTransforms[i, j, k] * atomPos,
+                        Mathf.Max(atomView.Radius, MinColliderRadius));
                 }
             }
         }

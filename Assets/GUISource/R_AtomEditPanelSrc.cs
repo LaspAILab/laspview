@@ -12,6 +12,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     public VectorInputController coordsInput;
     public Dropdown elementDropdown;
     public Toggle fractionalToggle;
+    public ScalarInputController radiusInput;
+    public ColorPickerController colorPickerController;
 
     public GameObject label, edits;
     public GameObject addAtomButton, fixAtomPanel;
@@ -39,6 +41,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
 
         textLabel = label.GetComponent<Text>();
         coordsInput.SetOnChangeCallback(UpdateCoords);
+        radiusInput.SetOnChangeCallback(UpdateRadius);
 
         gameObject.SetActive(false);
     }
@@ -60,6 +63,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         edits.SetActive(true);
         addAtomButton.SetActive(true);
         fixAtomPanel.SetActive(false);
+        radiusInput.gameObject.SetActive(false);
+        colorPickerController.gameObject.SetActive(false);
 
         if (currentArc != null)
         {
@@ -85,6 +90,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             textLabel.text = $"{selection.Count} atoms selected";
             edits.SetActive(false);
             addAtomButton.SetActive(false);
+            radiusInput.gameObject.SetActive(false);
+            colorPickerController.gameObject.SetActive(false);
             activeAtom = null;
             return;
         }
@@ -94,6 +101,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         label.SetActive(false);
         edits.SetActive(true);
         addAtomButton.SetActive(false);
+        radiusInput.gameObject.SetActive(true);
+        colorPickerController.gameObject.SetActive(true);
         DisplayActiveAtomProperties();
     }
 
@@ -101,7 +110,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     {
         if (activeAtom == null)
         {
-            textLabel.text = $"{currentArc.Atoms.Count} atoms within single lattice";
             return;
         }
 
@@ -110,6 +118,14 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         coordsInput.SetValue(fractionalToggle.isOn
             ? currentArc.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
             : activeAtom.SourceAtom.Coordinates);
+
+        radiusInput.SetValue(activeAtom.Radius);
+        colorPickerController.SetColor(activeAtom.DisplayColor);
+        colorPickerController.RegisterCallback((color) =>
+        {
+            activeAtom.DisplayColor = color;
+            App.Instance.Viewport.structureRenderer.RecollectDrawBatches();
+        });
     }
 
     public void UpdateElement()
@@ -124,7 +140,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         App.Instance.Viewport.SubmitOperation(new SetElementOperation(activeAtom, element));
     }
 
-    public void UpdateCoords()
+    void UpdateCoords()
     {
         if (activeAtom == null)
         {
@@ -143,15 +159,34 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             : coords.Value));
     }
 
+    void UpdateRadius()
+    {
+        if (activeAtom == null)
+        {
+            return;
+        }
+
+        if (!float.TryParse(radiusInput.GetValue(), out float radius) || radius <= 0)
+        {
+            ConFun.UpdateStatusLabel("Invalid charge");
+            return;
+        }
+
+        activeAtom.Radius = radius;
+        ColliderManager.Instance.UpdateColliderForAtom(activeAtom);
+        App.Instance.Viewport.structureRenderer.RecollectDrawBatches();
+    }
+
     public void FixAtoms(bool isFixed)
     {
         if (App.Instance.Viewport.CurrentStructureView == null)
         {
             return;
         }
-        
+
         Assert.IsFalse(App.Instance.Viewport.selectionManager.IsEmpty);
-        App.Instance.Viewport.SubmitOperation(new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, isFixed));
+        App.Instance.Viewport.SubmitOperation(
+            new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, isFixed));
     }
 
     public void ToggleFractionalCoordinates()
