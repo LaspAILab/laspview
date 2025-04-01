@@ -10,6 +10,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
     public static Dictionary<string, float> defaultModelPara;
 
     public Toggle showLatticeToggle;
+    public ColorPickerController backgroundPicker;
 
     void Awake()
     {
@@ -40,6 +41,12 @@ public class L_DisplayPanelSrc : MonoBehaviour
 
             GuiMain.S.BtnHideObject(dspButton, this.gameObject);
         });
+        
+        backgroundPicker.RegisterCallback(color =>
+        {
+            Camera.main.backgroundColor = color;
+        });
+        
         this.gameObject.SetActive(false);
     }
 
@@ -82,28 +89,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
         viewport.latticeRenderer.SetDisplay(showLatticeToggle.isOn);
         App.Instance.BondTolerance = modelPara["tolerance"];
 
-        SetBackground((int)modelPara["background"]);
         // MainScr.S.CurrentStructure().DrawModel();
         // GuiMain.S.FocusCameraCenter();
-    }
-
-    private void SetBackground(int type)
-    {
-        switch (type)
-        {
-            case 0:
-                Camera.main.backgroundColor = Color.black;
-                break;
-            case 1:
-                Camera.main.backgroundColor = new Color32(0, 0, 139, 255);
-                break;
-            case 2:
-                Camera.main.backgroundColor = Color.grey;
-                break;
-            case 3:
-                Camera.main.backgroundColor = Color.white;
-                break;
-        }
     }
 
     public void DisplayLoadModelPara()

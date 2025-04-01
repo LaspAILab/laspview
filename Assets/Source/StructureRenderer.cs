@@ -96,14 +96,9 @@ public class StructureRenderer : MonoBehaviour
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Color GetAtomColor(AtomView atom)
+    Color GetAtomColor(AtomView atom)
     {
-        if (atom.IsSelected)
-        {
-            return Color.yellow;
-        }
-
-        return App.Elements[atom.Symbol].Color;
+        return atom.IsSelected ? Color.yellow : atom.DisplayColor;
     }
 
     public void SetLatticeTransforms(Matrix4x4[,,] newLatticeTransforms)
