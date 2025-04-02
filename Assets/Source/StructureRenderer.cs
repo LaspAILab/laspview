@@ -8,40 +8,74 @@ using UnityEngine.Assertions;
 using UnityEngine.Profiling;
 using UnityEngine.Rendering;
 
-// Batch of atoms and bonds that belong to the same element, so that they could be rendered in batch
-struct DrawBatch
+struct InstancingData
 {
-    public List<Matrix4x4> AtomTransforms;
-    public List<Matrix4x4> BondTransforms;
-}
+    public List<Matrix4x4> Transforms;
+    public List<Vector4> Colors;
+    public List<float> RimStrengths;
 
-struct RenderArgs
-{
-    public RenderParams Params;
-    public Material Mat;
+    public int InstanceCount => Transforms.Count;
+
+    public int Capacity
+    {
+        get => Transforms.Capacity;
+        set
+        {
+            Transforms.Capacity = value;
+            Colors.Capacity = value;
+            RimStrengths.Capacity = value;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Clear()
+    {
+        Transforms.Clear();
+        Colors.Clear();
+        RimStrengths.Clear();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Add(Matrix4x4 matrix, Vector4 color, float strength)
+    {
+        Transforms.Add(matrix);
+        Colors.Add(color);
+        RimStrengths.Add(strength);
+    }
 }
 
 public class StructureRenderer : MonoBehaviour
 {
-    public const string RENDERMAT_SELECTION = "select";
-
-    static Dictionary<string, RenderArgs> ElementMaterials = new();
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
-    Dictionary<string, DrawBatch> ElementDrawBatches = new();
+    private static readonly int RimStrength = Shader.PropertyToID("_RimStrength");
+
+    // Rim strength for frozen atoms
+    private const float FrozenRimStrength = 2f;
 
     public Material RenderMaterial;
     public Mesh AtomMesh;
     public Mesh BondMesh;
+
+    public bool OutlineFrozenAtoms = true;
 
     public ArcStructureView CurrentStructureView { get; private set; } = null;
 
     private float stickRadius = 0.35f, radiusScale = 1f;
     private Matrix4x4[,,] latticeTransforms = null;
 
-    private List<Matrix4x4> atomTransforms = new();
-    private List<Vector4> atomColors = new();
-    private List<Matrix4x4> bondTransforms = new();
-    private List<Vector4> bondColors = new();
+    private InstancingData atomInstancingData = new InstancingData
+    {
+        Transforms = new List<Matrix4x4>(),
+        Colors = new List<Vector4>(),
+        RimStrengths = new List<float>()
+    };
+
+    private InstancingData bondInstancingData = new InstancingData
+    {
+        Transforms = new List<Matrix4x4>(),
+        Colors = new List<Vector4>(),
+        RimStrengths = new List<float>()
+    };
 
     private RenderParams renderParams;
     private bool renderAtoms = true, renderBonds = true;
@@ -108,15 +142,14 @@ public class StructureRenderer : MonoBehaviour
     }
 
     // Duplicate render items, to render multiple lattices
-    private void ReplicateBuffers(int repeatA, int repeatB, int repeatC)
+    private void ReplicateBuffers(ref InstancingData instancingData, int repeatA, int repeatB, int repeatC)
     {
         if (latticeTransforms == null)
         {
             return;
         }
 
-        int atomCount = atomTransforms.Count;
-        int bondCount = bondTransforms.Count;
+        int instanceCount = instancingData.InstanceCount;
         for (int i = 0; i < repeatA; i++)
         {
             for (int j = 0; j < repeatB; j++)
@@ -128,23 +161,17 @@ public class StructureRenderer : MonoBehaviour
                         continue;
                     }
 
-                    for (int count = 0; count < atomCount; count++)
+                    for (int count = 0; count < instanceCount; count++)
                     {
-                        atomTransforms.Add(latticeTransforms[i, j, k] * atomTransforms[count]);
-                        atomColors.Add(atomColors[count]);
-                    }
-
-                    for (int count = 0; count < bondCount; count++)
-                    {
-                        bondTransforms.Add(latticeTransforms[i, j, k] * bondTransforms[count]);
-                        bondColors.Add(bondColors[count]);
+                        instancingData.Transforms.Add(latticeTransforms[i, j, k] * instancingData.Transforms[count]);
+                        instancingData.Colors.Add(instancingData.Colors[count]);
+                        instancingData.RimStrengths.Add(instancingData.RimStrengths[count]);
                     }
                 }
             }
         }
 
-        Assert.AreEqual(atomTransforms.Count, atomCount * repeatA * repeatB * repeatC);
-        Assert.AreEqual(bondTransforms.Count, bondCount * repeatA * repeatB * repeatC);
+        Assert.AreEqual(instancingData.InstanceCount, instanceCount * repeatA * repeatB * repeatC);
     }
 
     internal void SetStructureView(ArcStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
@@ -161,6 +188,7 @@ public class StructureRenderer : MonoBehaviour
     internal void RecollectDrawBatches()
     {
         Profiler.BeginSample("Collect draw batch");
+        Debug.Log("Collecting draw batches");
 
         int repeatA = 1, repeatB = 1, repeatC = 1;
         if (latticeTransforms != null)
@@ -171,34 +199,33 @@ public class StructureRenderer : MonoBehaviour
         }
 
         // GC.Collect();
-        atomTransforms.Clear();
-        atomColors.Clear();
-        atomTransforms.Capacity = CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC;
-        atomColors.Capacity = CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC;
+        atomInstancingData.Clear();
+        atomInstancingData.Capacity = CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC;
         foreach (var item in CurrentStructureView.Atoms)
         {
-            atomTransforms.Add(item.Transform);
-            atomColors.Add(GetAtomColor(item));
+            atomInstancingData.Add(item.Transform, GetAtomColor(item),
+                item.SourceAtom.FixedFlags > 0 ? FrozenRimStrength : 0);
         }
 
-        bondTransforms.Clear();
-        bondColors.Clear();
-        bondTransforms.Capacity = CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC;
-        bondColors.Capacity = CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC;
+        bondInstancingData.Clear();
+        bondInstancingData.Capacity = CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC;
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.WaitOne();
 #endif
         foreach (var item in CurrentStructureView.Bonds)
         {
-            bondTransforms.Add(item.Transform);
-            bondColors.Add(GetAtomColor(item.FromAtom));
+            // Add blue rim for bonds only if two atoms are both fixed
+            float rimStrength = (item.FromAtom.SourceAtom.FixedFlags > 0 && item.ToAtom.SourceAtom.FixedFlags > 0)
+                ? FrozenRimStrength
+                : 0;
+            bondInstancingData.Add(item.Transform, GetAtomColor(item.FromAtom), rimStrength);
         }
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.ReleaseMutex();
 #endif
 
-        ReplicateBuffers(repeatA, repeatB, repeatC);
-
+        ReplicateBuffers(ref atomInstancingData, repeatA, repeatB, repeatC);
+        ReplicateBuffers(ref bondInstancingData, repeatA, repeatB, repeatC);
         Profiler.EndSample();
     }
 
@@ -214,25 +241,35 @@ public class StructureRenderer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (atomColors.Count == 0)
+        if (atomInstancingData.InstanceCount == 0)
         {
             return;
         }
 
         var propertyBlock = new MaterialPropertyBlock();
-        propertyBlock.SetVectorArray(BaseColor, atomColors);
+        propertyBlock.SetVectorArray(BaseColor, atomInstancingData.Colors);
+        if (OutlineFrozenAtoms)
+        {
+            propertyBlock.SetFloatArray(RimStrength, atomInstancingData.RimStrengths);
+        }
+
         renderParams.matProps = propertyBlock;
         if (renderAtoms)
         {
-            Graphics.RenderMeshInstanced(renderParams, AtomMesh, 0, atomTransforms);
+            Graphics.RenderMeshInstanced(renderParams, AtomMesh, 0, atomInstancingData.Transforms);
         }
 
-        propertyBlock = new();
-        propertyBlock.SetVectorArray(BaseColor, bondColors);
-        renderParams.matProps = propertyBlock;
-        if (renderBonds && bondColors.Count > 0)
+        propertyBlock = new MaterialPropertyBlock();
+        propertyBlock.SetVectorArray(BaseColor, bondInstancingData.Colors);
+        if (OutlineFrozenAtoms)
         {
-            Graphics.RenderMeshInstanced(renderParams, BondMesh, 0, bondTransforms);
+            propertyBlock.SetFloatArray(RimStrength, bondInstancingData.RimStrengths);
+        }
+
+        renderParams.matProps = propertyBlock;
+        if (renderBonds && bondInstancingData.InstanceCount > 0)
+        {
+            Graphics.RenderMeshInstanced(renderParams, BondMesh, 0, bondInstancingData.Transforms);
         }
     }
 }
