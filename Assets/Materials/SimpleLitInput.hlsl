@@ -10,6 +10,7 @@ CBUFFER_START(UnityPerMaterial)
     float4 _BaseMap_TexelSize;
     half4 _SpecColor;
     half4 _EmissionColor;
+    half4 _RimColor;
     half _Cutoff;
     half _Surface;
     UNITY_TEXTURE_STREAMING_DEBUG_VARS;
@@ -17,6 +18,7 @@ CBUFFER_END
 
 UNITY_INSTANCING_BUFFER_START(UnityPerMaterialInstanced)
     UNITY_DEFINE_INSTANCED_PROP(half4, _BaseColor)
+    UNITY_DEFINE_INSTANCED_PROP(float, _RimStrength)
 UNITY_INSTANCING_BUFFER_END(UnityPerMaterialInstanced)
 
 #ifdef UNITY_DOTS_INSTANCING_ENABLED
