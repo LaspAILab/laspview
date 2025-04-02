@@ -78,8 +78,6 @@ public class ViewportController : MonoBehaviour
         FixedFlags
     }
 
-    private LabelType labelType = LabelType.None;
-
     private Matrix4x4[,,] latticeTransforms = null;
 
     public Matrix4x4[,,] LatticeTransforms
@@ -230,11 +228,6 @@ public class ViewportController : MonoBehaviour
         latticeCorner =
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
         RefocusCamera();
-    }
-
-    public void SetLabelType(LabelType newLabelType)
-    {
-        labelType = newLabelType;
     }
 
     public void RefocusCamera()
@@ -529,7 +522,7 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void UpdateBondingInfoDisplay(bool isClickSelect = true)
+    void UpdateBondingInfoDisplay()
     {
         if (selectionManager.SelectedAtoms.Count is 0 or > 4)
         {
@@ -551,7 +544,7 @@ public class ViewportController : MonoBehaviour
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} Bond length: {length} A");
         }
-        else if (isClickSelect && selectionManager.SelectedAtoms.Count == 3)
+        else if (selectionManager.SelectedAtoms.Count == 3)
         {
             Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
             Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
@@ -560,7 +553,7 @@ public class ViewportController : MonoBehaviour
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} Bond angle: {angle:f3} degrees");
         }
-        else if (isClickSelect && selectionManager.SelectedAtoms.Count == 4)
+        else if (selectionManager.SelectedAtoms.Count == 4)
         {
             Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
             Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
@@ -835,13 +828,18 @@ public class ViewportController : MonoBehaviour
                 Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
                 selectionBoxDrawer.DrawBox(boxRect);
                 shallUpdateRenderer = shallUpdateRenderer || UpdateBoxSelection(boxRect);
-                UpdateBondingInfoDisplay(false);
+                UpdateBondingInfoDisplay();
             }
             else
             {
                 // End box select
                 ReplaceCurrentTool(ToolType.Select);
                 selectionManager.MergeSelection(temporarySelectionManager);
+                if (selectionManager.Selection.Count == 2)
+                {
+                    UpdateBondingInfoDisplay();
+                }
+                
                 temporarySelectionManager = null;
             }
         }
@@ -943,11 +941,6 @@ public class ViewportController : MonoBehaviour
             return;
         }
 
-        if (labelType == LabelType.None)
-        {
-            return;
-        }
-
         foreach (var sel in selectionManager.Selection)
         {
             var posScreen = activeCamera.WorldToScreenPoint(sel.Position);
@@ -957,14 +950,7 @@ public class ViewportController : MonoBehaviour
                 continue;
             }
 
-            string text = labelType switch
-            {
-                LabelType.Symbol => $"[{sel.Atom.Symbol}]",
-                LabelType.FixedFlags => sel.Atom.SourceAtom.FixedFlags > 0 ? "f" : "t",
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
-            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), text, selectionLabelStyle);
+            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{sel.Atom.Symbol}]", selectionLabelStyle);
         }
     }
 }

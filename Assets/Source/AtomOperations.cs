@@ -220,7 +220,7 @@ public class SetFixedOperation : IOperation
         return true;
     }
 
-    public override UpdateFlags Flags => UpdateFlags.None;
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
 public class AddAtomOperation : IOperation

@@ -9,7 +9,6 @@ public class L_DisplayPanelSrc : MonoBehaviour
     static public syfPanelPara displayPanelPara;
     public static Dictionary<string, float> defaultModelPara;
 
-    public Toggle showLatticeToggle;
     public ColorPickerController backgroundPicker;
 
     void Awake()
@@ -22,8 +21,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
         defaultModelPara = new Dictionary<string, float>
         {
             { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
-            { "display style", 0.0f }, { "label type", 0.0f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
-            { "ball radius type", 0.0f }, { "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
+            { "display style", 0.0f }, { "outline frozen", 1f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
+            { "ball radius type", 0.0f }, { "show lattice", 1f }, { "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
         };
         DisplayLoadModelPara();
 
@@ -41,12 +40,9 @@ public class L_DisplayPanelSrc : MonoBehaviour
 
             GuiMain.S.BtnHideObject(dspButton, this.gameObject);
         });
-        
-        backgroundPicker.RegisterCallback(color =>
-        {
-            Camera.main.backgroundColor = color;
-        });
-        
+
+        backgroundPicker.RegisterCallback(color => { Camera.main.backgroundColor = color; });
+
         this.gameObject.SetActive(false);
     }
 
@@ -57,37 +53,35 @@ public class L_DisplayPanelSrc : MonoBehaviour
         viewport.SetLatticeRepeat((int)modelPara["lat range a"], (int)modelPara["lat range b"],
             (int)modelPara["lat range c"]);
 
-        if (modelPara["label type"] == 0)
+        if (viewport.structureRenderer != null)
         {
-            viewport.SetLabelType(ViewportController.LabelType.None);
-        }
-        else if (Mathf.Approximately(modelPara["label type"], 1f))
-        {
-            viewport.SetLabelType(ViewportController.LabelType.Symbol);
-        }
-        else if (Mathf.Approximately(modelPara["label type"], 2f))
-        {
-            viewport.SetLabelType(ViewportController.LabelType.FixedFlags);
-        }
-
-        viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
-        viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
-
-        if (modelPara["display style"] == 0)
-        {
-            viewport.structureRenderer.SetDisplayType(true, true);
-        }
-        else if (Mathf.Approximately(modelPara["display style"], 1f))
-        {
-            viewport.structureRenderer.SetDisplayType(true, false);
-        }
-        else if (Mathf.Approximately(modelPara["display style"], 2f))
-        {
-            viewport.structureRenderer.SetDisplayType(false, true);
+            viewport.structureRenderer.OutlineFrozenAtoms = modelPara["outline frozen"] > 0;
+            viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
+            viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
+            
+            if (modelPara["display style"] == 0)
+            {
+                viewport.structureRenderer.SetDisplayType(true, true);
+            }
+            else if (Mathf.Approximately(modelPara["display style"], 1f))
+            {
+                viewport.structureRenderer.SetDisplayType(true, false);
+            }
+            else if (Mathf.Approximately(modelPara["display style"], 2f))
+            {
+                viewport.structureRenderer.SetDisplayType(false, true);
+            }
         }
 
-        viewport.latticeRenderer.SetDisplay(showLatticeToggle.isOn);
-        App.Instance.BondTolerance = modelPara["tolerance"];
+        if (viewport.latticeRenderer != null)
+        {
+            viewport.latticeRenderer.SetDisplay(modelPara["show lattice"] > 0);
+        }
+
+        if (App.Instance != null)
+        {
+            App.Instance.BondTolerance = modelPara["tolerance"];
+        }
 
         // MainScr.S.CurrentStructure().DrawModel();
         // GuiMain.S.FocusCameraCenter();
@@ -120,6 +114,10 @@ public class L_DisplayPanelSrc : MonoBehaviour
                 kvp.Value.GetComponent<Slider>().onValueChanged
                     .SetPersistentListenerState(1, UnityEngine.Events.UnityEventCallState.EditorAndRuntime);
             }
+            else if (kvp.Value.GetComponent<Toggle>())
+            {
+                kvp.Value.GetComponent<Toggle>().isOn = arcPara[kvp.Key] > 0;
+            }
         }
 
         DisplayOnSytleChange();
@@ -143,6 +141,10 @@ public class L_DisplayPanelSrc : MonoBehaviour
             else if (kvp.Value.GetComponent<Slider>())
             {
                 v = kvp.Value.GetComponent<Slider>().value;
+            }
+            else if (kvp.Value.GetComponent<Toggle>())
+            {
+                v = kvp.Value.GetComponent<Toggle>().isOn ? 1 : 0;
             }
 
             modelPara.Add(kvp.Key, v);

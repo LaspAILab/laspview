@@ -6,6 +6,9 @@ Shader "Custom/Instanced Color Simple Lit"
     {
         [MainTexture] _BaseMap("Base Map (RGB) Smoothness / Alpha (A)", 2D) = "white" {}
         [MainColor]   _BaseColor("Base Color", Color) = (1, 1, 1, 1)
+        
+        _RimStrength("Rim Strength", Float) = 0
+        _RimColor("Rim Color", Color) = (0.247, 0.816, 0.831, 0)
 
         _Cutoff("Alpha Clipping", Range(0.0, 1.0)) = 0.5
 
