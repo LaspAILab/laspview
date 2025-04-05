@@ -148,19 +148,57 @@ public class ArcFile
     }
 }
 
+public enum CrossCellBondPolicy
+{
+    None,
+    Adjacent,
+    Diagonal,
+    BodyDiagonal,
+}
+
 // The view model of an ARC structure
 public class ArcStructureView
 {
     // Vectors to translate the lattice, in fractional coords, used to check cross-lattice bonds
     static readonly Vector3[] TranslationVectorsFractional =
     {
+        // Adjacent
         new(1, 0, 0),
         new(0, 1, 0),
         new(0, 0, 1),
         new(-1, 0, 0),
         new(0, -1, 0),
         new(0, 0, -1),
+        // Diagonal
+        new(1, 1, 0),
+        new(-1, -1, 0),
+        new(-1, 1, 0),
+        new(1, -1, 0),
+        new(0, 1, 1),
+        new(0, -1, -1),
+        new(0, -1, 1),
+        new(0, 1, -1),
+        new(1, 0, 1),
+        new(-1, 0, -1),
+        new(-1, 0, 1),
+        new(1, 0, -1),
+        // Body diagonal
+        new(1, 1, 1),
+        new(-1, 1, 1),
+        new(1, -1, 1),
+        new(1, 1, -1),
+        new(-1, -1, 1),
+        new(1, -1, -1),
+        new(-1, 1, -1),
+        new(-1, -1, -1),
     };
+
+    private static readonly int[] AdjacentCellCounts = { 0, 6, 6 + 12, 6 + 12 + 8 };
+
+    // Remember to recalculate bonds after change
+    public static float BondTolerance { get; set; } = 1.26f;
+
+    public static CrossCellBondPolicy CrossCellPolicy { get; set; } = CrossCellBondPolicy.Adjacent;
 
     // Translation vectors, converted to cartesian space
     Vector3[] translationVectorsCartesian;
@@ -175,15 +213,11 @@ public class ArcStructureView
     public Mutex BondMutex;
 #endif
 
-    // Remember to recalculate bonds after change
-    public float BondTolerance { get; set; }
-
     private PointOctree<AtomView> accelerationOctree;
     private float maxAtomRadius = 0f;
 
-    public ArcStructureView(ArcStructure structure, float bondTolerance = 1.0f)
+    public ArcStructureView(ArcStructure structure)
     {
-        BondTolerance = bondTolerance;
         Structure = structure;
 #if !UNITY_WEBGL
         BondMutex = new();
@@ -327,7 +361,8 @@ public class ArcStructureView
         }
 
         // Check bond across lattice
-        for (int i = 0; i < translationVectorsCartesian.Length; i++)
+        var adjacentCellCount = AdjacentCellCounts[(int)CrossCellPolicy];
+        for (int i = 0; i < adjacentCellCount; i++)
         {
             var translatedCoord = targetAtom.Position + translationVectorsCartesian[i];
             accelerationOctree.GetNearbyNonAlloc(translatedCoord, maxDistance, nearbyAtoms);
