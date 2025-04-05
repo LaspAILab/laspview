@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +22,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
         defaultModelPara = new Dictionary<string, float>
         {
             { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
-            { "display style", 0.0f }, { "outline frozen", 1f }, { "stick radius", 0.35f }, { "tolerance", 1.26f },
+            { "display style", 0.0f }, { "outline frozen", 1f }, { "stick radius", 0.35f }, { "cross-cell bond", 1f }, { "tolerance", 1.26f },
             { "ball radius type", 0.0f }, { "show lattice", 1f }, { "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
         };
         DisplayLoadModelPara();
@@ -58,18 +59,19 @@ public class L_DisplayPanelSrc : MonoBehaviour
             viewport.structureRenderer.OutlineFrozenAtoms = modelPara["outline frozen"] > 0;
             viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
             viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
-            
-            if (modelPara["display style"] == 0)
+
+            int displayStyle = (int)modelPara["display style"];
+            switch (displayStyle)
             {
-                viewport.structureRenderer.SetDisplayType(true, true);
-            }
-            else if (Mathf.Approximately(modelPara["display style"], 1f))
-            {
-                viewport.structureRenderer.SetDisplayType(true, false);
-            }
-            else if (Mathf.Approximately(modelPara["display style"], 2f))
-            {
-                viewport.structureRenderer.SetDisplayType(false, true);
+                case 0:
+                    viewport.structureRenderer.SetDisplayType(true, true);
+                    break;
+                case 1:
+                    viewport.structureRenderer.SetDisplayType(true, false);
+                    break;
+                case 2:
+                    viewport.structureRenderer.SetDisplayType(false, true);
+                    break;
             }
         }
 
@@ -81,6 +83,14 @@ public class L_DisplayPanelSrc : MonoBehaviour
         if (App.Instance != null)
         {
             App.Instance.BondTolerance = modelPara["tolerance"];
+            App.Instance.BondCalculationPolicy = (int)modelPara["cross-cell bond"] switch
+            {
+                0 => CrossCellBondPolicy.None,
+                1 => CrossCellBondPolicy.Adjacent,
+                2 => CrossCellBondPolicy.Diagonal,
+                3 => CrossCellBondPolicy.BodyDiagonal,
+                _ => throw new ArgumentOutOfRangeException()
+            };
         }
 
         // MainScr.S.CurrentStructure().DrawModel();

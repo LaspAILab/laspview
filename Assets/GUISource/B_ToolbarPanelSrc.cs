@@ -106,14 +106,12 @@ public class B_ToolbarPanelSrc : MonoBehaviour
             //    }
             //}
             //R_ServerPanelSrc.S.NetLocalBtnChange();
-            GuiMain.S.SetAllUIInteract(L_ServerPanelSrc.S.gameObject, false);
 #endif
         }
         else
         {
 #if !UNITY_WEBGL
-            GuiMain.S.SetAllUIInteract(L_ServerPanelSrc.S.gameObject, true);
-            L_ServerPanelSrc.S.NetLocalBtnChange();
+            // L_ServerPanelSrc.S.NetLocalBtnChange();
 #endif
             PlayerBtnChecked((true, true));
         }

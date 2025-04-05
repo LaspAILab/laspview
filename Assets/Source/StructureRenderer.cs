@@ -188,7 +188,6 @@ public class StructureRenderer : MonoBehaviour
     internal void RecollectDrawBatches()
     {
         Profiler.BeginSample("Collect draw batch");
-        Debug.Log("Collecting draw batches");
 
         int repeatA = 1, repeatB = 1, repeatC = 1;
         if (latticeTransforms != null)
@@ -257,6 +256,11 @@ public class StructureRenderer : MonoBehaviour
         if (renderAtoms)
         {
             Graphics.RenderMeshInstanced(renderParams, AtomMesh, 0, atomInstancingData.Transforms);
+        }
+
+        if (bondInstancingData.InstanceCount == 0)
+        {
+            return;
         }
 
         propertyBlock = new MaterialPropertyBlock();

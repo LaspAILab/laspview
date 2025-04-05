@@ -55,20 +55,32 @@ public class App : MonoBehaviour
 
     public ViewportController Viewport;
 
-    private float bondTolerance = 1.26f;
-
     public float BondTolerance
     {
-        get => bondTolerance;
+        get => ArcStructureView.BondTolerance;
         set
         {
-            if (Mathf.Approximately(bondTolerance, value))
+            if (Mathf.Approximately(ArcStructureView.BondTolerance, value))
             {
                 return;
             }
 
-            bondTolerance = value;
-            Viewport.CurrentStructureView.BondTolerance = bondTolerance;
+            ArcStructureView.BondTolerance = value;
+            Viewport.RecalculateBonds();
+        }
+    }
+
+    public CrossCellBondPolicy BondCalculationPolicy
+    {
+        get => ArcStructureView.CrossCellPolicy;
+        set
+        {
+            if (ArcStructureView.CrossCellPolicy == value)
+            {
+                return;
+            }
+
+            ArcStructureView.CrossCellPolicy = value;
             Viewport.RecalculateBonds();
         }
     }
@@ -188,13 +200,13 @@ public class App : MonoBehaviour
 #endif
 
 #if UNITY_WEBGL
-        ArcStructureView structureView = new(currentStructure, bondTolerance);
+        ArcStructureView structureView = new(currentStructure);
         Viewport.OpenStructureView(structureView);
         ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
 #else
         Task.Run(() =>
         {
-            ArcStructureView structureView = new(currentStructure, bondTolerance);
+            ArcStructureView structureView = new(currentStructure);
             ScheduleTask(() =>
             {
                 Viewport.OpenStructureView(structureView);
@@ -278,7 +290,7 @@ public class App : MonoBehaviour
         CurrentFile = OpenFileList[filename];
         CurrentStructureIndex = 0;
 
-        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
         Viewport.OpenStructureView(structureView);
         ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
             CurrentFile.Structures[CurrentStructureIndex].Energy);
@@ -295,7 +307,7 @@ public class App : MonoBehaviour
 
         if (CurrentFile.StructureCount > 0)
         {
-            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
             Viewport.OpenStructureView(structureView);
             ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
                 CurrentFile.Structures[CurrentStructureIndex].Energy);
@@ -325,8 +337,7 @@ public class App : MonoBehaviour
             {
                 CurrentStructureIndex = 0;
 
-                ArcStructureView structureView =
-                    new(currentStructure, bondTolerance);
+                ArcStructureView structureView = new(currentStructure);
                 Viewport.OpenStructureView(structureView);
                 Viewport.RefocusCamera();
                 firstStructureLoaded = true;
