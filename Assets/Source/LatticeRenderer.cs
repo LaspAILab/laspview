@@ -8,11 +8,11 @@ public class LatticeRenderer : MonoBehaviour
     public float LineWidth;
     
     private BoxCollider boxCollider;
-    private Camera activeCamera;
+    private bool isEnabled;
 
     void Awake()
     {
-        activeCamera = Camera.main;
+        isEnabled = true;
     }
 
     private void AddLine(Vector3 from, Vector3 to, float thickness)
@@ -74,6 +74,11 @@ public class LatticeRenderer : MonoBehaviour
         // Set bounding box
         boxCollider.center = furthestPoint / 2;
         boxCollider.size = furthestPoint;
+
+        if (!isEnabled)
+        {
+            SetDisplay(false);
+        }
     }
 
     public void SetDisplay(bool show)
@@ -82,5 +87,7 @@ public class LatticeRenderer : MonoBehaviour
         {
             line.enabled = show;
         }
+        
+        isEnabled = show;
     }
 }
