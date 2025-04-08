@@ -175,7 +175,6 @@ public class App : MonoBehaviour
         {
             SendJSEvent("ArcFileFail", e.Message);
         }
-        
     }
 #endif
 
@@ -236,7 +235,7 @@ public class App : MonoBehaviour
 #if UNITY_WEBGL
         CurrentFile = new();
         AddFile(CurrentFile, filename);
-        
+
         bool readFinished = CurrentFile.ReadArc(content);
         if (!readFinished)
         {
@@ -244,15 +243,13 @@ public class App : MonoBehaviour
         }
 
         CurrentStructureIndex = 0;
-
         if (CurrentFile.StructureCount > 0)
         {
             ConFun.UpdateStatusLabel($"Reading arc file: {CurrentFile.StructureCount} structures loaded");
             ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
                 CurrentFile.Structures[CurrentStructureIndex].Energy);
 
-            ArcStructureView structureView =
-                new(CurrentFile.Structures[CurrentStructureIndex], bondTolerance);
+            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
             Viewport.OpenStructureView(structureView);
             Viewport.RefocusCamera();
         }
