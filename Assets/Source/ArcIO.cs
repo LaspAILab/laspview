@@ -97,13 +97,20 @@ public static class ArcIO
                     Debug.LogError($"Unknown exception: {e.Message}");
                 }
             }
-            else if (tokens.Contains("CORE"))
+            else if (tokens.Contains("CORE") || tokens.Contains("MOL") || tokens.Contains("XXXX"))
             {
                 try
                 {
                     Vector3 coords = new(float.Parse(tokens[1]), float.Parse(tokens[2]), float.Parse(tokens[3]));
 
-                    currentStructure.AddAtom(tokens[0], coords, float.Parse(tokens[8]));
+                    float charge = float.Parse(tokens[8]);
+                    // Discard charge but do not discard fixed flags
+                    if (charge != 0 && charge != 1)
+                    {
+                        charge = 0;
+                    }
+
+                    currentStructure.AddAtom(tokens[6], coords, charge);
                 }
                 catch (FormatException e)
                 {
