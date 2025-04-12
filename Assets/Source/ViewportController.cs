@@ -542,7 +542,7 @@ public class ViewportController : MonoBehaviour
         {
             var length = Vector3.Distance(sortedSelection[0].Position, sortedSelection[1].Position);
             ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} Bond length: {length} A");
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} dist: {length} A");
         }
         else if (selectionManager.SelectedAtoms.Count == 3)
         {
@@ -551,7 +551,7 @@ public class ViewportController : MonoBehaviour
 
             var angle = Vector3.Angle(vec1, vec2);
             ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} Bond angle: {angle:f3} degrees");
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} angle: {angle:f3} degrees");
         }
         else if (selectionManager.SelectedAtoms.Count == 4)
         {
@@ -564,7 +564,7 @@ public class ViewportController : MonoBehaviour
 
             var angle = Vector3.Angle(normal1, normal2);
             ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} Dihedral angle: {angle:f3} degrees");
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} dihedral angle: {angle:f3} degrees");
         }
     }
 
@@ -599,6 +599,11 @@ public class ViewportController : MonoBehaviour
         switch (currentTool)
         {
             case ToolType.BoxSelect:
+                if (temporarySelectionManager != null)
+                {
+                    temporarySelectionManager.ClearSelection();
+                    temporarySelectionManager = null;
+                }
                 selectionBoxDrawer.Hide();
                 mouseDownTime = -1;
                 break;
@@ -631,6 +636,9 @@ public class ViewportController : MonoBehaviour
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+#if UNITY_STANDALONE_OSX || UNITY_WEBGL
+        ctrlDown = ctrlDown || Input.GetKey(KeyCode.LeftApple) || Input.GetKey(KeyCode.RightApple);
+#endif
         if (ctrlDown)
         {
             IOperation op = null;
@@ -696,7 +704,12 @@ public class ViewportController : MonoBehaviour
             cameraZoomed = false;
             mouseDownTime = Time.time;
             mouseDownPos = Input.mousePosition;
-            Debug.Log("Record pointer down");
+        }
+
+        if (Input.GetKeyUp(KeyCode.Mouse0))
+        {
+            // Reset mouse down time if mouse already released
+            mouseDownTime = -1;
         }
 
         if (Input.GetKeyUp(KeyCode.Mouse0) && currentTool == ToolType.Select)
@@ -833,14 +846,14 @@ public class ViewportController : MonoBehaviour
             else
             {
                 // End box select
-                ReplaceCurrentTool(ToolType.Select);
                 selectionManager.MergeSelection(temporarySelectionManager);
+                temporarySelectionManager = null;
+                
+                ReplaceCurrentTool(ToolType.Select);
                 if (selectionManager.Selection.Count == 2)
                 {
                     UpdateBondingInfoDisplay();
                 }
-                
-                temporarySelectionManager = null;
             }
         }
         else if (Input.GetKey(KeyCode.Mouse0) && !isMovingAtom && !isRotatingAtom && mouseDownTime > 0 &&

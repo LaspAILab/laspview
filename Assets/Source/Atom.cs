@@ -74,9 +74,9 @@ public class AtomView : ITransform, IEquatable<AtomView>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Matrix4x4 CreateTransformCache(float radiusScale = 1f)
+    public void CreateTransformCache(float radiusScale = 1f)
     {
-        return Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
+        transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
 
     public string Symbol;
@@ -111,7 +111,10 @@ public class AtomView : ITransform, IEquatable<AtomView>
     {
         get
         {
-            transformCache ??= CreateTransformCache();
+            if (transformCache == null)
+            {
+                CreateTransformCache();
+            }
             return transformCache.Value;
         }
     }
@@ -156,13 +159,13 @@ public class BondView : ITransform
     public float Rate;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Matrix4x4 CreateTransformCache(float stickRadius = 0.35f)
+    public void CreateTransformCache(float stickRadius = 0.35f)
     {
         Vector3 bondCenter = Origin + 0.5f * Rate * Theta;
         Quaternion rotation =
             Quaternion.AngleAxis(-Vector3.Angle(Vector3.up, Theta), new Vector3(-Theta.z, 0, Theta.x));
         Vector3 scale = new(stickRadius, Theta.magnitude * Rate * 0.5f, stickRadius);
-        return Matrix4x4.TRS(bondCenter, rotation, scale);
+        transformCache = Matrix4x4.TRS(bondCenter, rotation, scale);
     }
 
     private Matrix4x4? transformCache;
@@ -171,7 +174,10 @@ public class BondView : ITransform
     {
         get
         {
-            transformCache ??= CreateTransformCache();
+            if (transformCache == null)
+            {
+                CreateTransformCache();
+            }
             return transformCache.Value;
         }
     }

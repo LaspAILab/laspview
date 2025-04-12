@@ -120,7 +120,6 @@ public class StructureRenderer : MonoBehaviour
         }
 
         this.radiusScale = radiusScale;
-
         foreach (var item in CurrentStructureView.Atoms)
         {
             item.CreateTransformCache(radiusScale);
@@ -232,6 +231,7 @@ public class StructureRenderer : MonoBehaviour
     {
         var props = new MaterialPropertyBlock();
         props.SetColor(BaseColor, GetAtomColor(atom));
+        props.SetFloat(RimStrength, atom.SourceAtom.FixedFlags > 0 ? FrozenRimStrength : 0);
         renderParams.matProps = props;
         var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * radiusScale * Vector3.one);
         Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
