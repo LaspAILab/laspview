@@ -1596,6 +1596,7 @@ MonoBehaviour:
   RenderMaterial: {fileID: 2100000, guid: d52663c9ccb3aca479168493a931ac87, type: 2}
   AtomMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   BondMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  OutlineFrozenAtoms: 1
 --- !u!114 &637342124
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2197,9 +2198,9 @@ MonoBehaviour:
   m_OnSubmit:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: MainScr, Assembly-CSharp
-        m_MethodName: OnChangeArc
+      - m_Target: {fileID: 1505343041}
+        m_TargetAssemblyTypeName: ConFun, Assembly-CSharp
+        m_MethodName: OnStructureIndexSubmit
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
