@@ -178,7 +178,7 @@ public class App : MonoBehaviour
     }
 #endif
 
-    public void SwitchStructure(int index)
+    public bool SwitchStructure(int index)
     {
 #if !UNITY_WEBGL
         CurrentFile.ListMutex.WaitOne();
@@ -189,7 +189,7 @@ public class App : MonoBehaviour
 #if !UNITY_WEBGL
             CurrentFile.ListMutex.ReleaseMutex();
 #endif
-            return;
+            return false;
         }
 
         CurrentStructureIndex = index;
@@ -213,6 +213,8 @@ public class App : MonoBehaviour
             });
         });
 #endif
+        
+        return true;
     }
 
     public void AddFile(ArcFile arc, string filename)

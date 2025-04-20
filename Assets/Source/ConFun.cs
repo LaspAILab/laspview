@@ -23,7 +23,7 @@ public class ConFun : MonoBehaviour
     {
         structureText = GameObject.Find("StructureText");
         statusLabel = GameObject.Find("StatusText").GetComponent<Text>();
-        
+
         ReadGlobalConfig();
         GlobalConfig.Add("model_type", "scale");
     }
@@ -44,6 +44,7 @@ public class ConFun : MonoBehaviour
             {
                 continue;
             }
+
             string[] kv = lin.Split('=');
             GlobalConfig.Add(kv[0], kv[1]);
         }
@@ -52,7 +53,20 @@ public class ConFun : MonoBehaviour
     public static void UpdateStructureInfo(int currentStruct, int totalStructs, float energy)
     {
         //print(structureText);
-        structureText.transform.GetChild(1).gameObject.GetComponent<InputField>().SetTextWithoutNotify((currentStruct + 1).ToString());
+        var indexInput = structureText.transform.GetChild(1).GetComponent<InputField>();
+        if (int.TryParse(indexInput.text, out int index) && App.Instance?.CurrentFile != null)
+        {
+            // Index out of bounds, update index display
+            if (index <= 0 && index > App.Instance.CurrentFile.StructureCount)
+            {
+                indexInput.SetTextWithoutNotify((App.Instance.CurrentStructureIndex + 1).ToString());
+            }
+        }
+        else
+        {
+            indexInput.SetTextWithoutNotify((App.Instance.CurrentStructureIndex + 1).ToString());
+        }
+
         structureText.transform.GetChild(3).GetComponent<Text>().text = totalStructs.ToString();
         structureText.transform.GetChild(5).GetComponent<Text>().text = energy.ToString("f3");
     }
@@ -61,5 +75,15 @@ public class ConFun : MonoBehaviour
     {
         statusLabel.text = str;
         // Debug.Log(str);
+    }
+
+    public void OnStructureIndexSubmit()
+    {
+        var indexInput = structureText.transform.GetChild(1).GetComponent<InputField>();
+        if (int.TryParse(indexInput.text, out int index) && App.Instance != null)
+        {
+            App.Instance.SwitchStructure(index - 1);
+            indexInput.SetTextWithoutNotify((App.Instance.CurrentStructureIndex + 1).ToString());
+        }
     }
 }
