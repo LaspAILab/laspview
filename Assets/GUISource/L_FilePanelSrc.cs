@@ -77,7 +77,10 @@ public class L_FilePanelSrc : MonoBehaviour
 
     public static ExtensionFilter[] Extensions = new[]
     {
+        new ExtensionFilter("Structure Files", "arc", "car", "poscar", "cif"),
         new ExtensionFilter("Arc Files", "arc", "car"),
+        new ExtensionFilter("Poscar Files", "poscar"),
+        new ExtensionFilter("Cif Files", "cif"),
         new ExtensionFilter("All Files", "*"),
     };
 
@@ -123,16 +126,24 @@ public class L_FilePanelSrc : MonoBehaviour
         var bytes = Encoding.UTF8.GetBytes(newArcFile.WriteArc());
         DownloadFile(gameObject.name, "OnFileDownload", "result.arc", bytes, bytes.Length);
 #else
-        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
         {
             if (string.IsNullOrEmpty(path))
             {
                 return;
             }
-
-            ArcFile newArcFile = new();
-            newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
-            string str = newArcFile.WriteArc();
+            
+            string format = Path.GetExtension(path).Substring(1);
+            IFormat formatSaver = IFormat.GetFormatIO(format);
+            if (formatSaver == null)
+            {
+                Debug.LogError($"Invalid format `{format}`, cannot save");
+                return;
+            }
+                
+            StructureFile newStructureFile = new();
+            newStructureFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
+            string str = formatSaver.Write(newStructureFile);
             File.WriteAllText(path, str);
         });
 #endif
@@ -157,7 +168,15 @@ public class L_FilePanelSrc : MonoBehaviour
                 return;
             }
 
-            string str = App.Instance.CurrentFile.WriteArc();
+            string format = Path.GetExtension(path).Substring(1);
+            IFormat formatSaver = IFormat.GetFormatIO(format);
+            if (formatSaver == null)
+            {
+                Debug.LogError($"Invalid format `{format}`, cannot save");
+                return;
+            }
+
+            string str = formatSaver.Write(App.Instance.CurrentFile);
             File.WriteAllText(path, str);
         });
 #endif

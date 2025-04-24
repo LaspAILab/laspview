@@ -11,11 +11,11 @@ public class Atom
 {
     public int Index;
     public Vector3 Coordinates;
-
-    public string Symbol;
+    public float Charge;
 
     // Flags about whether the atom is fixed, 1 means fixed
     public float FixedFlags;
+    public string Symbol;
 }
 
 interface ITransform
@@ -32,7 +32,7 @@ public class AtomView : ITransform, IEquatable<AtomView>
     /// <param name="structure">The parent structure of the atom</param>
     /// <param name="repeat">If true, then use repeat, else use clamp</param>
     /// <returns></returns>
-    public static Vector3 ClipAtomCoords(Vector3 posCartesian, ArcStructure structure, bool repeat)
+    public static Vector3 ClipAtomCoords(Vector3 posCartesian, CrystalStructure structure, bool repeat)
     {
         // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
         Vector3 fract = structure.CartesianToFractional(posCartesian);
@@ -56,7 +56,7 @@ public class AtomView : ITransform, IEquatable<AtomView>
         return structure.FractionalToCartesian(fract);
     }
 
-    public AtomView(Atom atom, ArcStructure structure)
+    public AtomView(Atom atom, CrystalStructure structure)
     {
         SourceAtom = atom;
         Symbol = atom.Symbol;
