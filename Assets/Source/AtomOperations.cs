@@ -16,7 +16,7 @@ public class TranslateAtomsOperation : IOperation
         this.translation = translation;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         foreach (var item in targetAtoms)
         {
@@ -38,7 +38,7 @@ public class TranslateAtomsOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         foreach (var item in targetAtoms)
         {
@@ -75,7 +75,7 @@ public class RepositionAtomsOperation : IOperation
         Assert.AreEqual(newPositions.Count, targetAtoms.Count);
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         oldPositions = new List<Vector3>(targetAtoms.Count);
         for (int i = 0; i < targetAtoms.Count; i++)
@@ -99,7 +99,7 @@ public class RepositionAtomsOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         for (int i = 0; i < targetAtoms.Count; i++)
         {
@@ -135,7 +135,7 @@ public class SetPositionOperation : IOperation
         this.newPosition = newPosition;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         oldPosition = targetAtom.Position;
         structureView.SetAtomPosition(targetAtom, newPosition, false);
@@ -145,7 +145,7 @@ public class SetPositionOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         structureView.SetAtomPosition(targetAtom, oldPosition, false);
         ColliderManager.Instance.UpdateColliderForAtom(targetAtom);
@@ -168,7 +168,7 @@ public class SetElementOperation : IOperation
         this.newSymbol = newSymbol;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         oldSymbol = targetAtom.Symbol;
         structureView.SetAtomElement(targetAtom, newSymbol);
@@ -176,7 +176,7 @@ public class SetElementOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         structureView.SetAtomElement(targetAtom, oldSymbol);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
@@ -198,7 +198,7 @@ public class SetFixedOperation : IOperation
         this.isFixed = isFixed;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         oldFixedFlags = new float[targetAtoms.Count];
         for (int i = 0; i < targetAtoms.Count; i++)
@@ -210,7 +210,7 @@ public class SetFixedOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         for (int i = 0; i < targetAtoms.Count; i++)
         {
@@ -238,7 +238,7 @@ public class AddAtomOperation : IOperation
         };
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         if (addedAtom == null)
         {
@@ -253,7 +253,7 @@ public class AddAtomOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         ColliderManager.Instance.DropColliderForAtom(addedAtom);
         structureView.RemoveAtom(addedAtom);
@@ -276,7 +276,7 @@ public class AddAtomsOperation : IOperation
         this.atomsToAdd = atomsToAdd;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         if (addedAtoms != null)
         {
@@ -306,7 +306,7 @@ public class AddAtomsOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         foreach (var item in addedAtoms)
         {
@@ -332,7 +332,7 @@ public class RemoveAtomsOperation : IOperation
         this.removedAtoms = removedAtoms;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         foreach (var item in removedAtoms)
         {
@@ -343,7 +343,7 @@ public class RemoveAtomsOperation : IOperation
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         foreach (var item in removedAtoms)
         {
@@ -369,14 +369,14 @@ public class ChangeLatticeOperation : IOperation
         this.keepCartesian = keepCartesian;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         oldParams = structureView.Structure.LatticeParams;
         structureView.ChangeLattice(newParams, keepCartesian);
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         structureView.ChangeLattice(oldParams, keepCartesian);
         return true;
@@ -396,14 +396,14 @@ public class SuperCellOperation : IOperation
         this.repeatC = repeatC;
     }
 
-    protected override bool DoImpl(ArcStructureView structureView)
+    protected override bool DoImpl(CrystalStructureView structureView)
     {
         structureView.ToSuperCell(repeatA, repeatB, repeatC);
         ColliderManager.Instance.CreateCollidersForStructure(structureView);
         return true;
     }
 
-    protected override bool UndoImpl(ArcStructureView structureView)
+    protected override bool UndoImpl(CrystalStructureView structureView)
     {
         // TODO: unimplemented
         return false;

@@ -21,7 +21,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     private Text textLabel;
     private AtomView activeAtom;
 
-    private ArcStructure currentArc;
+    private CrystalStructure currentStructure;
 
     void Start()
     {
@@ -46,9 +46,9 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void SetCurrentStructure(ArcStructure arcStructure)
+    public void SetCurrentStructure(CrystalStructure crystalStructure)
     {
-        currentArc = arcStructure;
+        currentStructure = crystalStructure;
         OnNoSelection();
     }
 
@@ -66,9 +66,9 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         radiusInput.gameObject.SetActive(false);
         colorPickerController.gameObject.SetActive(false);
 
-        if (currentArc != null)
+        if (currentStructure != null)
         {
-            textLabel.text = $"{currentArc.Atoms.Count} atoms within single lattice";
+            textLabel.text = $"{currentStructure.Atoms.Count} atoms within single lattice";
         }
 
         coordsInput.SetValue(0.5f, 0.5f, 0.5f);
@@ -116,7 +116,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         elementDropdown.value = elementDropdown.options.FindIndex(x => x.text == activeAtom.SourceAtom.Symbol);
 
         coordsInput.SetValue(fractionalToggle.isOn
-            ? currentArc.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
+            ? currentStructure.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
             : activeAtom.SourceAtom.Coordinates);
 
         radiusInput.SetValue(activeAtom.Radius);
@@ -155,7 +155,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         }
 
         App.Instance.Viewport.SubmitOperation(new SetPositionOperation(activeAtom, fractionalToggle.isOn
-            ? currentArc.FractionalToCartesian(coords.Value)
+            ? currentStructure.FractionalToCartesian(coords.Value)
             : coords.Value));
     }
 
@@ -207,7 +207,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         Assert.IsTrue(App.Elements.ContainsKey(element));
 
         App.Instance.Viewport.SubmitOperation(new AddAtomOperation(fractionalToggle.isOn
-            ? currentArc.FractionalToCartesian(coords.Value)
+            ? currentStructure.FractionalToCartesian(coords.Value)
             : coords.Value, element, 0));
     }
 }

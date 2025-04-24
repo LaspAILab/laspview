@@ -13,7 +13,7 @@ public abstract class IOperation
 {
     private bool isDone = false;
 
-    public void Do(ArcStructureView structureView)
+    public void Do(CrystalStructureView structureView)
     {
         if (isDone)
         {
@@ -26,7 +26,7 @@ public abstract class IOperation
         }
     }
 
-    public void Undo(ArcStructureView structureView)
+    public void Undo(CrystalStructureView structureView)
     {
         if (!isDone)
         {
@@ -39,9 +39,9 @@ public abstract class IOperation
         }
     }
 
-    protected abstract bool DoImpl(ArcStructureView structureView);
+    protected abstract bool DoImpl(CrystalStructureView structureView);
 
-    protected abstract bool UndoImpl(ArcStructureView structureView);
+    protected abstract bool UndoImpl(CrystalStructureView structureView);
 
     public abstract UpdateFlags Flags { get; }
 }
@@ -50,9 +50,9 @@ public class UndoManager
 {
     private List<IOperation> operationStack;
     private int stackTop = -1;
-    private ArcStructureView structureView;
+    private CrystalStructureView structureView;
 
-    public UndoManager(ArcStructureView structureView)
+    public UndoManager(CrystalStructureView structureView)
     {
         operationStack = new();
         this.structureView = structureView;

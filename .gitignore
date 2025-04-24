@@ -110,6 +110,7 @@ Thumbs.db
 #=============#
 /*.arc
 /*.car
+/TestFiles
 UserAddress.log
 LASP4WIN*
 LaspRun/*

@@ -25,7 +25,7 @@ public class LatticeRenderer : MonoBehaviour
         line.SetPosition(1, to);
     }
 
-    public void SetLattice(ArcStructure structure, int repeatA, int repeatB, int repeatC)
+    public void SetLattice(CrystalStructure structure, int repeatA, int repeatB, int repeatC)
     {
         if (boxCollider is null)
         {

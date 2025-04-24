@@ -58,7 +58,7 @@ public class StructureRenderer : MonoBehaviour
 
     public bool OutlineFrozenAtoms = true;
 
-    public ArcStructureView CurrentStructureView { get; private set; } = null;
+    public CrystalStructureView CurrentStructureView { get; private set; } = null;
 
     private float stickRadius = 0.35f, radiusScale = 1f;
     private Matrix4x4[,,] latticeTransforms = null;
@@ -173,7 +173,7 @@ public class StructureRenderer : MonoBehaviour
         Assert.AreEqual(instancingData.InstanceCount, instanceCount * repeatA * repeatB * repeatC);
     }
 
-    internal void SetStructureView(ArcStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
+    internal void SetStructureView(CrystalStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
     {
         CurrentStructureView = structureView;
 

@@ -102,11 +102,11 @@ public class ColliderManager : MonoBehaviour
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CreateCollidersForStructure(ArcStructureView arcStructureView)
+    public void CreateCollidersForStructure(CrystalStructureView crystalStructureView)
     {
         DropAll();
 
-        foreach (var atomView in arcStructureView.Atoms)
+        foreach (var atomView in crystalStructureView.Atoms)
         {
             CreateColliderForAtom(atomView);
         }
