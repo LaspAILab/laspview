@@ -25,7 +25,7 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void UpdateLattice(ArcStructure structure)
+    public void UpdateLattice(CrystalStructure structure)
     {
         lengthsInput.SetValue(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
         anglesInput.SetValue(structure.LatticeParams[3], structure.LatticeParams[4], structure.LatticeParams[5]);

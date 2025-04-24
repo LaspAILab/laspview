@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class ArcStructure
+public class CrystalStructure
 {
     public float Energy { get; set; }
 
@@ -32,7 +32,7 @@ public class ArcStructure
 
     public int AtomIndex { get; set; } = 0;
 
-    public ArcStructure()
+    public CrystalStructure()
     {
         Energy = 0;
         Conv = 0;
@@ -41,11 +41,11 @@ public class ArcStructure
         NumMinimum = 0;
         NoPathway = 0;
         LatticeMatrix = InvLatticeMatrix = Matrix4x4.identity;
-        LatticeParams = new float[6];
+        LatticeParams = null;
         Atoms = new();
     }
 
-    public Atom AddAtom(string elemSymbol, Vector3 coords, float fixedFlags = 0)
+    public Atom AddAtom(string elemSymbol, Vector3 coords, float charge, float fixedFlags = 0)
     {
         if (!App.Elements.ContainsKey(elemSymbol))
         {
@@ -57,6 +57,7 @@ public class ArcStructure
             Index = AtomIndex++,
             Symbol = elemSymbol,
             Coordinates = coords,
+            Charge = charge,
             FixedFlags = fixedFlags
         };
         Atoms.Add(newAtom);
@@ -105,6 +106,57 @@ public class ArcStructure
             new Vector4(0, 0, 0, 1));
         InvLatticeMatrix = LatticeMatrix.inverse;
     }
+    
+    public void SetLattice(Vector3[] baseVectors)
+    {
+        if (baseVectors.Length != 3)
+        {
+            throw new ArgumentException("Lattice must have exactly 3 base vectors.");
+        }
+        
+        LatticeParams = new float[6];
+        LatticeParams[0] = baseVectors[0].magnitude;
+        LatticeParams[1] = baseVectors[1].magnitude;
+        LatticeParams[2] = baseVectors[2].magnitude;
+        LatticeParams[3] = Vector3.Angle(baseVectors[1], baseVectors[2]);
+        LatticeParams[4] = Vector3.Angle(baseVectors[0], baseVectors[2]);
+        LatticeParams[5] = Vector3.Angle(baseVectors[0], baseVectors[1]);
+
+        LatticeMatrix = new Matrix4x4(new Vector4(baseVectors[0].x, baseVectors[1].x, baseVectors[2].x, 0),
+            new Vector4(baseVectors[0].y, baseVectors[1].y, baseVectors[2].y, 0),
+            new Vector4(baseVectors[0].z, baseVectors[1].z, baseVectors[2].z, 0),
+            new Vector4(0, 0, 0, 1));
+        InvLatticeMatrix = LatticeMatrix.inverse;
+    }
+
+    public Vector3[] GetBaseVectors()
+    {
+        var baseVectors = new Vector3[3];
+
+        for (int i = 0; i < 3; i++)
+        {
+            baseVectors[i] = new Vector3(LatticeMatrix[0, i], LatticeMatrix[1, i], LatticeMatrix[2, i]);
+        }
+        
+        return baseVectors;
+    }
+
+    public Dictionary<string, List<Atom>> GroupAtoms()
+    {
+        var groupedAtoms = new Dictionary<string, List<Atom>>();
+
+        foreach (var atom in Atoms)
+        {
+            if (!groupedAtoms.ContainsKey(atom.Symbol))
+            {
+                groupedAtoms[atom.Symbol] = new List<Atom>();
+            }
+
+            groupedAtoms[atom.Symbol].Add(atom);
+        }
+        
+        return groupedAtoms;
+    }
 
     public Vector3 FractionalToCartesian(Vector3 posFractional)
     {
@@ -121,17 +173,17 @@ public class ArcStructure
     }
 }
 
-public class ArcFile
+public class StructureFile
 {
 #if !UNITY_WEBGL
     public Mutex ListMutex;
 #endif
 
-    public List<ArcStructure> Structures { get; private set; }
+    public List<CrystalStructure> Structures { get; private set; }
 
     public int StructureCount => Structures.Count;
 
-    public ArcFile()
+    public StructureFile()
     {
         Structures = new();
 #if !UNITY_WEBGL
@@ -139,7 +191,7 @@ public class ArcFile
 #endif
     }
 
-    ~ArcFile()
+    ~StructureFile()
     {
 #if !UNITY_WEBGL
         ListMutex.Dispose();
@@ -157,7 +209,7 @@ public enum CrossCellBondPolicy
 }
 
 // The view model of an ARC structure
-public class ArcStructureView
+public class CrystalStructureView
 {
     // Vectors to translate the lattice, in fractional coords, used to check cross-lattice bonds
     static readonly Vector3[] TranslationVectorsFractional =
@@ -203,7 +255,7 @@ public class ArcStructureView
     // Translation vectors, converted to cartesian space
     Vector3[] translationVectorsCartesian;
 
-    public ArcStructure Structure;
+    public CrystalStructure Structure;
 
     public List<AtomView> Atoms = new();
 
@@ -216,7 +268,7 @@ public class ArcStructureView
     private PointOctree<AtomView> accelerationOctree;
     private float maxAtomRadius = 0f;
 
-    public ArcStructureView(ArcStructure structure)
+    public CrystalStructureView(CrystalStructure structure)
     {
         Structure = structure;
 #if !UNITY_WEBGL
@@ -593,7 +645,7 @@ public class ArcStructureView
         return fractional is { x: >= 0 and <= 1, y: >= 0 and <= 1, z: >= 0 and <= 1 };
     }
 
-    ~ArcStructureView()
+    ~CrystalStructureView()
     {
 #if !UNITY_WEBGL
         BondMutex.Dispose();

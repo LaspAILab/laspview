@@ -71,13 +71,6 @@ public class ViewportController : MonoBehaviour
     private static readonly Vector3 pasteOffset = new(1f, 1f, 0f);
     private List<Atom> clipboard = new();
 
-    public enum LabelType
-    {
-        None,
-        Symbol,
-        FixedFlags
-    }
-
     private Matrix4x4[,,] latticeTransforms = null;
 
     public Matrix4x4[,,] LatticeTransforms
@@ -93,7 +86,7 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    public ArcStructureView CurrentStructureView { get; private set; } = null;
+    public CrystalStructureView CurrentStructureView { get; private set; } = null;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -149,7 +142,7 @@ public class ViewportController : MonoBehaviour
 #endif
     }
 
-    public void OpenStructureView(ArcStructureView structureView)
+    public void OpenStructureView(CrystalStructureView structureView)
     {
         CurrentStructureView = structureView;
         CurrentStructureView.GenerateBonds();

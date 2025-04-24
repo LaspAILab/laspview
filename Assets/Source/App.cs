@@ -57,37 +57,37 @@ public class App : MonoBehaviour
 
     public float BondTolerance
     {
-        get => ArcStructureView.BondTolerance;
+        get => CrystalStructureView.BondTolerance;
         set
         {
-            if (Mathf.Approximately(ArcStructureView.BondTolerance, value))
+            if (Mathf.Approximately(CrystalStructureView.BondTolerance, value))
             {
                 return;
             }
 
-            ArcStructureView.BondTolerance = value;
+            CrystalStructureView.BondTolerance = value;
             Viewport.RecalculateBonds();
         }
     }
 
     public CrossCellBondPolicy BondCalculationPolicy
     {
-        get => ArcStructureView.CrossCellPolicy;
+        get => CrystalStructureView.CrossCellPolicy;
         set
         {
-            if (ArcStructureView.CrossCellPolicy == value)
+            if (CrystalStructureView.CrossCellPolicy == value)
             {
                 return;
             }
 
-            ArcStructureView.CrossCellPolicy = value;
+            CrystalStructureView.CrossCellPolicy = value;
             Viewport.RecalculateBonds();
         }
     }
 
-    public Dictionary<string, ArcFile> OpenFileList { get; } = new();
+    public Dictionary<string, StructureFile> OpenFileList { get; } = new();
 
-    public ArcFile CurrentFile { get; private set; }
+    public StructureFile CurrentFile { get; private set; }
 
     public int CurrentStructureIndex { get; private set; }
 
@@ -109,12 +109,12 @@ public class App : MonoBehaviour
         bool hasConfigFileName = ConFun.GlobalConfig.TryGetValue("arc_default", out string filename);
         if (hasConfigFileName && File.Exists(Path.Join(Application.dataPath, filename)))
         {
-            OpenArc(File.ReadAllLines(Path.Join(Application.dataPath, filename)), "Default");
+            OpenArc(File.ReadAllLines(Path.Join(Application.dataPath, filename)), "Default.arc");
         }
         else
         {
             string lines = Resources.Load<TextAsset>("DefaultArc").text;
-            OpenArc(lines.Split('\n'), "Default");
+            OpenArc(lines.Split('\n'), "Default.arc");
         }
 #endif
     }
@@ -153,9 +153,9 @@ public class App : MonoBehaviour
     {
         try
         {
-            ArcFile newArcFile = new();
-            newArcFile.Structures.Add(Viewport.CurrentStructureView.Structure);
-            string str = newArcFile.WriteArc();
+            StructureFile newFile = new();
+            newFile.Structures.Add(Viewport.CurrentStructureView.Structure);
+            string str = IFormat.GetFormatIO("arc").Write(newFile);
             SendJSEvent("ArcFileRecv", str);
         }
         catch (Exception e)
@@ -168,7 +168,7 @@ public class App : MonoBehaviour
     {
         try
         {
-            string str = CurrentFile.WriteArc();
+            string str = IFormat.GetFormatIO("arc").Write(CurrentFile);
             SendJSEvent("ArcFileRecv", str);
         }
         catch (Exception e)
@@ -193,19 +193,19 @@ public class App : MonoBehaviour
         }
 
         CurrentStructureIndex = index;
-        ArcStructure currentStructure = CurrentFile.Structures[index];
+        CrystalStructure currentStructure = CurrentFile.Structures[index];
 #if !UNITY_WEBGL
         CurrentFile.ListMutex.ReleaseMutex();
 #endif
 
 #if UNITY_WEBGL
-        ArcStructureView structureView = new(currentStructure);
+        CrystalStructureView structureView = new(currentStructure);
         Viewport.OpenStructureView(structureView);
         ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
 #else
         Task.Run(() =>
         {
-            ArcStructureView structureView = new(currentStructure);
+            CrystalStructureView structureView = new(currentStructure);
             ScheduleTask(() =>
             {
                 Viewport.OpenStructureView(structureView);
@@ -213,18 +213,18 @@ public class App : MonoBehaviour
             });
         });
 #endif
-        
+
         return true;
     }
 
-    public void AddFile(ArcFile arc, string filename)
+    public void AddFile(StructureFile structureFile, string filename)
     {
-        if (OpenFileList.ContainsValue(arc) || OpenFileList.ContainsKey(filename))
+        if (OpenFileList.ContainsValue(structureFile) || OpenFileList.ContainsKey(filename))
         {
             return;
         }
 
-        OpenFileList.Add(filename, arc);
+        OpenFileList.Add(filename, structureFile);
 #if UNITY_WEBGL
         L_ProjectPanelSrc.S.ProjectListAddCell(filename);
 #else
@@ -234,15 +234,19 @@ public class App : MonoBehaviour
 
     public void OpenArc(IEnumerable<string> content, string filename)
     {
+        string format = Path.GetExtension(filename).Substring(1);
+        IFormat formatReader = IFormat.GetFormatIO(format);
+        if (formatReader == null)
+        {
+            Debug.LogError($"Invalid format `{format}`, cannot open");
+            return;
+        }
+
 #if UNITY_WEBGL
         CurrentFile = new();
         AddFile(CurrentFile, filename);
 
-        bool readFinished = CurrentFile.ReadArc(content);
-        if (!readFinished)
-        {
-            Debug.Log("File too large, truncated");
-        }
+        formatReader.Read(CurrentFile, content);
 
         CurrentStructureIndex = 0;
         if (CurrentFile.StructureCount > 0)
@@ -251,7 +255,7 @@ public class App : MonoBehaviour
             ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
                 CurrentFile.Structures[CurrentStructureIndex].Energy);
 
-            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+            CrystalStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
             Viewport.OpenStructureView(structureView);
             Viewport.RefocusCamera();
         }
@@ -268,11 +272,11 @@ public class App : MonoBehaviour
             try
             {
                 AddFile(CurrentFile, filename);
-                CurrentFile.ReadArc(content, _ => { loadedStructuresDirty = true; });
+                formatReader.Read(CurrentFile, content, _ => { loadedStructuresDirty = true; });
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to read arc file: {e.Message}");
+                Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
             }
         });
 #endif
@@ -289,7 +293,7 @@ public class App : MonoBehaviour
         CurrentFile = OpenFileList[filename];
         CurrentStructureIndex = 0;
 
-        ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+        CrystalStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
         Viewport.OpenStructureView(structureView);
         ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
             CurrentFile.Structures[CurrentStructureIndex].Energy);
@@ -299,14 +303,14 @@ public class App : MonoBehaviour
     public void NewEmpty()
     {
         CurrentFile = new();
-        ArcStructure arcStructure = new();
-        arcStructure.Energy = 0;
-        arcStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });
-        CurrentFile.Structures.Add(arcStructure);
+        CrystalStructure crystalStructure = new();
+        crystalStructure.Energy = 0;
+        crystalStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });
+        CurrentFile.Structures.Add(crystalStructure);
 
         if (CurrentFile.StructureCount > 0)
         {
-            ArcStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
+            CrystalStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
             Viewport.OpenStructureView(structureView);
             ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
                 CurrentFile.Structures[CurrentStructureIndex].Energy);
@@ -329,22 +333,26 @@ public class App : MonoBehaviour
 
             CurrentFile.ListMutex.WaitOne();
             int numLoadedStructures = CurrentFile.StructureCount;
-            ArcStructure currentStructure = CurrentFile.Structures[CurrentStructureIndex];
+            CrystalStructure currentStructure = CurrentFile.Structures[CurrentStructureIndex];
             CurrentFile.ListMutex.ReleaseMutex();
 
             if (!firstStructureLoaded)
             {
                 CurrentStructureIndex = 0;
 
-                ArcStructureView structureView = new(currentStructure);
+                CrystalStructureView structureView = new(currentStructure);
                 Viewport.OpenStructureView(structureView);
                 Viewport.RefocusCamera();
                 firstStructureLoaded = true;
+                ConFun.UpdateStructureInfo(CurrentStructureIndex, numLoadedStructures,
+                    currentStructure.Energy);
+            }
+            else
+            {
+                ConFun.UpdateStructureInfo(null, numLoadedStructures, currentStructure.Energy);
             }
 
             ConFun.UpdateStatusLabel($"Reading arc file: {numLoadedStructures} structures loaded");
-            ConFun.UpdateStructureInfo(CurrentStructureIndex, numLoadedStructures,
-                currentStructure.Energy);
         }
 #endif
     }
