@@ -1560,7 +1560,12 @@ PrefabInstance:
     - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_MinHeight
-      value: 20
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FlexibleHeight
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3766126866125366700, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -1580,12 +1585,29 @@ PrefabInstance:
     - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_Text
-      value: Placeholder
+      value: 'Place
+
+        holder'
       objectReference: {fileID: 0}
     - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FontData.m_RichText
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FontData.m_VerticalOverflow
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
+        type: 3}
+      propertyPath: m_FontData.m_HorizontalOverflow
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
