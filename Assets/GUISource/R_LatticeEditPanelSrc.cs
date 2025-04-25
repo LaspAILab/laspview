@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +24,7 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         this.transform.localScale = Vector3.one;
         Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
         edButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(edButton, this.gameObject); });
-        
+
         gameObject.SetActive(false);
     }
 
@@ -31,9 +34,46 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         anglesInput.SetValue(structure.LatticeParams[3], structure.LatticeParams[4], structure.LatticeParams[5]);
     }
 
-    public void UpdateAtomsCount(int newCount)
+    static int Gcd(IEnumerable<int> numbers)
     {
-        textLabel.text = $"{newCount} atoms within single lattice";
+        return numbers.Aggregate(_GcdImpl);
+    }
+
+    private static int _GcdImpl(int a, int b)
+    {
+        while (true)
+        {
+            if (b == 0) return a;
+            var a1 = a;
+            a = b;
+            b = a1 % b;
+        }
+    }
+
+    public void UpdateAtomsCount(CrystalStructure structure)
+    {
+        var atoms = structure.GroupAtoms().Select(x => new KeyValuePair<string, int>(x.Key, x.Value.Count)).ToArray();
+
+        Array.Sort(atoms, (a, b) =>
+        {
+            var (periodA, valanceA) = App.GetElementPeriodAndValance(a.Key);
+            var (periodB, valanceB) = App.GetElementPeriodAndValance(b.Key);
+
+            return valanceA != valanceB ? valanceB.CompareTo(valanceA) : periodA.CompareTo(periodB);
+        });
+
+        StringBuilder formulaBuilder = new();
+        int totalAtoms = 0;
+        int gcd = Gcd(atoms.Select(x => x.Value));
+
+        foreach (var atomType in atoms)
+        {
+            int count = atomType.Value / gcd;
+            formulaBuilder.Append($"{atomType.Key}<size=10>{(count == 1 ? "" : count)}</size>");
+            totalAtoms += atomType.Value;
+        }
+
+        textLabel.text = $"{totalAtoms} atoms in total, formula: {formulaBuilder}";
     }
 
     public void ChangeLattice()

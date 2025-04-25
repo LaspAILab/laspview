@@ -154,7 +154,7 @@ public class ViewportController : MonoBehaviour
         latticeTransforms = null;
         colliderManager.SetLatticeTransforms(LatticeTransforms);
         colliderManager.CreateCollidersForStructure(CurrentStructureView);
-        R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Atoms.Count);
+        R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Structure);
         R_LatticeEditPanelSrc.S.UpdateLattice(structureView.Structure);
         structureRenderer.SetStructureView(structureView, LatticeTransforms);
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
@@ -420,12 +420,12 @@ public class ViewportController : MonoBehaviour
         {
             case UpdateFlags.UpdateAtom:
                 R_AtomEditPanelSrc.S.UpdateSelection(selectionManager.Selection.ToList());
-                R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Atoms.Count);
+                R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Structure);
                 shallUpdateRenderer = true;
                 break;
             case UpdateFlags.UpdateLattice:
                 R_LatticeEditPanelSrc.S.UpdateLattice(CurrentStructureView.Structure);
-                R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Atoms.Count);
+                R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Structure);
                 // Update display properties since they may have changed due to lattice reform
                 R_AtomEditPanelSrc.S.DisplayActiveAtomProperties();
                 RecalculateBonds();
