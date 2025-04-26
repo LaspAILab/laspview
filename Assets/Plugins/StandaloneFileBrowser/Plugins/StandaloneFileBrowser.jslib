@@ -36,12 +36,11 @@ var StandaloneFileBrowserWebGLPlugin = {
         };
         fileInput.onchange = function (event) {
             // multiselect works
-            var urls = [];
-            for (var i = 0; i < event.target.files.length; i++) {
-                urls.push(URL.createObjectURL(event.target.files[i]));
-            }
+            var url = URL.createObjectURL(event.target.files[0]);
+            var filename = event.target.files[0].name;
+            
             // File selected
-            SendMessage(gameObjectName, methodName, urls.join());
+            SendMessage(gameObjectName, methodName, filename + ';' + url);
 
             // Remove after file selected
             document.body.removeChild(fileInput);
