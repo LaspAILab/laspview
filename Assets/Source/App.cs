@@ -168,7 +168,7 @@ public class App : MonoBehaviour
     public void OpenArcString(string content)
     {
         Debug.Log("OpenArcString: " + content);
-        OpenArc(content.Split('\n'), OpenFileList.Count.ToString());
+        OpenArc(content.Split('\n'), $"{OpenFileList.Count}.arc");
     }
 
     public void SaveCurrentStructure()

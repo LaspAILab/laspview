@@ -26,6 +26,9 @@ public class L_FilePanelSrc : MonoBehaviour
     private static extern void DownloadFile(string gameObjectName, string methodName, string filename, byte[] byteArray,
         int byteArraySize);
 
+    [DllImport("__Internal")]
+    private static extern void AskForSaveFormat(string gameObjectName, string methodName);
+
     // Called from browser
     public void OnFileUpload(string url)
     {
@@ -34,7 +37,10 @@ public class L_FilePanelSrc : MonoBehaviour
 
     private IEnumerator OutputRoutine(string url)
     {
-        var loader = UnityWebRequest.Get(url);
+        // Filename;Upload url
+        var data = url.Split(';');
+        
+        var loader = UnityWebRequest.Get(data[1]);
         yield return loader.SendWebRequest();
 
         if (loader.result != UnityWebRequest.Result.Success)
@@ -43,7 +49,8 @@ public class L_FilePanelSrc : MonoBehaviour
         }
         else
         {
-            App.Instance.OpenArcString(loader.downloadHandler.text);
+            Debug.Log(url);
+            App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(data[0]));
         }
     }
 
@@ -96,12 +103,23 @@ public class L_FilePanelSrc : MonoBehaviour
             }
         });
 #elif UNITY_WEBGL && !UNITY_EDITOR
-        UploadFile(gameObject.name, "OnFileUpload", ".arc,.car", false);
+        UploadFile(gameObject.name, "OnFileUpload", ".arc,.car,.poscar,.cif", false);
 #elif UNITY_STANDALONE_OSX
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, false);
         FileRead(paths[0]);
 #endif
     }
+    
+#if UNITY_WEBGL && !UNITY_EDITOR
+    private StructureFile pendingFile = null;
+    
+    public void WebFileDownloadCallback(string format)
+    {
+        string str = IFormat.GetFormatIO(format).Write(pendingFile);
+        var bytes = Encoding.UTF8.GetBytes(str);
+        DownloadFile(gameObject.name, "OnFileDownload", $"result.{format}", bytes, bytes.Length);
+    }
+#endif
 
     private void FileRead(string path)
     {
@@ -121,10 +139,10 @@ public class L_FilePanelSrc : MonoBehaviour
         }
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-        ArcFile newArcFile = new();
-        newArcFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
-        var bytes = Encoding.UTF8.GetBytes(newArcFile.WriteArc());
-        DownloadFile(gameObject.name, "OnFileDownload", "result.arc", bytes, bytes.Length);
+        StructureFile newFile = new();
+        newFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
+        pendingFile = newFile;
+        AskForSaveFormat(gameObject.name, "WebFileDownloadCallback");
 #else
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
         {
@@ -157,9 +175,8 @@ public class L_FilePanelSrc : MonoBehaviour
         }
 
 #if UNITY_WEBGL && !UNITY_EDITOR
-        string str = App.Instance.CurrentFile.WriteArc();
-        var bytes = Encoding.UTF8.GetBytes(str);
-        DownloadFile(gameObject.name, "OnFileDownload", "result.arc", bytes, bytes.Length);
+        pendingFile = App.Instance.CurrentFile;
+        AskForSaveFormat(gameObject.name, "WebFileDownloadCallback");
 #else
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
         {
