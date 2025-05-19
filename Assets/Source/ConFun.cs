@@ -62,10 +62,13 @@ public class ConFun : MonoBehaviour
         structureText.transform.GetChild(5).GetComponent<Text>().text = energy.ToString("f3");
     }
 
-    public static void UpdateStatusLabel(string str)
+    public static void UpdateStatusLabel(string str, bool addLog=true)
     {
         statusLabel.text = str;
-        // Debug.Log(str);
+        if (addLog)
+        {
+            Debug.Log(str);
+        }
     }
 
     public void OnStructureIndexSubmit()

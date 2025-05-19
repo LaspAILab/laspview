@@ -44,6 +44,8 @@ public class App : MonoBehaviour
 {
     public static App Instance;
 
+    public static bool IsRunningOnMacOS = false;
+
     public static Dictionary<string, ElementData> Elements;
 
 #if !UNITY_WEBGL
@@ -96,6 +98,11 @@ public class App : MonoBehaviour
         ReadPeriodicTable();
         Instance = this;
         Viewport = GetComponent<ViewportController>();
+
+        // We have to invert input axis on mac os
+        IsRunningOnMacOS = SystemInfo.operatingSystem.Contains("Mac OS") || SystemInfo.operatingSystem.Contains("MacOS");
+        Debug.Log("Running on OS: " + SystemInfo.operatingSystem);
+        Debug.Log("Is Mac OS: "+IsRunningOnMacOS);
     }
 
     private void Start()
