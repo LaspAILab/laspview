@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using RuntimeSceneGizmo;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Random = System.Random;
 
 internal enum ToolType
 {
@@ -32,15 +33,23 @@ public class ViewportController : MonoBehaviour
 
     public GUIStyle selectionLabelStyle;
 
+    private Random randomGenerator = new();
+    
+    // Workaround for MacOS command issue
+    // All keys pressed while command is held will be retained even if the key has already released, 
+    // so we have to avoid responding to a hotkey too many times
+    private List<KeyCode> ignoreKeyCodes = new();
+
     private int atomsLayer, latticeLayer;
 
     // Whether to update bonds in realtime when moving atoms
     private bool updateBondsRealtime = true;
+#if !UNITY_WEBGL
     private bool bondRecalculationRunning = false, bondDirtyFlag = false;
+#endif
 
     private int repeatA = 1, repeatB = 1, repeatC = 1;
     private Vector3 latticeCorner;
-
     private Vector3 cameraCenter;
 
     // How far the camera is from the focal center
@@ -67,8 +76,6 @@ public class ViewportController : MonoBehaviour
     private SelectionManager temporarySelectionManager;
 
     private bool shallUpdateRenderer = false, shallUpdateLattice = false;
-
-    private static readonly Vector3 pasteOffset = new(1f, 1f, 0f);
     private List<Atom> clipboard = new();
 
     private Matrix4x4[,,] latticeTransforms = null;
@@ -597,6 +604,7 @@ public class ViewportController : MonoBehaviour
                     temporarySelectionManager.ClearSelection();
                     temporarySelectionManager = null;
                 }
+
                 selectionBoxDrawer.Hide();
                 mouseDownTime = -1;
                 break;
@@ -606,13 +614,46 @@ public class ViewportController : MonoBehaviour
         currentTool = newTool;
     }
 
+    private void DebugKeyboard()
+    {
+        List<string> pressedKeys = new List<string>();
+        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+        {
+            pressedKeys.Add("Control");
+        }
+
+        if (Input.GetKey(KeyCode.LeftApple) || Input.GetKey(KeyCode.RightApple))
+        {
+            pressedKeys.Add("Command");
+        }
+
+        if (Input.GetKey(KeyCode.C))
+        {
+            pressedKeys.Add("C");
+        }
+
+        if (Input.GetKey(KeyCode.X))
+        {
+            pressedKeys.Add("X");
+        }
+
+        if (Input.GetKey(KeyCode.V))
+        {
+            pressedKeys.Add("V");
+        }
+
+        ConFun.UpdateStatusLabel(string.Join(" | ", pressedKeys), false);
+    }
+
     void HandleKeyboardEvents()
     {
+        // DebugKeyboard();
         var move = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0);
 
-#if UNITY_STANDALONE_OSX
-        move.y = -move.y;
-#endif
+        if (App.IsRunningOnMacOS)
+        {
+            move.y = -move.y;
+        }
 
         if (move.magnitude > 1e-5)
         {
@@ -629,53 +670,71 @@ public class ViewportController : MonoBehaviour
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-#if UNITY_STANDALONE_OSX || UNITY_WEBGL
-        ctrlDown = ctrlDown || Input.GetKey(KeyCode.LeftApple) || Input.GetKey(KeyCode.RightApple);
-#endif
+        if (App.IsRunningOnMacOS)
+        {
+            ctrlDown = ctrlDown || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
+        }
+        
         if (ctrlDown)
         {
             IOperation op = null;
-
-            if (Input.GetKeyUp(KeyCode.Z))
+            
+            // WebGL build running on Mac OS cannot report key up/down signals correctly, 
+            // This is a workaround
+            if (Input.GetKey(KeyCode.Z) && !ignoreKeyCodes.Contains(KeyCode.Z))
             {
                 // Undo
                 ConFun.UpdateStatusLabel("Undo!");
                 op = undoManager.Undo();
+                ignoreKeyCodes.Add(KeyCode.Z);
             }
-            else if (Input.GetKeyUp(KeyCode.Y))
+            else if (Input.GetKey(KeyCode.Y) && !ignoreKeyCodes.Contains(KeyCode.Y))
             {
                 ConFun.UpdateStatusLabel("Redo!");
                 op = undoManager.Redo();
+                ignoreKeyCodes.Add(KeyCode.Y);
             }
-            else if (Input.GetKeyUp(KeyCode.X))
+            else if (Input.GetKey(KeyCode.X) && !ignoreKeyCodes.Contains(KeyCode.X))
             {
                 ConFun.UpdateStatusLabel("Cut!");
                 SaveCurrentSelectionToClipboard();
                 SubmitOperation(new RemoveAtomsOperation(selectionManager.SelectedAtoms));
                 selectionManager.ClearSelection();
+                ignoreKeyCodes.Add(KeyCode.X);
             }
-            else if (Input.GetKeyUp(KeyCode.C))
+            else if (Input.GetKey(KeyCode.C) && !ignoreKeyCodes.Contains(KeyCode.C))
             {
                 ConFun.UpdateStatusLabel("Copy!");
                 SaveCurrentSelectionToClipboard();
                 selectionManager.ClearSelection();
+                ignoreKeyCodes.Add(KeyCode.C);
             }
-            else if (Input.GetKeyUp(KeyCode.V))
+            else if (Input.GetKey(KeyCode.V) && !ignoreKeyCodes.Contains(KeyCode.V))
             {
                 ConFun.UpdateStatusLabel("Paste!");
-                // Apply a offset before paste
+                // Add some noise to avoid pasting to the same position
+                float rand = (float)randomGenerator.NextDouble();
+                Vector3 pasteOffset = new(0.8f + 0.4f * rand, 0.8f + 0.4f * rand, 0);
+                // Apply an offset before paste
                 foreach (var item in clipboard)
                 {
                     item.Coordinates += pasteOffset;
                 }
 
                 SubmitOperation(new AddAtomsOperation(clipboard));
+                selectionManager.ClearSelection();
+                ignoreKeyCodes.Add(KeyCode.V);
             }
 
             if (op != null)
             {
                 OnOperationDone(op);
             }
+        }
+        else
+        {
+            // Clean up keys
+            ignoreKeyCodes.Clear();
         }
     }
 
@@ -684,7 +743,7 @@ public class ViewportController : MonoBehaviour
         SelectionItem hoveredAtom = raycastAtom.Count > 0 ? raycastAtom[0] : new SelectionItem { Atom = null };
         // Forbid zooming when right key is pressed
         bool cameraRotated = false,
-            cameraZoomed = !Input.GetKey(KeyCode.Mouse0) && Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5,
+            cameraZoomed = !Input.GetKey(KeyCode.Mouse1) && Mathf.Abs(Input.mouseScrollDelta.y) > 1e-5,
             cameraMoved = false;
         bool shallMoveAtom = false, shallRotateAtom = false;
         var mouseWorldPos = activeCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -692,20 +751,20 @@ public class ViewportController : MonoBehaviour
         bool shiftDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         bool altDown = Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
 
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse1))
         {
             cameraZoomed = false;
             mouseDownTime = Time.time;
             mouseDownPos = Input.mousePosition;
         }
 
-        if (Input.GetKeyUp(KeyCode.Mouse0))
+        if (!Input.GetKey(KeyCode.Mouse1))
         {
             // Reset mouse down time if mouse already released
             mouseDownTime = -1;
         }
 
-        if (Input.GetKeyUp(KeyCode.Mouse0) && currentTool == ToolType.Select)
+        if (Input.GetKeyUp(KeyCode.Mouse1) && currentTool == ToolType.Select)
         {
             if (raycastAtom.Count > 0)
             {
@@ -743,7 +802,7 @@ public class ViewportController : MonoBehaviour
 
         if (altDown)
         {
-            if (Input.GetKey(KeyCode.Mouse0))
+            if (Input.GetKey(KeyCode.Mouse1))
             {
                 ReplaceCurrentTool(ToolType.MoveAtom);
                 shallMoveAtom = true;
@@ -757,7 +816,7 @@ public class ViewportController : MonoBehaviour
                 }
             }
 
-            if (Input.GetKey(KeyCode.Mouse1) && !selectionManager.IsEmpty)
+            if (Input.GetKey(KeyCode.Mouse0) && !selectionManager.IsEmpty)
             {
                 ReplaceCurrentTool(ToolType.RotateAtom);
                 shallRotateAtom = true;
@@ -774,7 +833,7 @@ public class ViewportController : MonoBehaviour
         else
         {
             // Viewport op
-            if (Input.GetKey(KeyCode.Mouse1))
+            if (Input.GetKey(KeyCode.Mouse0))
             {
                 ReplaceCurrentTool(ToolType.RotateView);
                 cameraRotated = true;
@@ -821,7 +880,7 @@ public class ViewportController : MonoBehaviour
 
         if (currentTool == ToolType.BoxSelect)
         {
-            if (Input.GetKey(KeyCode.Mouse0))
+            if (Input.GetKey(KeyCode.Mouse1))
             {
                 var mousePos = Input.mousePosition;
                 // Handle box select
@@ -841,7 +900,7 @@ public class ViewportController : MonoBehaviour
                 // End box select
                 selectionManager.MergeSelection(temporarySelectionManager);
                 temporarySelectionManager = null;
-                
+
                 ReplaceCurrentTool(ToolType.Select);
                 if (selectionManager.Selection.Count == 2)
                 {
@@ -849,7 +908,7 @@ public class ViewportController : MonoBehaviour
                 }
             }
         }
-        else if (Input.GetKey(KeyCode.Mouse0) && !isMovingAtom && !isRotatingAtom && mouseDownTime > 0 &&
+        else if (Input.GetKey(KeyCode.Mouse1) && !isMovingAtom && !isRotatingAtom && mouseDownTime > 0 &&
                  Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
         {
             mouseDownTime = Time.time;
@@ -956,7 +1015,8 @@ public class ViewportController : MonoBehaviour
                 continue;
             }
 
-            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{sel.Atom.Symbol}]", selectionLabelStyle);
+            GUI.Label(new Rect(posScreen.x - 15, posScreen.y - 15, 100, 100), $"[{sel.Atom.Symbol}]",
+                selectionLabelStyle);
         }
     }
 }
