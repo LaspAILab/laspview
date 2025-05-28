@@ -184,7 +184,7 @@ public class App : MonoBehaviour
         {
             StructureFile newFile = new();
             newFile.Structures.Add(Viewport.CurrentStructureView.Structure);
-            string str = IFormat.GetFormatIO("arc").Write(newFile);
+            string str = IFormat.GetFormatIO(".arc").Write(newFile);
             SendJSEvent("ArcFileRecv", str);
         }
         catch (Exception e)
@@ -197,7 +197,7 @@ public class App : MonoBehaviour
     {
         try
         {
-            string str = IFormat.GetFormatIO("arc").Write(CurrentFile);
+            string str = IFormat.GetFormatIO(".arc").Write(CurrentFile);
             SendJSEvent("ArcFileRecv", str);
         }
         catch (Exception e)
@@ -263,11 +263,10 @@ public class App : MonoBehaviour
 
     public void OpenArc(IEnumerable<string> content, string filename)
     {
-        string format = Path.GetExtension(filename).Substring(1);
-        IFormat formatReader = IFormat.GetFormatIO(format);
+        IFormat formatReader = IFormat.GetFormatIO(filename);
         if (formatReader == null)
         {
-            Debug.LogError($"Invalid format `{format}`, cannot open");
+            Debug.LogError($"Invalid format for file `{Path.GetFileName(filename)}`, cannot open");
             return;
         }
 

@@ -1,0 +1,20 @@
+Tutorial:
+-- Viewport operations
+1. Drag with left mouse button to rotate view
+2. Drag with middle mouse button to move view
+
+-- Selection
+1. Click with right mouse button to select single atom
+2. Shift + Right mouse button to append/remove from selection
+2. Drag with right mouse button to box select
+3. Click on empty screen with right mouse button to clear selection
+
+-- Atom operations
+1. Alt + Right mouse button to move selected atoms
+2. Alt + Left mouse button to rotate selected atoms
+
+-- Hotkeys (all Ctrl are replaced with Command on Mac machines)
+1. Ctrl + C to copy selected atoms
+2. Ctrl + V to paste copied atoms
+3. Ctrl + Z to undo last operation
+4. Ctrl + Y to redo undone operation

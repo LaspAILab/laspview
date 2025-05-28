@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 
 public interface IFormat
@@ -29,13 +30,19 @@ public interface IFormat
         return doTrim ? line.Trim() : line;
     }
 
-    public static IFormat GetFormatIO(string format)
+    public static IFormat GetFormatIO(string filename)
     {
-        return format switch
+        // Recognize any file with name `POSCAR` as a poscar file
+        if (Path.GetFileNameWithoutExtension(filename).ToUpper() == "POSCAR")
         {
-            "arc" or "car" => new ArcFormat(),
-            "poscar" => new PoscarFormat(),
-            "cif" => new CifFormat(),
+            return new PoscarFormat();
+        }
+         
+        return Path.GetExtension(filename) switch
+        {
+            ".arc" or ".car" => new ArcFormat(),
+            ".poscar" => new PoscarFormat(),
+            ".cif" => new CifFormat(),
             _ => null
         };
     }

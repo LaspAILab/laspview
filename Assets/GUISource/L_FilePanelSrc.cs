@@ -151,11 +151,10 @@ public class L_FilePanelSrc : MonoBehaviour
                 return;
             }
             
-            string format = Path.GetExtension(path).Substring(1);
-            IFormat formatSaver = IFormat.GetFormatIO(format);
+            IFormat formatSaver = IFormat.GetFormatIO(path);
             if (formatSaver == null)
             {
-                Debug.LogError($"Invalid format `{format}`, cannot save");
+                Debug.LogError($"Invalid format for file `{Path.GetFileName(path)}`, cannot save");
                 return;
             }
                 
@@ -178,18 +177,17 @@ public class L_FilePanelSrc : MonoBehaviour
         pendingFile = App.Instance.CurrentFile;
         AskForSaveFormat(gameObject.name, "WebFileDownloadCallback");
 #else
-        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (string path) =>
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
         {
             if (string.IsNullOrEmpty(path))
             {
                 return;
             }
 
-            string format = Path.GetExtension(path).Substring(1);
-            IFormat formatSaver = IFormat.GetFormatIO(format);
+            IFormat formatSaver = IFormat.GetFormatIO(path);
             if (formatSaver == null)
             {
-                Debug.LogError($"Invalid format `{format}`, cannot save");
+                Debug.LogError($"Invalid format for file `{Path.GetFileName(path)}`, cannot save");
                 return;
             }
 

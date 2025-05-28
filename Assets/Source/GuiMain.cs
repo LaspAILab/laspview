@@ -18,6 +18,7 @@ public class GuiMain : MonoBehaviour
     public GameObject L_ProjectPanelPrefab;
     public GameObject R_LatticeEditPanelPrefab;
     public GameObject R_AtomEditPanelPrefab;
+    public GameObject M_InfoPanelPrefab;
 #if !UNITY_WEBGL
     //public GameObject M_LaspInWidgetPrefab;
     //public GameObject R_LASPPanelPrefab;
@@ -28,8 +29,6 @@ public class GuiMain : MonoBehaviour
     public GameObject statusPanel;
     public GameObject leftCanvas;
     public GameObject rightCanvas;
-
-    public bool menuBtnStatus = false;
 
     private Color UiPressedColor = new Color((144 / 255f), (144 / 255f), (144 / 255f), (255 / 255f));
     private Color UiUnPressedColor = new Color((203 / 255f), (203 / 255f), (203 / 255f), (203 / 255f));
@@ -93,6 +92,7 @@ public class GuiMain : MonoBehaviour
 #endif
         GameObject l_AtomPanel = Instantiate(R_AtomEditPanelPrefab);
         GameObject l_EditPanel = Instantiate(R_LatticeEditPanelPrefab);
+        GameObject m_InfoPanel = Instantiate(M_InfoPanelPrefab, transform, false);
     }
 
     public void SetAllUIInteract(GameObject go, bool interactable)

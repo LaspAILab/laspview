@@ -56,6 +56,8 @@ public class ViewportController : MonoBehaviour
     private float cameraDistance;
     private float cameraViewportSize = 0f;
 
+    private Vector3 pasteOffset;
+
     private Vector3 prevMousePos, opStartMousePos;
     private Ray mouseRay;
     private ToolType currentTool = ToolType.Select;
@@ -399,7 +401,15 @@ public class ViewportController : MonoBehaviour
             HandleMouseEvents(raycastResult);
         }
 
-        HandleKeyboardEvents();
+        var currentSelectedElement = EventSystem.current.currentSelectedGameObject;
+        bool isKeyboardCapturedByUI = currentSelectedElement != null &&
+                                      currentSelectedElement.GetComponent<RectTransform>() != null;
+        // Ignore keyboard events if a UI element is focused
+        if (!isKeyboardCapturedByUI)
+        {
+            HandleKeyboardEvents();
+        }
+        
         if (shallUpdateLattice)
         {
             latticeTransforms = null;
@@ -534,7 +544,7 @@ public class ViewportController : MonoBehaviour
 
         if (selectionManager.SelectedAtoms.Count == 1)
         {
-            string fixedState = sortedSelection[0].Atom.SourceAtom.FixedFlags > 0 ? "Fixed" : "Unfixed";
+            string fixedState = sortedSelection[0].Atom.SourceAtom.FixedFlags > 0 ? "Fixed" : "Non-fixed";
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol} {sortedSelection[0].Atom.SourceAtom.Coordinates} ({fixedState})");
         }
@@ -581,16 +591,11 @@ public class ViewportController : MonoBehaviour
         return center / count;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void SaveCurrentSelectionToClipboard()
     {
-        // Caution: avoid copying by reference here
-        // We don't wish editing copied atoms after copying will affect the clipboard
-        clipboard = selectionManager.Selection.Select(x => new Atom
-        {
-            Coordinates = x.Atom.SourceAtom.Coordinates,
-            FixedFlags = x.Atom.SourceAtom.FixedFlags,
-            Symbol = x.Atom.SourceAtom.Symbol
-        }).ToList();
+        // Atoms are added to clipboard by reference, remember to copy them when pasting! 
+        clipboard = selectionManager.Selection.Select(x => x.Atom.SourceAtom).ToList();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -604,45 +609,16 @@ public class ViewportController : MonoBehaviour
                     temporarySelectionManager.ClearSelection();
                     temporarySelectionManager = null;
                 }
-
+                
+                Debug.Log("End box select");
                 selectionBoxDrawer.Hide();
                 mouseDownTime = -1;
+                shallUpdateRenderer = true;
                 break;
             // Add any tool that may require manual canceling
         }
 
         currentTool = newTool;
-    }
-
-    private void DebugKeyboard()
-    {
-        List<string> pressedKeys = new List<string>();
-        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-        {
-            pressedKeys.Add("Control");
-        }
-
-        if (Input.GetKey(KeyCode.LeftApple) || Input.GetKey(KeyCode.RightApple))
-        {
-            pressedKeys.Add("Command");
-        }
-
-        if (Input.GetKey(KeyCode.C))
-        {
-            pressedKeys.Add("C");
-        }
-
-        if (Input.GetKey(KeyCode.X))
-        {
-            pressedKeys.Add("X");
-        }
-
-        if (Input.GetKey(KeyCode.V))
-        {
-            pressedKeys.Add("V");
-        }
-
-        ConFun.UpdateStatusLabel(string.Join(" | ", pressedKeys), false);
     }
 
     void HandleKeyboardEvents()
@@ -652,7 +628,7 @@ public class ViewportController : MonoBehaviour
 
         if (App.IsRunningOnMacOS)
         {
-            move.y = -move.y;
+            move = -move;
         }
 
         if (move.magnitude > 1e-5)
@@ -686,12 +662,14 @@ public class ViewportController : MonoBehaviour
                 // Undo
                 ConFun.UpdateStatusLabel("Undo!");
                 op = undoManager.Undo();
+                selectionManager.RemoveInvalid();
                 ignoreKeyCodes.Add(KeyCode.Z);
             }
             else if (Input.GetKey(KeyCode.Y) && !ignoreKeyCodes.Contains(KeyCode.Y))
             {
                 ConFun.UpdateStatusLabel("Redo!");
                 op = undoManager.Redo();
+                selectionManager.RemoveInvalid();
                 ignoreKeyCodes.Add(KeyCode.Y);
             }
             else if (Input.GetKey(KeyCode.X) && !ignoreKeyCodes.Contains(KeyCode.X))
@@ -706,6 +684,7 @@ public class ViewportController : MonoBehaviour
             {
                 ConFun.UpdateStatusLabel("Copy!");
                 SaveCurrentSelectionToClipboard();
+                pasteOffset = Vector3.zero;
                 selectionManager.ClearSelection();
                 ignoreKeyCodes.Add(KeyCode.C);
             }
@@ -714,15 +693,18 @@ public class ViewportController : MonoBehaviour
                 ConFun.UpdateStatusLabel("Paste!");
                 // Add some noise to avoid pasting to the same position
                 float rand = (float)randomGenerator.NextDouble();
-                Vector3 pasteOffset = new(0.8f + 0.4f * rand, 0.8f + 0.4f * rand, 0);
-                // Apply an offset before paste
-                foreach (var item in clipboard)
+                pasteOffset += new Vector3(0.8f + 0.4f * rand, 0.8f + 0.4f * rand, 0);
+                
+                // Perform a deep copy of clipboard atoms to avoid strange problems
+                var newAtoms = clipboard.Select(x => new Atom
                 {
-                    item.Coordinates += pasteOffset;
-                }
-
-                SubmitOperation(new AddAtomsOperation(clipboard));
-                selectionManager.ClearSelection();
+                    // Apply an offset
+                    Coordinates = x.Coordinates + pasteOffset,
+                    FixedFlags = x.FixedFlags,
+                    Symbol = x.Symbol
+                }).ToList();
+                
+                SubmitOperation(new AddAtomsOperation(newAtoms));
                 ignoreKeyCodes.Add(KeyCode.V);
             }
 
@@ -788,7 +770,6 @@ public class ViewportController : MonoBehaviour
                 }
 
                 UpdateBondingInfoDisplay();
-
                 shallUpdateRenderer = true;
             }
             else if (!shiftDown && !altDown)
@@ -916,12 +897,13 @@ public class ViewportController : MonoBehaviour
             selectionBoxDrawer.Display();
             Rect boxRect = Rect.MinMaxRect(mouseDownPos.x, mouseDownPos.y, mouseDownPos.x, mouseDownPos.y);
             selectionBoxDrawer.DrawBox(boxRect);
-            currentTool = ToolType.BoxSelect;
+            ReplaceCurrentTool(ToolType.BoxSelect);
 
             // Clear the current selection if shift down
             if (!shiftDown)
             {
                 selectionManager.ClearSelection();
+                shallUpdateRenderer = true;
             }
 
             temporarySelectionManager = new SelectionManager();
@@ -934,6 +916,7 @@ public class ViewportController : MonoBehaviour
             {
                 // If one or none atoms are selected, then the atom at cursor is moved
                 selectionManager.ReplaceSelection(hoveredAtom);
+                shallUpdateRenderer = true;
             }
 
             if (shallMoveAtom)
