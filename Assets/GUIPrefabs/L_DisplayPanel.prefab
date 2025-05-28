@@ -3470,7 +3470,7 @@ PrefabInstance:
     - target: {fileID: 2156995620175326573, guid: a33ee80d9ebc7d647a494d155bc39683,
         type: 3}
       propertyPath: m_Text
-      value: Outline frozen
+      value: Show fixed atoms
       objectReference: {fileID: 0}
     - target: {fileID: 2784289336627658197, guid: a33ee80d9ebc7d647a494d155bc39683,
         type: 3}

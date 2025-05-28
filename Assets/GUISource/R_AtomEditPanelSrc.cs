@@ -10,7 +10,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
     public static R_AtomEditPanelSrc S;
 
     public VectorInputController coordsInput;
-    public Dropdown elementDropdown;
+    public InputField elementInput;
     public Toggle fractionalToggle;
     public ScalarInputController radiusInput;
     public ColorPickerController colorPickerController;
@@ -33,11 +33,6 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         this.transform.localScale = Vector3.one;
         Button edButton = GameObject.Find("EditBtn").GetComponent<Button>();
         edButton.onClick.AddListener(() => { GuiMain.S.BtnHideObject(edButton, gameObject); });
-
-        foreach (var kv in App.Elements)
-        {
-            elementDropdown.options.Add(new Dropdown.OptionData(kv.Key));
-        }
 
         textLabel = label.GetComponent<Text>();
         coordsInput.SetOnChangeCallback(UpdateCoords);
@@ -112,8 +107,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         {
             return;
         }
-
-        elementDropdown.value = elementDropdown.options.FindIndex(x => x.text == activeAtom.SourceAtom.Symbol);
+        
+        elementInput.SetTextWithoutNotify(activeAtom.SourceAtom.Symbol);
 
         coordsInput.SetValue(fractionalToggle.isOn
             ? currentStructure.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
@@ -128,15 +123,32 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         });
     }
 
+    private static string ToElementSymbol(string rawText)
+    {
+        if (string.IsNullOrEmpty(rawText))
+        {
+            return null;
+        }
+        
+        return char.ToUpper(rawText[0]) + rawText.Substring(1).ToLower();
+    }
+
     public void UpdateElement()
     {
-        string element = elementDropdown.options[elementDropdown.value].text;
+        string element = ToElementSymbol(elementInput.text);
         if (activeAtom == null || activeAtom.SourceAtom.Symbol == element)
         {
             return;
         }
 
-        Assert.IsTrue(App.Elements.ContainsKey(element));
+        if (element == null || !App.Elements.ContainsKey(element))
+        {
+            ConFun.UpdateStatusLabel($"Invalid element {element}, ignoring! ");
+            elementInput.SetTextWithoutNotify(activeAtom.SourceAtom.Symbol);
+            return;
+        }
+
+        elementInput.SetTextWithoutNotify(element);
         App.Instance.Viewport.SubmitOperation(new SetElementOperation(activeAtom, element));
     }
 
@@ -203,8 +215,13 @@ public class R_AtomEditPanelSrc : MonoBehaviour
             return;
         }
 
-        string element = elementDropdown.options[elementDropdown.value].text;
-        Assert.IsTrue(App.Elements.ContainsKey(element));
+        string element = ToElementSymbol(elementInput.text);
+        if (element == null || !App.Elements.ContainsKey(element))
+        {
+            ConFun.UpdateStatusLabel($"Invalid element {element}, cannot add atom! ");
+            elementInput.SetTextWithoutNotify("H");
+            return;
+        }
 
         App.Instance.Viewport.SubmitOperation(new AddAtomOperation(fractionalToggle.isOn
             ? currentStructure.FractionalToCartesian(coords.Value)
