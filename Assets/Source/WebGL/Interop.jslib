@@ -18,7 +18,7 @@
         
         var format = prompt("Which format? (supported: arc, car, poscar, cif)", "arc");
         if (format != null) {
-            SendMessage(gameObjectName, methodName, format);
+            SendMessage(gameObjectName, methodName, "result." + format);
         }
     }
 });

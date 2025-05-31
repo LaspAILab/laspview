@@ -172,7 +172,7 @@ public class ArcFormat : IFormat
                 Atom atom = crystalStructure.Atoms[h];
                 lines.Append(string.Format("{0,-2}{1,15:f9}{2,15:f9}{3,15:f9}", atom.Symbol, atom.Coordinates[0],
                     atom.Coordinates[1], atom.Coordinates[2]));
-                lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-3}{atom.Symbol,-3}{atom.FixedFlags,8:f4}{h + 1,5:d}\n");
+                lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-4}{atom.Symbol,-4}{atom.FixedFlags,8:f4}{h + 1,5:d}\n");
             }
 
             lines.Append("end\nend\n");

@@ -32,25 +32,27 @@ public class L_FilePanelSrc : MonoBehaviour
     // Called from browser
     public void OnFileUpload(string url)
     {
-        StartCoroutine(OutputRoutine(url));
+        StartCoroutine(OutputRoutine(url.Split(';')));
     }
 
-    private IEnumerator OutputRoutine(string url)
+    private IEnumerator OutputRoutine(string[] files)
     {
-        // Filename;Upload url
-        var data = url.Split(';');
-        
-        var loader = UnityWebRequest.Get(data[1]);
-        yield return loader.SendWebRequest();
+        foreach (var file in files)
+        {
+            // Url, filename
+            var parts = file.Split('|');
+            Debug.Log($"Loading file {parts[1]}, url: {parts[0]}");
+            var loader = UnityWebRequest.Get(parts[0]);
+            yield return loader.SendWebRequest();
 
-        if (loader.result != UnityWebRequest.Result.Success)
-        {
-            Debug.Log("WebGL upload error: " + loader.error);
-        }
-        else
-        {
-            Debug.Log(url);
-            App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(data[0]));
+            if (loader.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning("WebGL upload error: " + loader.error);
+            }
+            else
+            {
+                App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]));
+            }
         }
     }
 
@@ -95,29 +97,33 @@ public class L_FilePanelSrc : MonoBehaviour
     {
         // Open file with filter
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, false, (paths) =>
+        // Multiselect is ignored in editor, this is not a bug
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, true, (paths) =>
         {
-            if (paths.Length > 0)
+            foreach (var path in paths)
             {
-                FileRead(paths[0]);
+                FileRead(path);
             }
         });
 #elif UNITY_WEBGL && !UNITY_EDITOR
-        UploadFile(gameObject.name, "OnFileUpload", ".arc,.car,.poscar,.cif", false);
+        UploadFile(gameObject.name, "OnFileUpload", ".arc,.car,.poscar,.cif", true);
 #elif UNITY_STANDALONE_OSX
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, false);
-        FileRead(paths[0]);
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, true);
+        foreach (var path in paths)
+        {
+            FileRead(path);
+        }
 #endif
     }
     
 #if UNITY_WEBGL && !UNITY_EDITOR
     private StructureFile pendingFile = null;
     
-    public void WebFileDownloadCallback(string format)
+    public void WebFileDownloadCallback(string filename)
     {
-        string str = IFormat.GetFormatIO(format).Write(pendingFile);
-        var bytes = Encoding.UTF8.GetBytes(str);
-        DownloadFile(gameObject.name, "OnFileDownload", $"result.{format}", bytes, bytes.Length);
+        string str = IFormat.GetFormatIO(filename).Write(pendingFile);
+        var bytes = Encoding.UTF8.GetBytes(filename);
+        DownloadFile(gameObject.name, "OnFileDownload", filename, bytes, bytes.Length);
     }
 #endif
 
