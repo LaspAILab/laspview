@@ -8,7 +8,7 @@ var StandaloneFileBrowserWebGLPlugin = {
     //     Match all audio files: "audio/*"
     //     Custom: ".plist, .xml, .yaml"
     // multiselect: Allows multiple file selection
-    UploadFile: function(gameObjectNamePtr, methodNamePtr, filterPtr, multiselect) {
+    UploadFile: function (gameObjectNamePtr, methodNamePtr, filterPtr, multiselect) {
         gameObjectName = UTF8ToString(gameObjectNamePtr);
         methodName = UTF8ToString(methodNamePtr);
         filter = UTF8ToString(filterPtr);
@@ -22,8 +22,8 @@ var StandaloneFileBrowserWebGLPlugin = {
         fileInput = document.createElement('input');
         fileInput.setAttribute('id', gameObjectName);
         fileInput.setAttribute('type', 'file');
-        fileInput.setAttribute('style','display:none;');
-        fileInput.setAttribute('style','visibility:hidden;');
+        fileInput.setAttribute('style', 'display:none;');
+        fileInput.setAttribute('style', 'visibility:hidden;');
         if (multiselect) {
             fileInput.setAttribute('multiple', '');
         }
@@ -36,11 +36,15 @@ var StandaloneFileBrowserWebGLPlugin = {
         };
         fileInput.onchange = function (event) {
             // multiselect works
-            var url = URL.createObjectURL(event.target.files[0]);
-            var filename = event.target.files[0].name;
+            var fileStrings = [];
+            for (var i = 0; i < event.target.files.length; i++) {
+                var file = event.target.files[i];
+                var url = URL.createObjectURL(file);
+                fileStrings.push(url + "|" + file.name);
+            }
             
             // File selected
-            SendMessage(gameObjectName, methodName, filename + ';' + url);
+            SendMessage(gameObjectName, methodName, fileStrings.join(";"));
 
             // Remove after file selected
             document.body.removeChild(fileInput);
@@ -57,7 +61,7 @@ var StandaloneFileBrowserWebGLPlugin = {
     // filenamePtr: Filename with extension
     // byteArray: byte[]
     // byteArraySize: byte[].Length
-    DownloadFile: function(gameObjectNamePtr, methodNamePtr, filenamePtr, byteArray, byteArraySize) {
+    DownloadFile: function (gameObjectNamePtr, methodNamePtr, filenamePtr, byteArray, byteArraySize) {
         gameObjectName = UTF8ToString(gameObjectNamePtr);
         methodName = UTF8ToString(methodNamePtr);
         filename = UTF8ToString(filenamePtr);
@@ -69,7 +73,7 @@ var StandaloneFileBrowserWebGLPlugin = {
 
         var downloader = window.document.createElement('a');
         downloader.setAttribute('id', gameObjectName);
-        downloader.href = window.URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
+        downloader.href = window.URL.createObjectURL(new Blob([bytes], {type: 'application/octet-stream'}));
         downloader.download = filename;
         document.body.appendChild(downloader);
 

@@ -62,6 +62,12 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
             return valanceA != valanceB ? valanceB.CompareTo(valanceA) : periodA.CompareTo(periodB);
         });
 
+        if (atoms.Length == 0)
+        {
+            textLabel.text = "Empty lattice";
+            return;
+        }
+        
         StringBuilder formulaBuilder = new();
         int totalAtoms = 0;
         int gcd = Gcd(atoms.Select(x => x.Value));
