@@ -96,7 +96,7 @@ public class PoscarFormat : IFormat
 
                     var vectorStrings = IFormat.SplitWhiteSpace(line.Trim());
                     
-                    float fixedFlags = 0;
+                    AtomFlags flags = AtomFlags.None;
                     if (vectorStrings.Length == 6)
                     {
                         if (!hasFixedFlags)
@@ -105,9 +105,10 @@ public class PoscarFormat : IFormat
                                 "Fixed flags specified, but the file doesn't contains `Selective dynamics`. ");
                         }
 
-                        fixedFlags = (vectorStrings[3] == "F" || vectorStrings[4] == "F" || vectorStrings[5] == "F")
-                            ? 1
-                            : 0;
+                        if (vectorStrings[3] == "F" || vectorStrings[4] == "F" || vectorStrings[5] == "F")
+                        {
+                            flags = AtomFlags.Fixed;
+                        }
                     }
                     else
                     {
@@ -132,7 +133,7 @@ public class PoscarFormat : IFormat
                         coords = crystalStructure.FractionalToCartesian(coords);
                     }
 
-                    crystalStructure.AddAtom(atomType.element, coords, 0, fixedFlags);
+                    crystalStructure.AddAtom(atomType.element, coords, 0, flags);
                 }
             }
 
@@ -186,7 +187,7 @@ public class PoscarFormat : IFormat
             structure = file.Structures[i];
             
             bool useSelectiveDynamics = false;
-            if (structure.Atoms.Any(x => x.FixedFlags > 0))
+            if (structure.Atoms.Any(x => x.Flags > AtomFlags.Fixed))
             {
                 // If any fixed atoms, then enable selective dynamics
                 lines.Append("Selective dynamics\n");
@@ -200,7 +201,7 @@ public class PoscarFormat : IFormat
                 {
                     if (useSelectiveDynamics)
                     {
-                        char fixedFlags = atom.FixedFlags > 0 ? 'F' : 'T';
+                        char fixedFlags = atom.Flags == AtomFlags.Fixed ? 'F' : 'T';
                         lines.Append(
                             $"{atom.Coordinates.x:f8} {atom.Coordinates.y:f8} {atom.Coordinates.z:f8} {fixedFlags} {fixedFlags} {fixedFlags}\n");
                     }

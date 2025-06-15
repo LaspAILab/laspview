@@ -74,15 +74,21 @@ public class ArcFormat : IFormat
                     }
 
                     float charge = float.Parse(match.Groups[9].Value);
-                    float fixedFlags = 0;
-                    // View charge as fixed flags
-                    if (charge == 1)
+                    AtomFlags flags = AtomFlags.None;
+                    // View charge value 1 as fixed
+                    if (Mathf.Approximately(charge, 1))
                     {
-                        fixedFlags = 1;
+                        flags = AtomFlags.Fixed;
+                        charge = 0;
+                    }
+                    // View charge value 0.1 as react
+                    if (Mathf.Approximately(charge, 1))
+                    {
+                        flags = AtomFlags.React;
                         charge = 0;
                     }
 
-                    currentStructure.AddAtom(element, coords, charge, fixedFlags);
+                    currentStructure.AddAtom(element, coords, charge, flags);
                 }
                 catch (FormatException e)
                 {
@@ -170,9 +176,15 @@ public class ArcFormat : IFormat
             for (int h = 0; h < crystalStructure.Atoms.Count; h++)
             {
                 Atom atom = crystalStructure.Atoms[h];
+                float charge = atom.Flags switch
+                {
+                    AtomFlags.Fixed => 1,
+                    AtomFlags.React => 0.1f,
+                    _ => atom.Charge
+                };
                 lines.Append(string.Format("{0,-2}{1,15:f9}{2,15:f9}{3,15:f9}", atom.Symbol, atom.Coordinates[0],
                     atom.Coordinates[1], atom.Coordinates[2]));
-                lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-4}{atom.Symbol,-4}{atom.FixedFlags,8:f4}{h + 1,5:d}\n");
+                lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-4}{atom.Symbol,-4}{charge,8:f4}{h + 1,5:d}\n");
             }
 
             lines.Append("end\nend\n");

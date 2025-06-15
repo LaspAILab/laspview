@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 
+public enum AtomFlags
+{
+    None = 0,
+    Fixed = 1,
+    React = 2
+}
+
 public class Atom
 {
     public int Index;
@@ -14,7 +21,7 @@ public class Atom
     public float Charge;
 
     // Flags about whether the atom is fixed, 1 means fixed
-    public float FixedFlags;
+    public AtomFlags Flags;
     public string Symbol;
 }
 

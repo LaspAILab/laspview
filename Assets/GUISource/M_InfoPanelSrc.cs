@@ -23,7 +23,7 @@ public class M_InfoPanelSrc : MonoBehaviour
 
         uiCamera = Camera.main;
         rectTransform = GetComponent<RectTransform>();
-        descriptionText.text = descriptionText.text.Replace("%%os", SystemInfo.operatingSystem);
+        descriptionText.text = Resources.Load<TextAsset>("AboutText").text.Replace("%%os", SystemInfo.operatingSystem);
         
         mainText = gameObject.GetComponentInChildren<InputField>();
         mainText.text = Resources.Load<TextAsset>("HelpText").text;
