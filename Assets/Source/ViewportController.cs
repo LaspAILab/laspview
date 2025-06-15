@@ -34,7 +34,7 @@ public class ViewportController : MonoBehaviour
     public GUIStyle selectionLabelStyle;
 
     private Random randomGenerator = new();
-    
+
     // Workaround for MacOS command issue
     // All keys pressed while command is held will be retained even if the key has already released, 
     // so we have to avoid responding to a hotkey too many times
@@ -229,6 +229,21 @@ public class ViewportController : MonoBehaviour
         latticeRenderer.SetLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
         latticeCorner =
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
+
+        // Check if selected atoms are still visible, if not, change the selection to the original atom
+        var currentSelection = selectionManager.Selection.ToList();
+        foreach (var item in currentSelection)
+        {
+            // Is the selected atom out of the current bounds?
+            if (item.Position.x > latticeCorner.x || item.Position.y > latticeCorner.y ||
+                item.Position.z > latticeCorner.z)
+            {
+                // Transfer selection to the first copy of the corresponding atom
+                selectionManager.Selection.Remove(item);
+                selectionManager.Selection.Add(new SelectionItem { Atom = item.Atom, LatticeOffset = Vector3.zero });
+            }
+        }
+
         RefocusCamera();
     }
 
@@ -409,7 +424,7 @@ public class ViewportController : MonoBehaviour
         {
             HandleKeyboardEvents();
         }
-        
+
         if (shallUpdateLattice)
         {
             latticeTransforms = null;
@@ -544,7 +559,12 @@ public class ViewportController : MonoBehaviour
 
         if (selectionManager.SelectedAtoms.Count == 1)
         {
-            string fixedState = sortedSelection[0].Atom.SourceAtom.FixedFlags > 0 ? "Fixed" : "Non-fixed";
+            string fixedState = sortedSelection[0].Atom.SourceAtom.Flags switch
+            {
+                AtomFlags.Fixed => "Fixed",
+                AtomFlags.React => "React",
+                _ => "Free"
+            };
             ConFun.UpdateStatusLabel(
                 $"{sortedSelection[0].Atom.Symbol} {sortedSelection[0].Atom.SourceAtom.Coordinates} ({fixedState})");
         }
@@ -609,7 +629,7 @@ public class ViewportController : MonoBehaviour
                     temporarySelectionManager.ClearSelection();
                     temporarySelectionManager = null;
                 }
-                
+
                 Debug.Log("End box select");
                 selectionBoxDrawer.Hide();
                 mouseDownTime = -1;
@@ -650,11 +670,11 @@ public class ViewportController : MonoBehaviour
         {
             ctrlDown = ctrlDown || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
         }
-        
+
         if (ctrlDown)
         {
             IOperation op = null;
-            
+
             // WebGL build running on Mac OS cannot report key up/down signals correctly, 
             // This is a workaround
             if (Input.GetKey(KeyCode.Z) && !ignoreKeyCodes.Contains(KeyCode.Z))
@@ -694,16 +714,16 @@ public class ViewportController : MonoBehaviour
                 // Add some noise to avoid pasting to the same position
                 float rand = (float)randomGenerator.NextDouble();
                 pasteOffset += new Vector3(0.8f + 0.4f * rand, 0.8f + 0.4f * rand, 0);
-                
+
                 // Perform a deep copy of clipboard atoms to avoid strange problems
                 var newAtoms = clipboard.Select(x => new Atom
                 {
                     // Apply an offset
                     Coordinates = x.Coordinates + pasteOffset,
-                    FixedFlags = x.FixedFlags,
+                    Flags = x.Flags,
                     Symbol = x.Symbol
                 }).ToList();
-                
+
                 SubmitOperation(new AddAtomsOperation(newAtoms));
                 ignoreKeyCodes.Add(KeyCode.V);
             }

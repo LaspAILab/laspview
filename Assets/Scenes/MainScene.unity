@@ -1804,6 +1804,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60652ecae7afb394bbaebf5bc6bc6b1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FixedRimColor: {r: 0.247, g: 0.816, b: 0.831, a: 2}
+  ReactRimColor: {r: 0.9892183, g: 0.6791832, b: 0.23330605, a: 2}
   RenderMaterial: {fileID: 2100000, guid: d52663c9ccb3aca479168493a931ac87, type: 2}
   AtomMesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   BondMesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}

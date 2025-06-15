@@ -1611,9 +1611,7 @@ PrefabInstance:
     - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_Text
-      value: "LaspView version 1.2.2\nRunning on OS: %%os \nCreated for LASP by Liu
-        Group\nWebsite: http://laspai.com/\n\nOriginal version created by Y.F. Shi
-        (@paptigshiyf)\nRewritten/optimized version by Y.C. Xu (@HydrogenC)\n"
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8324370880690241121, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}

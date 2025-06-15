@@ -189,7 +189,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         App.Instance.Viewport.structureRenderer.RecollectDrawBatches();
     }
 
-    public void FixAtoms(bool isFixed)
+    public void SetAtomFlags(int flags)
     {
         if (App.Instance.Viewport.CurrentStructureView == null)
         {
@@ -198,7 +198,7 @@ public class R_AtomEditPanelSrc : MonoBehaviour
 
         Assert.IsFalse(App.Instance.Viewport.selectionManager.IsEmpty);
         App.Instance.Viewport.SubmitOperation(
-            new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, isFixed));
+            new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, (AtomFlags)flags));
     }
 
     public void ToggleFractionalCoordinates()

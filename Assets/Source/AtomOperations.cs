@@ -189,22 +189,22 @@ public class SetElementOperation : IOperation
 public class SetFixedOperation : IOperation
 {
     private List<AtomView> targetAtoms;
-    private float[] oldFixedFlags;
-    private bool isFixed;
+    private AtomFlags[] oldFlags;
+    private AtomFlags newFlag;
 
-    public SetFixedOperation(List<AtomView> targetAtoms, bool isFixed)
+    public SetFixedOperation(List<AtomView> targetAtoms, AtomFlags newFlag)
     {
         this.targetAtoms = targetAtoms;
-        this.isFixed = isFixed;
+        this.newFlag = newFlag;
     }
 
     protected override bool DoImpl(CrystalStructureView structureView)
     {
-        oldFixedFlags = new float[targetAtoms.Count];
+        oldFlags = new AtomFlags[targetAtoms.Count];
         for (int i = 0; i < targetAtoms.Count; i++)
         {
-            oldFixedFlags[i] = targetAtoms[i].SourceAtom.FixedFlags;
-            targetAtoms[i].SourceAtom.FixedFlags = isFixed ? 1f : 0f;
+            oldFlags[i] = targetAtoms[i].SourceAtom.Flags;
+            targetAtoms[i].SourceAtom.Flags = newFlag;
         }
 
         return true;
@@ -214,7 +214,7 @@ public class SetFixedOperation : IOperation
     {
         for (int i = 0; i < targetAtoms.Count; i++)
         {
-            targetAtoms[i].SourceAtom.FixedFlags = oldFixedFlags[i];
+            targetAtoms[i].SourceAtom.Flags = oldFlags[i];
         }
 
         return true;
@@ -228,13 +228,13 @@ public class AddAtomOperation : IOperation
     private AtomView addedAtom = null;
     private Atom atomToAdd;
 
-    public AddAtomOperation(Vector3 position, string symbol, float fixedFlags = 0)
+    public AddAtomOperation(Vector3 position, string symbol, AtomFlags flags = AtomFlags.None)
     {
         atomToAdd = new Atom
         {
             Symbol = symbol,
             Coordinates = position,
-            FixedFlags = fixedFlags
+            Flags = flags
         };
     }
 
