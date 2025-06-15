@@ -45,7 +45,7 @@ public class CrystalStructure
         Atoms = new();
     }
 
-    public Atom AddAtom(string elemSymbol, Vector3 coords, float charge, float fixedFlags = 0)
+    public Atom AddAtom(string elemSymbol, Vector3 coords, float charge, AtomFlags flags = AtomFlags.None)
     {
         if (!App.Elements.ContainsKey(elemSymbol))
         {
@@ -58,7 +58,7 @@ public class CrystalStructure
             Symbol = elemSymbol,
             Coordinates = coords,
             Charge = charge,
-            FixedFlags = fixedFlags
+            Flags = flags
         };
         Atoms.Add(newAtom);
         return newAtom;

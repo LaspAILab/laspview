@@ -40,7 +40,7 @@ public interface IFormat
          
         return Path.GetExtension(filename) switch
         {
-            ".arc" or ".car" => new ArcFormat(),
+            ".arc" or ".car" or ".txt" => new ArcFormat(),
             ".poscar" => new PoscarFormat(),
             ".cif" => new CifFormat(),
             _ => null

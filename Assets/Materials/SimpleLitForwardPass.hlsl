@@ -220,8 +220,8 @@ void LitPassFragmentSimple(
     color.a = OutputAlpha(color.a, IsSurfaceTypeTransparent(_Surface));
 
     half fresnel = saturate(1 - dot(inputData.viewDirectionWS, input.normalWS));
-    float rimStrength = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterialInstanced, _RimStrength);
-    color.rgb = lerp(color.rgb, _RimColor, fresnel * rimStrength);
+    half4 rimColor = UNITY_ACCESS_INSTANCED_PROP(UnityPerMaterialInstanced, _RimColor);
+    color.rgb = lerp(color.rgb, rimColor.rgb, fresnel * rimColor.a);
 
     outColor = color;
 

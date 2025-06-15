@@ -1,0 +1,7 @@
+LaspView version 1.3.0
+Running on OS: %%os 
+Created for LASP by Liu Group
+Website: http://laspai.com/
+
+Original version created by Y.F. Shi (@paptigshiyf)
+Rewritten/optimized version by Y.C. Xu (@HydrogenC)

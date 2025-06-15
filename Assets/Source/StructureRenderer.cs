@@ -12,7 +12,7 @@ struct InstancingData
 {
     public List<Matrix4x4> Transforms;
     public List<Vector4> Colors;
-    public List<float> RimStrengths;
+    public List<Vector4> RimColors;
 
     public int InstanceCount => Transforms.Count;
 
@@ -23,7 +23,7 @@ struct InstancingData
         {
             Transforms.Capacity = value;
             Colors.Capacity = value;
-            RimStrengths.Capacity = value;
+            RimColors.Capacity = value;
         }
     }
 
@@ -32,25 +32,25 @@ struct InstancingData
     {
         Transforms.Clear();
         Colors.Clear();
-        RimStrengths.Clear();
+        RimColors.Clear();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(Matrix4x4 matrix, Vector4 color, float strength)
+    public void Add(Matrix4x4 matrix, Vector4 color, Vector4 rimColor)
     {
         Transforms.Add(matrix);
         Colors.Add(color);
-        RimStrengths.Add(strength);
+        RimColors.Add(rimColor);
     }
 }
 
 public class StructureRenderer : MonoBehaviour
 {
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
-    private static readonly int RimStrength = Shader.PropertyToID("_RimStrength");
+    private static readonly int RimColor = Shader.PropertyToID("_RimColor");
 
-    // Rim strength for frozen atoms
-    private const float FrozenRimStrength = 2f;
+    public Color FixedRimColor = new Vector4(0.247f, 0.816f, 0.831f, 2);
+    public Color ReactRimColor = new Vector4(0.990f, 0.680f, 0.233f, 2);
 
     public Material RenderMaterial;
     public Mesh AtomMesh;
@@ -67,14 +67,14 @@ public class StructureRenderer : MonoBehaviour
     {
         Transforms = new List<Matrix4x4>(),
         Colors = new List<Vector4>(),
-        RimStrengths = new List<float>()
+        RimColors = new List<Vector4>()
     };
 
     private InstancingData bondInstancingData = new InstancingData
     {
         Transforms = new List<Matrix4x4>(),
         Colors = new List<Vector4>(),
-        RimStrengths = new List<float>()
+        RimColors = new List<Vector4>()
     };
 
     private RenderParams renderParams;
@@ -134,6 +134,19 @@ public class StructureRenderer : MonoBehaviour
         return atom.IsSelected ? Color.yellow : atom.DisplayColor;
     }
 
+    Vector4 GetRimColor(AtomFlags flags)
+    {
+        switch (flags)
+        {
+            case AtomFlags.Fixed:
+                return FixedRimColor;
+            case AtomFlags.React:
+                return ReactRimColor;
+            default:
+                return Vector4.zero;
+        }
+    }
+
     public void SetLatticeTransforms(Matrix4x4[,,] newLatticeTransforms)
     {
         latticeTransforms = newLatticeTransforms;
@@ -164,7 +177,7 @@ public class StructureRenderer : MonoBehaviour
                     {
                         instancingData.Transforms.Add(latticeTransforms[i, j, k] * instancingData.Transforms[count]);
                         instancingData.Colors.Add(instancingData.Colors[count]);
-                        instancingData.RimStrengths.Add(instancingData.RimStrengths[count]);
+                        instancingData.RimColors.Add(instancingData.RimColors[count]);
                     }
                 }
             }
@@ -201,8 +214,7 @@ public class StructureRenderer : MonoBehaviour
         atomInstancingData.Capacity = CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC;
         foreach (var item in CurrentStructureView.Atoms)
         {
-            atomInstancingData.Add(item.Transform, GetAtomColor(item),
-                item.SourceAtom.FixedFlags > 0 ? FrozenRimStrength : 0);
+            atomInstancingData.Add(item.Transform, GetAtomColor(item), GetRimColor(item.SourceAtom.Flags));
         }
 
         bondInstancingData.Clear();
@@ -213,10 +225,9 @@ public class StructureRenderer : MonoBehaviour
         foreach (var item in CurrentStructureView.Bonds)
         {
             // Add blue rim for bonds only if two atoms are both fixed
-            float rimStrength = (item.FromAtom.SourceAtom.FixedFlags > 0 && item.ToAtom.SourceAtom.FixedFlags > 0)
-                ? FrozenRimStrength
-                : 0;
-            bondInstancingData.Add(item.Transform, GetAtomColor(item.FromAtom), rimStrength);
+            Vector4 rimColor = GetRimColor(item.FromAtom.SourceAtom.Flags == item.ToAtom.SourceAtom.Flags ? item.FromAtom.SourceAtom.Flags
+                : AtomFlags.None);
+            bondInstancingData.Add(item.Transform, GetAtomColor(item.FromAtom), rimColor);
         }
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.ReleaseMutex();
@@ -231,7 +242,7 @@ public class StructureRenderer : MonoBehaviour
     {
         var props = new MaterialPropertyBlock();
         props.SetColor(BaseColor, GetAtomColor(atom));
-        props.SetFloat(RimStrength, atom.SourceAtom.FixedFlags > 0 ? FrozenRimStrength : 0);
+        props.SetColor(RimColor, GetRimColor(atom.SourceAtom.Flags));
         renderParams.matProps = props;
         var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * radiusScale * Vector3.one);
         Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
@@ -249,7 +260,7 @@ public class StructureRenderer : MonoBehaviour
         propertyBlock.SetVectorArray(BaseColor, atomInstancingData.Colors);
         if (OutlineFrozenAtoms)
         {
-            propertyBlock.SetFloatArray(RimStrength, atomInstancingData.RimStrengths);
+            propertyBlock.SetVectorArray(RimColor, atomInstancingData.RimColors);
         }
 
         renderParams.matProps = propertyBlock;
@@ -267,7 +278,7 @@ public class StructureRenderer : MonoBehaviour
         propertyBlock.SetVectorArray(BaseColor, bondInstancingData.Colors);
         if (OutlineFrozenAtoms)
         {
-            propertyBlock.SetFloatArray(RimStrength, bondInstancingData.RimStrengths);
+            propertyBlock.SetVectorArray(RimColor, bondInstancingData.RimColors);
         }
 
         renderParams.matProps = propertyBlock;

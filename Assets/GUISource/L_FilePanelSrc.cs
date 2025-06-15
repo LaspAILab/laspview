@@ -86,8 +86,8 @@ public class L_FilePanelSrc : MonoBehaviour
 
     public static ExtensionFilter[] Extensions = new[]
     {
-        new ExtensionFilter("Structure Files", "arc", "car", "poscar", "cif"),
-        new ExtensionFilter("Arc Files", "arc", "car"),
+        new ExtensionFilter("Structure Files", "txt", "arc", "car", "poscar", "cif"),
+        new ExtensionFilter("Arc Files",  "txt", "arc", "car"),
         new ExtensionFilter("Poscar Files", "poscar"),
         new ExtensionFilter("Cif Files", "cif"),
         new ExtensionFilter("All Files", "*"),
@@ -106,7 +106,7 @@ public class L_FilePanelSrc : MonoBehaviour
             }
         });
 #elif UNITY_WEBGL && !UNITY_EDITOR
-        UploadFile(gameObject.name, "OnFileUpload", ".arc,.car,.poscar,.cif", true);
+        UploadFile(gameObject.name, "OnFileUpload", ".txt,.arc,.car,.poscar,.cif", true);
 #elif UNITY_STANDALONE_OSX
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, true);
         foreach (var path in paths)
@@ -122,7 +122,7 @@ public class L_FilePanelSrc : MonoBehaviour
     public void WebFileDownloadCallback(string filename)
     {
         string str = IFormat.GetFormatIO(filename).Write(pendingFile);
-        var bytes = Encoding.UTF8.GetBytes(filename);
+        var bytes = Encoding.UTF8.GetBytes(str);
         DownloadFile(gameObject.name, "OnFileDownload", filename, bytes, bytes.Length);
     }
 #endif
