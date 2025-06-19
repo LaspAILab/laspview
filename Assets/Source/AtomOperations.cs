@@ -22,6 +22,7 @@ public class TranslateAtomsOperation : IOperation
         {
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates + translation, false);
             ColliderManager.Instance.UpdateColliderForAtom(item);
+            HBondRenderer.Instance.OnAtomUpdate(structureView, item);
         }
 
 #if !UNITY_WEBGL
@@ -44,6 +45,7 @@ public class TranslateAtomsOperation : IOperation
         {
             structureView.SetAtomPosition(item, item.SourceAtom.Coordinates - translation, false);
             ColliderManager.Instance.UpdateColliderForAtom(item);
+            HBondRenderer.Instance.OnAtomUpdate(structureView, item);
         }
 
 #if !UNITY_WEBGL
@@ -83,6 +85,7 @@ public class RepositionAtomsOperation : IOperation
             oldPositions.Add(targetAtoms[i].SourceAtom.Coordinates);
             structureView.SetAtomPosition(targetAtoms[i], newPositions[i], false);
             ColliderManager.Instance.UpdateColliderForAtom(targetAtoms[i]);
+            HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtoms[i]);
         }
 
 #if !UNITY_WEBGL
@@ -105,6 +108,7 @@ public class RepositionAtomsOperation : IOperation
         {
             structureView.SetAtomPosition(targetAtoms[i], oldPositions[i], false);
             ColliderManager.Instance.UpdateColliderForAtom(targetAtoms[i]);
+            HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtoms[i]);
         }
 
 #if !UNITY_WEBGL
@@ -141,6 +145,7 @@ public class SetPositionOperation : IOperation
         structureView.SetAtomPosition(targetAtom, newPosition, false);
         ColliderManager.Instance.UpdateColliderForAtom(targetAtom);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
+        HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtom);
 
         return true;
     }
@@ -150,6 +155,7 @@ public class SetPositionOperation : IOperation
         structureView.SetAtomPosition(targetAtom, oldPosition, false);
         ColliderManager.Instance.UpdateColliderForAtom(targetAtom);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
+        HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtom);
         
         return true;
     }
@@ -173,6 +179,7 @@ public class SetElementOperation : IOperation
         oldSymbol = targetAtom.Symbol;
         structureView.SetAtomElement(targetAtom, newSymbol);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
+        HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtom);
         return true;
     }
 
@@ -180,6 +187,7 @@ public class SetElementOperation : IOperation
     {
         structureView.SetAtomElement(targetAtom, oldSymbol);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
+        HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtom);
         return true;
     }
 
@@ -250,6 +258,7 @@ public class AddAtomOperation : IOperation
         }
 
         ColliderManager.Instance.CreateColliderForAtom(addedAtom);
+        HBondRenderer.Instance.OnAtomUpdate(structureView, addedAtom);
         return true;
     }
 
@@ -257,6 +266,7 @@ public class AddAtomOperation : IOperation
     {
         ColliderManager.Instance.DropColliderForAtom(addedAtom);
         structureView.RemoveAtom(addedAtom);
+        HBondRenderer.Instance.OnAtomRemove(addedAtom);
         return true;
     }
 
@@ -284,6 +294,7 @@ public class AddAtomsOperation : IOperation
             {
                 structureView.ReviveAtom(item);
                 ColliderManager.Instance.CreateColliderForAtom(item);
+                HBondRenderer.Instance.OnAtomUpdate(structureView, item);
             }
         }
         else
@@ -294,6 +305,7 @@ public class AddAtomsOperation : IOperation
             {
                 addedAtoms[i] = structureView.AddAtom(atomsToAdd[i]);
                 ColliderManager.Instance.CreateColliderForAtom(addedAtoms[i]);
+                HBondRenderer.Instance.OnAtomUpdate(structureView, addedAtoms[i]);
             }
         }
 
@@ -312,6 +324,7 @@ public class AddAtomsOperation : IOperation
         {
             ColliderManager.Instance.DropColliderForAtom(item);
             structureView.RemoveAtom(item);
+            HBondRenderer.Instance.OnAtomRemove(item);
         }
 
         return true;
@@ -338,6 +351,7 @@ public class RemoveAtomsOperation : IOperation
         {
             ColliderManager.Instance.DropColliderForAtom(item);
             structureView.RemoveAtom(item);
+            HBondRenderer.Instance.OnAtomRemove(item);
         }
 
         return true;
@@ -349,6 +363,7 @@ public class RemoveAtomsOperation : IOperation
         {
             structureView.ReviveAtom(item);
             ColliderManager.Instance.CreateColliderForAtom(item);
+            HBondRenderer.Instance.OnAtomUpdate(structureView, item);
         }
 
         return true;

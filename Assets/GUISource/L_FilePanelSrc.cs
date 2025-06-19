@@ -78,7 +78,7 @@ public class L_FilePanelSrc : MonoBehaviour
             {
                 GuiMain.S.ClearLeftPanel();
             }
-            
+
             GuiMain.S.BtnHideObject(flButton, gameObject);
         });
         // gameObject.SetActive(false);
@@ -87,7 +87,7 @@ public class L_FilePanelSrc : MonoBehaviour
     public static ExtensionFilter[] Extensions = new[]
     {
         new ExtensionFilter("Structure Files", "txt", "arc", "car", "poscar", "cif"),
-        new ExtensionFilter("Arc Files",  "txt", "arc", "car"),
+        new ExtensionFilter("Arc Files", "txt", "arc", "car"),
         new ExtensionFilter("Poscar Files", "poscar"),
         new ExtensionFilter("Cif Files", "cif"),
         new ExtensionFilter("All Files", "*"),
@@ -98,24 +98,15 @@ public class L_FilePanelSrc : MonoBehaviour
         // Open file with filter
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         // Multiselect is ignored in editor, this is not a bug
-        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, true, (paths) =>
-        {
-            foreach (var path in paths)
-            {
-                FileRead(path);
-            }
-        });
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, true, FilesRead);
 #elif UNITY_WEBGL && !UNITY_EDITOR
         UploadFile(gameObject.name, "OnFileUpload", ".txt,.arc,.car,.poscar,.cif", true);
 #elif UNITY_STANDALONE_OSX
         string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, true);
-        foreach (var path in paths)
-        {
-            FileRead(path);
-        }
+        FilesRead(paths);
 #endif
     }
-    
+
 #if UNITY_WEBGL && !UNITY_EDITOR
     private StructureFile pendingFile = null;
     
@@ -127,9 +118,14 @@ public class L_FilePanelSrc : MonoBehaviour
     }
 #endif
 
-    private void FileRead(string path)
+    public static void FilesRead(string[] paths)
     {
-        App.Instance.OpenArc(File.ReadLines(path), Path.GetFileName(path));
+        bool isFirst = true;
+        foreach (var path in paths)
+        {
+            App.Instance.OpenArc(File.ReadLines(path), Path.GetFileName(path), isFirst);
+            isFirst = false;
+        }
     }
 
     public void NewStructure()
@@ -156,14 +152,14 @@ public class L_FilePanelSrc : MonoBehaviour
             {
                 return;
             }
-            
+
             IFormat formatSaver = IFormat.GetFormatIO(path);
             if (formatSaver == null)
             {
                 Debug.LogError($"Invalid format for file `{Path.GetFileName(path)}`, cannot save");
                 return;
             }
-                
+
             StructureFile newStructureFile = new();
             newStructureFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
             string str = formatSaver.Write(newStructureFile);

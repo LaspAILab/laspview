@@ -2,6 +2,7 @@ Shader "Unlit/DashedLineShader"
 {
     Properties
     {
+        _BaseColor ("Color", Color) = (1,1,1,1)
         _MainTex ("Texture", 2D) = "white" {}
         _Spacing ("Spacing", float) = 0.5
     }
@@ -32,6 +33,7 @@ Shader "Unlit/DashedLineShader"
                 float4 vertex : SV_POSITION;
             };
 
+            half4 _BaseColor;
             Texture2D _MainTex;
             SamplerState sampler_linear_repeat;
             float4 _MainTex_ST;
@@ -55,6 +57,7 @@ Shader "Unlit/DashedLineShader"
                 } else {
                     col = _MainTex.Sample(sampler_linear_repeat, i.uv);
                 }
+                col *= _BaseColor;
                 return col;
             }
             ENDHLSL

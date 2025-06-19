@@ -49,7 +49,7 @@ public class App : MonoBehaviour
     public static Dictionary<string, ElementData> Elements;
 
 #if !UNITY_WEBGL
-    // Queue for scheduling tasks on main thread
+    // Queue for scheduling tasks on the main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
 
     private bool loadedStructuresDirty = false, firstStructureLoaded = false;
@@ -116,12 +116,12 @@ public class App : MonoBehaviour
         bool hasConfigFileName = ConFun.GlobalConfig.TryGetValue("arc_default", out string filename);
         if (hasConfigFileName && File.Exists(Path.Join(Application.dataPath, filename)))
         {
-            OpenArc(File.ReadAllLines(Path.Join(Application.dataPath, filename)), "Default.arc");
+            OpenArc(File.ReadAllLines(Path.Join(Application.dataPath, filename)), "Default.arc", true);
         }
         else
         {
             string lines = Resources.Load<TextAsset>("DefaultArc").text;
-            OpenArc(lines.Split('\n'), "Default.arc");
+            OpenArc(lines.Split('\n'), "Default.arc", true);
         }
 #endif
     }
@@ -261,7 +261,7 @@ public class App : MonoBehaviour
 #endif
     }
 
-    public void OpenArc(IEnumerable<string> content, string filename)
+    public void OpenArc(IEnumerable<string> content, string filename, bool openAfterLoad = false)
     {
         IFormat formatReader = IFormat.GetFormatIO(filename);
         if (formatReader == null)
@@ -296,11 +296,22 @@ public class App : MonoBehaviour
         firstStructureLoaded = false;
         Task.Run(() =>
         {
-            CurrentFile = new();
+            StructureFile currentFile = new();
+            if (openAfterLoad)
+            {
+                CurrentFile = currentFile;
+            }
             try
             {
-                AddFile(CurrentFile, filename);
-                formatReader.Read(CurrentFile, content, _ => { loadedStructuresDirty = true; });
+                AddFile(currentFile, filename);
+                if (openAfterLoad)
+                {
+                    formatReader.Read(currentFile, content, _ => { loadedStructuresDirty = true; });
+                }
+                else
+                {
+                    formatReader.Read(currentFile, content);
+                }
             }
             catch (Exception e)
             {

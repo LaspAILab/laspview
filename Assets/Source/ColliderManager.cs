@@ -14,7 +14,7 @@ public class ColliderManager : MonoBehaviour
     public GameObject colliderPrefab;
     public GameObject colliderParent;
 
-    private ColliderPool colliderPool;
+    private GameObjectPool<ColliderScript> colliderPool;
 
     public Dictionary<AtomView, ColliderScript[,,]> colliderRegistry = new();
 
@@ -54,7 +54,7 @@ public class ColliderManager : MonoBehaviour
             {
                 for (int k = 0; k < repeatC; k++)
                 {
-                    atomColliders[i, j, k] = colliderPool.BorrowCollider();
+                    atomColliders[i, j, k] = colliderPool.BorrowObject();
                     collidersAlive++;
                     var atomPos = new Vector4(atomView.Position.x, atomView.Position.y, atomView.Position.z, 1);
                     atomColliders[i, j, k].SetAtom(atomView, latticeTransforms[i, j, k] * atomPos,
@@ -96,7 +96,7 @@ public class ColliderManager : MonoBehaviour
     {
         foreach (var item in colliders)
         {
-            colliderPool.DropCollider(item);
+            colliderPool.DropObject(item);
             collidersAlive--;
         }
     }

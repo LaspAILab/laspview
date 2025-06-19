@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using RuntimeSceneGizmo;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using B83.Win32;
 using Random = System.Random;
 
 internal enum ToolType
@@ -24,6 +25,7 @@ public class ViewportController : MonoBehaviour
     const float PAN_SPEED = 1f;
 
     [NonSerialized] public StructureRenderer structureRenderer;
+    [NonSerialized] public HBondRenderer hBondRenderer;
     [NonSerialized] public LatticeRenderer latticeRenderer;
     [NonSerialized] public SelectionManager selectionManager = null;
     [NonSerialized] public ColliderManager colliderManager;
@@ -101,6 +103,7 @@ public class ViewportController : MonoBehaviour
     void Awake()
     {
         structureRenderer = GetComponent<StructureRenderer>();
+        hBondRenderer = GetComponent<HBondRenderer>();
         latticeRenderer = GetComponent<LatticeRenderer>();
         colliderManager = GetComponent<ColliderManager>();
         activeCamera = Camera.main;
@@ -109,6 +112,30 @@ public class ViewportController : MonoBehaviour
         atomsLayer = LayerMask.NameToLayer("Default");
         latticeLayer = LayerMask.NameToLayer("TransparentFX");
     }
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
+    void OnEnable ()
+    {
+        // must be installed on the main thread to get the right thread id.
+        UnityDragAndDropHook.InstallHook();
+        UnityDragAndDropHook.OnDroppedFiles += OnFiles;
+    }
+
+    void OnDisable()
+    {
+        UnityDragAndDropHook.UninstallHook();
+    }
+#endif
+
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
+    void OnFiles(List<string> aFiles, POINT aPos)
+    {
+        // do something with the dropped file names. aPos will contain the 
+        // mouse position within the window where the files has been dropped.
+        ConFun.UpdateStatusLabel("Dropped files: " + string.Join(" ", aFiles));
+        L_FilePanelSrc.FilesRead(aFiles.ToArray());
+    }
+#endif
 
     public void RecalculateBonds()
     {
@@ -168,6 +195,7 @@ public class ViewportController : MonoBehaviour
         structureRenderer.SetStructureView(structureView, LatticeTransforms);
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
         latticeCorner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
+        hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
     }
 
     public void SubmitOperation(IOperation op)
@@ -226,6 +254,7 @@ public class ViewportController : MonoBehaviour
         latticeTransforms = null;
         structureRenderer.SetLatticeTransforms(LatticeTransforms);
         colliderManager.SetLatticeTransforms(LatticeTransforms);
+        hBondRenderer.OnLatticeRepeatChange(LatticeTransforms);
         latticeRenderer.SetLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
         latticeCorner =
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
@@ -429,6 +458,7 @@ public class ViewportController : MonoBehaviour
         {
             latticeTransforms = null;
             structureRenderer.SetLatticeTransforms(LatticeTransforms);
+            hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
             colliderManager.SetLatticeTransforms(LatticeTransforms);
             latticeRenderer.SetLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
             latticeCorner =
