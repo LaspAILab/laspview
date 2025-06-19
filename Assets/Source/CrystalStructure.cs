@@ -212,7 +212,7 @@ public enum CrossCellBondPolicy
 public class CrystalStructureView
 {
     // Vectors to translate the lattice, in fractional coords, used to check cross-lattice bonds
-    static readonly Vector3[] TranslationVectorsFractional =
+    public static readonly Vector3[] TranslationVectorsFractional =
     {
         // Adjacent
         new(1, 0, 0),
@@ -245,15 +245,15 @@ public class CrystalStructureView
         new(-1, -1, -1),
     };
 
-    private static readonly int[] AdjacentCellCounts = { 0, 6, 6 + 12, 6 + 12 + 8 };
+    public static readonly int[] AdjacentCellCounts = { 0, 6, 6 + 12, 6 + 12 + 8 };
 
     // Remember to recalculate bonds after change
     public static float BondTolerance { get; set; } = 1.26f;
 
     public static CrossCellBondPolicy CrossCellPolicy { get; set; } = CrossCellBondPolicy.Adjacent;
 
-    // Translation vectors, converted to cartesian space
-    Vector3[] translationVectorsCartesian;
+    // Translation vectors of adjacent cells, converted to cartesian space
+    public Vector3[] TranslationVectorsCartesian;
 
     public CrystalStructure Structure;
 
@@ -265,7 +265,12 @@ public class CrystalStructureView
     public Mutex BondMutex;
 #endif
 
-    private PointOctree<AtomView> accelerationOctree;
+    public PointOctree<AtomView> AccelerationOctree
+    {
+        get;
+        private set;
+    }
+    
     private float maxAtomRadius = 0f;
 
     public CrystalStructureView(CrystalStructure structure)
@@ -277,14 +282,14 @@ public class CrystalStructureView
 
         var latticeCenter = structure.FractionalToCartesian(new Vector3(0.5f, 0.5f, 0.5f));
         var maxSide = Mathf.Max(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
-        accelerationOctree = new PointOctree<AtomView>(maxSide, latticeCenter, 10f);
+        AccelerationOctree = new PointOctree<AtomView>(maxSide, latticeCenter, 10f);
         Atoms.Capacity = structure.Atoms.Count;
         foreach (var item in structure.Atoms)
         {
             AddAtomView(new AtomView(item, structure));
         }
 
-        translationVectorsCartesian =
+        TranslationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
@@ -292,7 +297,7 @@ public class CrystalStructureView
     private void AddAtomView(AtomView atomView)
     {
         Atoms.Add(atomView);
-        accelerationOctree.Add(atomView, atomView.Position);
+        AccelerationOctree.Add(atomView, atomView.Position);
         maxAtomRadius = Mathf.Max(maxAtomRadius, atomView.Radius);
         atomView.InLattice = true;
     }
@@ -301,7 +306,7 @@ public class CrystalStructureView
     private void RemoveAtomView(AtomView atomView)
     {
         Atoms.Remove(atomView);
-        accelerationOctree.Remove(atomView);
+        AccelerationOctree.Remove(atomView);
         atomView.InLattice = false;
     }
 
@@ -315,8 +320,8 @@ public class CrystalStructureView
 
         atomView.Position = AtomView.ClipAtomCoords(posCartesian, Structure, repeat);
         atomView.InvalidateTransform();
-        accelerationOctree.Remove(atomView);
-        accelerationOctree.Add(atomView, atomView.Position);
+        AccelerationOctree.Remove(atomView);
+        AccelerationOctree.Add(atomView, atomView.Position);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -389,7 +394,7 @@ public class CrystalStructureView
 
         float maxDistance = tolerance * (targetAtom.Radius + maxAtomRadius);
         List<AtomView> nearbyAtoms = new();
-        accelerationOctree.GetNearbyNonAlloc(targetAtom.Position, maxDistance, nearbyAtoms);
+        AccelerationOctree.GetNearbyNonAlloc(targetAtom.Position, maxDistance, nearbyAtoms);
 
         foreach (var otherAtom in nearbyAtoms)
         {
@@ -416,8 +421,8 @@ public class CrystalStructureView
         var adjacentCellCount = AdjacentCellCounts[(int)CrossCellPolicy];
         for (int i = 0; i < adjacentCellCount; i++)
         {
-            var translatedCoord = targetAtom.Position + translationVectorsCartesian[i];
-            accelerationOctree.GetNearbyNonAlloc(translatedCoord, maxDistance, nearbyAtoms);
+            var translatedCoord = targetAtom.Position + TranslationVectorsCartesian[i];
+            AccelerationOctree.GetNearbyNonAlloc(translatedCoord, maxDistance, nearbyAtoms);
 
             foreach (var otherAtom in nearbyAtoms)
             {
@@ -473,7 +478,7 @@ public class CrystalStructureView
             }
         }
 
-        translationVectorsCartesian =
+        TranslationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
     }
 
@@ -512,7 +517,7 @@ public class CrystalStructureView
             Structure.LatticeParams[3], Structure.LatticeParams[4], Structure.LatticeParams[5]
         });
 
-        translationVectorsCartesian =
+        TranslationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
 
         Atoms.Capacity = Atoms.Count * (repeatA + repeatB + repeatC);
@@ -596,7 +601,7 @@ public class CrystalStructureView
             Structure.LatticeParams[3], Structure.LatticeParams[4], Structure.LatticeParams[5]
         });
 
-        translationVectorsCartesian =
+        TranslationVectorsCartesian =
             TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
 
         foreach (var item in newAtoms)
