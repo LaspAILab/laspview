@@ -22,8 +22,8 @@ public class L_DisplayPanelSrc : MonoBehaviour
         defaultModelPara = new Dictionary<string, float>
         {
             { "lat range a", 1.0f }, { "lat range b", 1.0f }, { "lat range c", 1.0f }, { "play interval", 0.2f },
-            { "display style", 0.0f }, { "show fixed atoms", 1f }, { "stick radius", 0.35f }, { "cross-cell bond", 1f }, { "tolerance", 1.26f },
-            { "ball radius type", 0.0f }, { "show lattice", 1f }, { "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
+            { "display style", 0.0f }, { "highlight atoms", 1f }, { "stick radius", 0.35f }, { "cross-cell bond", 1f }, { "tolerance", 1.26f },
+            { "ball radius type", 0.0f }, { "show lattice", 1f }, {"show h bond", 1f},{ "ball scale", 1f }, { "ball radius", 1.0f }, { "background", 0.0f }
         };
         DisplayLoadModelPara();
 
@@ -56,7 +56,7 @@ public class L_DisplayPanelSrc : MonoBehaviour
 
         if (viewport.structureRenderer != null)
         {
-            viewport.structureRenderer.OutlineFrozenAtoms = modelPara["show fixed atoms"] > 0;
+            viewport.structureRenderer.OutlineFrozenAtoms = modelPara["highlight atoms"] > 0;
             viewport.structureRenderer.SetAtomStyle(modelPara["ball scale"]);
             viewport.structureRenderer.SetBondStyle(modelPara["stick radius"]);
 
@@ -78,6 +78,11 @@ public class L_DisplayPanelSrc : MonoBehaviour
         if (viewport.latticeRenderer != null)
         {
             viewport.latticeRenderer.SetDisplay(modelPara["show lattice"] > 0);
+        }
+
+        if (viewport.hBondRenderer != null)
+        {
+            viewport.hBondRenderer.SetDisplay(modelPara["show h bond"] > 0);
         }
 
         if (App.Instance != null)

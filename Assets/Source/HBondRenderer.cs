@@ -84,6 +84,8 @@ public class HBondRenderer : MonoBehaviour
     public GameObject dottedLinePrefab;
     public GameObject dottedLineParent;
 
+    private bool isEnabled = true;
+
     private CrystalStructureView structureView;
     private GameObjectPool<DottedLineScript> dottedLinePool;
     private List<HBond> hydrogenBonds = new();
@@ -91,7 +93,7 @@ public class HBondRenderer : MonoBehaviour
     private Matrix4x4[,,] latticeTransforms = null;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void Awake()
     {
         dottedLinePool = new(dottedLinePrefab, dottedLineParent);
         Instance = this;
@@ -114,7 +116,7 @@ public class HBondRenderer : MonoBehaviour
         bondObjects.Clear();
     }
 
-    private void GenerateLines()
+    private void CreateLines()
     {
         RemoveAddHBonds();
 
@@ -166,32 +168,76 @@ public class HBondRenderer : MonoBehaviour
 
     public void SetStructure(CrystalStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
     {
+        this.structureView = structureView;
         latticeTransforms = newLatticeTransforms;
+
+        if (isEnabled)
+        {
+            Regenerate();
+        }
+    }
+
+    private void Regenerate()
+    {
         structureView.GenerateHBonds(ref hydrogenBonds, HBOND_THRESHOLD);
-        GenerateLines();
+        CreateLines();
     }
     
     // Caution: this function doesn't recalculate bonds, so only use this when 
     public void OnLatticeRepeatChange(Matrix4x4[,,] newLatticeTransforms)
     {
         latticeTransforms = newLatticeTransforms;
-        GenerateLines();
+        
+        if (isEnabled)
+        {
+            CreateLines();
+        }
     }
 
     public void OnAtomRemove(AtomView atom)
     {
+        if (!isEnabled)
+        {
+            return;
+        }
+        
         hydrogenBonds.RemoveAll(x => x.HAtom == atom || x.AcceptorAtom == atom);
-        GenerateLines();
+        CreateLines();
     }
 
     public void OnAtomUpdate(CrystalStructureView structureView, AtomView atom)
     {
+        if (!isEnabled)
+        {
+            return;
+        }
+        
         if (atom.Symbol is not ("H" or "O" or "N" or "F"))
         {
             return;
         }
         
         structureView.GenerateHBonds(ref hydrogenBonds, HBOND_THRESHOLD);
-        GenerateLines();
+     
+        CreateLines();
+    }
+
+    public void SetDisplay(bool show)
+    {
+        if (isEnabled == show)
+        {
+            return;
+        }
+        
+        isEnabled = show;
+        if (isEnabled)
+        {
+            Regenerate();
+        }
+        else
+        {
+            RemoveAddHBonds();
+            hydrogenBonds.Clear();
+        }
     }
 }

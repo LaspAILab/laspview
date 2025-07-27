@@ -69,6 +69,6 @@ public class L_ProjectPanelSrc : MonoBehaviour
         //called by 
         string filename = obj.GetComponentInChildren<Text>().text;
 
-        App.Instance.SetArcFile(filename);
+        App.Instance.SwitchArcFile(filename);
     }
 }

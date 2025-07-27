@@ -141,23 +141,6 @@ public class CrystalStructure
         return baseVectors;
     }
 
-    public Dictionary<string, List<Atom>> GroupAtoms()
-    {
-        var groupedAtoms = new Dictionary<string, List<Atom>>();
-
-        foreach (var atom in Atoms)
-        {
-            if (!groupedAtoms.ContainsKey(atom.Symbol))
-            {
-                groupedAtoms[atom.Symbol] = new List<Atom>();
-            }
-
-            groupedAtoms[atom.Symbol].Add(atom);
-        }
-        
-        return groupedAtoms;
-    }
-
     public Vector3 FractionalToCartesian(Vector3 posFractional)
     {
         Vector4 tmp = new Vector4(posFractional.x, posFractional.y, posFractional.z, 1);
@@ -198,14 +181,6 @@ public class StructureFile
 #endif
         Debug.Log("Disposing arc file");
     }
-}
-
-public enum CrossCellBondPolicy
-{
-    None,
-    Adjacent,
-    Diagonal,
-    BodyDiagonal,
 }
 
 // The view model of an ARC structure
