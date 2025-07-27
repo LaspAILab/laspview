@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Serialization;
@@ -82,7 +83,8 @@ public class R_AtomEditPanelSrc : MonoBehaviour
         if (selection.Count > 1)
         {
             label.SetActive(true);
-            textLabel.text = $"{selection.Count} atoms selected";
+            string chemicalFormula = ChemicalFormulaUtils.GetChemicalFormula(selection.Select(x => x.Atom.SourceAtom).ToList(), 50);
+            textLabel.text = $"{selection.Count} atoms selected, formula: {chemicalFormula}";
             edits.SetActive(false);
             addAtomButton.SetActive(false);
             radiusInput.gameObject.SetActive(false);

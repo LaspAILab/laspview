@@ -80,7 +80,7 @@ public class StructureRenderer : MonoBehaviour
     private RenderParams renderParams;
     private bool renderAtoms = true, renderBonds = true;
 
-    public void SetDisplayType(bool showBalls = true, bool showSticks = true)
+    public void SetDisplayType(bool showBalls, bool showSticks)
     {
         renderAtoms = showBalls;
         renderBonds = showSticks;

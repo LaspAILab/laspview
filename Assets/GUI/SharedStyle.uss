@@ -1,0 +1,206 @@
+:root {
+}
+
+.title-button {
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-top-color: rgb(216, 220, 229);
+    border-left-color: rgb(216, 220, 229);
+    border-right-color: rgb(216, 220, 229);
+    border-bottom-color: rgb(216, 220, 229);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    height: 70%;
+    align-self: center;
+    background-color: rgb(255, 255, 255);
+    font-size: 22px;
+    padding-left: 25px;
+    padding-right: 25px;
+    align-content: flex-start;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 150px;
+    align-items: stretch;
+    justify-content: flex-start;
+    -unity-text-align: middle-left;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+}
+
+.title-button:hover {
+    -unity-font-style: normal;
+    border-left-color: rgb(97, 59, 231);
+    border-right-color: rgb(97, 59, 231);
+    border-top-color: rgb(97, 59, 231);
+    border-bottom-color: rgb(97, 59, 231);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+}
+
+.active-title-button {
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-top-color: rgb(216, 220, 229);
+    border-left-color: rgb(216, 220, 229);
+    border-right-color: rgb(216, 220, 229);
+    border-bottom-color: rgb(216, 220, 229);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    height: 70%;
+    align-self: center;
+    background-color: rgb(97, 59, 231);
+    color: rgb(255, 255, 255);
+}
+
+.icon-button {
+    background-size: 75% 75%;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-left-color: rgb(124, 124, 124);
+    border-right-color: rgb(124, 124, 124);
+    border-top-color: rgb(124, 124, 124);
+    border-bottom-color: rgb(124, 124, 124);
+    background-color: rgb(255, 255, 255);
+}
+
+.icon-button:hover {
+    background-size: 75% 75%;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-left-color: rgb(124, 124, 124);
+    border-right-color: rgb(124, 124, 124);
+    border-top-color: rgb(124, 124, 124);
+    border-bottom-color: rgb(124, 124, 124);
+    background-color: rgb(217, 217, 217);
+}
+
+.icon-button:active {
+    background-size: 75% 75%;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-left-color: rgb(124, 124, 124);
+    border-right-color: rgb(124, 124, 124);
+    border-top-color: rgb(124, 124, 124);
+    border-bottom-color: rgb(124, 124, 124);
+    background-color: rgb(171, 171, 171);
+}
+
+.transparent-button {
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.transparent-button:hover {
+    background-color: rgba(146, 146, 146, 0.33);
+}
+
+.transparent-button:active {
+    background-color: rgba(146, 146, 146, 0.67);
+}
+
+.transparent-panel {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    background-color: rgba(171, 171, 171, 0.42);
+    position: absolute;
+    bottom: 65px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.file-button {
+    font-size: 20px;
+    -unity-text-align: middle-left;
+    background-size: 30px 30px;
+    background-position-x: left 30px;
+    -unity-background-scale-mode: scale-to-fit;
+    padding-left: 75px;
+}
+
+.project-item-button {
+    font-size: 20px;
+    -unity-text-align: middle-left;
+    background-size: 30px 30px;
+    background-position-x: left 30px;
+    -unity-background-scale-mode: scale-to-fit;
+    padding-left: 60px;
+    background-image: url("project://database/Assets/GUIIcon/crystal-meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal-meth");
+    -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&guid=cd56282d3b0ad7b4aba00251bfaf2e0a&type=3#MonaspaceArgon-Regular");
+    border-top-width: 1px;
+    border-bottom-width: 0;
+    border-left-color: rgb(175, 175, 175);
+    border-right-color: rgb(175, 175, 175);
+    border-top-color: rgb(175, 175, 175);
+    border-bottom-color: rgb(175, 175, 175);
+    height: 35px;
+}
+
+.round-panel {
+    background-color: rgb(255, 255, 255);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-left-color: rgb(97, 59, 231);
+    border-right-color: rgb(97, 59, 231);
+    border-top-color: rgb(97, 59, 231);
+    border-bottom-color: rgb(97, 59, 231);
+}
+
+.display-option-item {
+    font-size: 20px;
+    -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.display-option-subtitle {
+    border-left-width: 2px;
+    margin-left: 15px;
+    padding-left: 10px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    border-left-color: rgb(97, 59, 231);
+    border-right-color: rgb(97, 59, 231);
+    border-top-color: rgb(97, 59, 231);
+    border-bottom-color: rgb(97, 59, 231);
+}
+
+.info-label {
+    font-size: 20px;
+    -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceXenon-Bold.otf?fileID=12800000&guid=b08c99acbf06dda46897111737ad9b35&type=3#MonaspaceXenon-Bold");
+    color: rgb(255, 255, 255);
+    margin-top: 1px;
+    margin-bottom: 1px;
+    padding-bottom: 1px;
+    padding-top: 1px;
+}

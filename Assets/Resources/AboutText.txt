@@ -1,4 +1,4 @@
-LaspView version 1.3.1
+LaspView version 1.3.4
 Running on OS: %%os 
 Created for LASP by Liu Group
 Website: http://laspai.com/

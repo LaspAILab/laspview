@@ -255,9 +255,9 @@ public class App : MonoBehaviour
 
         OpenFileList.Add(filename, structureFile);
 #if UNITY_WEBGL
-        L_ProjectPanelSrc.S.ProjectListAddCell(filename);
+        ProjectPanelController.Instance.AddProjectFile(filename);
 #else
-        ScheduleTask(() => L_ProjectPanelSrc.S.ProjectListAddCell(filename));
+        ScheduleTask(() => ProjectPanelController.Instance.AddProjectFile(filename));
 #endif
     }
 
@@ -321,7 +321,8 @@ public class App : MonoBehaviour
 #endif
     }
 
-    public void SetArcFile(string filename)
+    // Switches to an already opened (present in project list) structure file
+    public void SwitchArcFile(string filename)
     {
         if (!OpenFileList.ContainsKey(filename))
         {
@@ -391,7 +392,7 @@ public class App : MonoBehaviour
                 ConFun.UpdateStructureInfo(null, numLoadedStructures, currentStructure.Energy);
             }
 
-            ConFun.UpdateStatusLabel($"Reading arc file: {numLoadedStructures} structures loaded");
+            OverlayUiController.Instance.PrintStatusLog($"Reading arc file: {numLoadedStructures} structures loaded");
         }
 #endif
     }

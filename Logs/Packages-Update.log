@@ -116,3 +116,16 @@ The following packages were 已更新:
   com.unity.ugui 从版本 1.0.0 到 2.0.0
 The following packages were 已移除:
   com.unity.textmeshpro@2.0.1
+
+=== Tue Jul 22 14:11:58 2025
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.ai.navigation from version 2.0.4 to 2.0.8
+  com.unity.collab-proxy from version 2.5.2 to 2.8.2
+  com.unity.ide.rider from version 3.0.34 to 3.0.36
+  com.unity.ide.visualstudio from version 2.0.22 to 2.0.23
+  com.unity.render-pipelines.universal from version 17.0.3 to 17.1.0
+  com.unity.test-framework from version 1.4.5 to 1.5.1

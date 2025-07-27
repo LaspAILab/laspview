@@ -9,6 +9,21 @@ using UnityEngine.EventSystems;
 using B83.Win32;
 using Random = System.Random;
 
+public enum DisplayStyleType
+{
+    BallsAndSticks,
+    OnlyBalls,
+    OnlySticks
+}
+
+public enum CrossCellBondPolicy
+{
+    None,
+    Adjacent,
+    Diagonal,
+    BodyDiagonal,
+}
+
 internal enum ToolType
 {
     Select,

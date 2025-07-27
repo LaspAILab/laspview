@@ -1,0 +1,7 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
+    <ui:Label text="Active Project Files" style="font-size: 22px; margin-left: 12px; padding-top: 8px; padding-bottom: 8px; -unity-font-style: bold; padding-left: 4px;" />
+    <ui:ScrollView horizontal-scroller-visibility="Hidden" style="max-height: 400px;">
+        <ui:Button text="New Empty" name="SampleItem" class="transparent-button project-item-button" style="background-position-x: left 20px; display: none; background-size: 20px 20px;" />
+    </ui:ScrollView>
+</ui:UXML>

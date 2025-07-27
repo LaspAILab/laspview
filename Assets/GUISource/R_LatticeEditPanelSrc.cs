@@ -34,52 +34,20 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         anglesInput.SetValue(structure.LatticeParams[3], structure.LatticeParams[4], structure.LatticeParams[5]);
     }
 
-    static int Gcd(IEnumerable<int> numbers)
-    {
-        return numbers.Aggregate(_GcdImpl);
-    }
-
-    private static int _GcdImpl(int a, int b)
-    {
-        while (true)
-        {
-            if (b == 0) return a;
-            var a1 = a;
-            a = b;
-            b = a1 % b;
-        }
-    }
+    
 
     public void UpdateAtomsCount(CrystalStructure structure)
     {
-        var atoms = structure.GroupAtoms().Select(x => new KeyValuePair<string, int>(x.Key, x.Value.Count)).ToArray();
-
-        Array.Sort(atoms, (a, b) =>
-        {
-            var (periodA, valanceA) = App.GetElementPeriodAndValance(a.Key);
-            var (periodB, valanceB) = App.GetElementPeriodAndValance(b.Key);
-
-            return valanceA != valanceB ? valanceB.CompareTo(valanceA) : periodA.CompareTo(periodB);
-        });
-
-        if (atoms.Length == 0)
+        string chemicalFormula = ChemicalFormulaUtils.GetChemicalFormula(structure.Atoms, 50);
+        
+        if (chemicalFormula == null)
         {
             textLabel.text = "Empty lattice";
-            return;
         }
-        
-        StringBuilder formulaBuilder = new();
-        int totalAtoms = 0;
-        int gcd = Gcd(atoms.Select(x => x.Value));
-
-        foreach (var atomType in atoms)
+        else
         {
-            int count = atomType.Value / gcd;
-            formulaBuilder.Append($"{atomType.Key}<size=10>{(count == 1 ? "" : count)}</size>");
-            totalAtoms += atomType.Value;
+            textLabel.text = $"{structure.Atoms.Count} atoms in total, formula: {chemicalFormula}";
         }
-
-        textLabel.text = $"{totalAtoms} atoms in total, formula: {formulaBuilder}";
     }
 
     public void ChangeLattice()

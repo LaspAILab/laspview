@@ -236,7 +236,7 @@ PrefabInstance:
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 18.2
+      value: 18.199997
       objectReference: {fileID: 0}
     - target: {fileID: 8484607959944786406, guid: 784f3f00df60edb4998c8aa63634a4af,
         type: 3}
@@ -910,6 +910,142 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 396991421}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &410927087
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 410927089}
+  - component: {fileID: 410927088}
+  - component: {fileID: 410927090}
+  - component: {fileID: 410927093}
+  - component: {fileID: 410927092}
+  - component: {fileID: 410927094}
+  - component: {fileID: 410927095}
+  m_Layer: 0
+  m_Name: UISystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &410927088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_PanelSettings: {fileID: 11400000, guid: 2fcf7973b9134f54cb1a7ac590505d0a, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: faf8a60cf00d292439a60d8246cd77bc,
+    type: 3}
+  m_SortingOrder: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+--- !u!4 &410927089
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &410927090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae8361c300324b52962996a7bb72fe80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  imageContainerName: GizmoPanel
+  controller: {fileID: 114490568713215462, guid: 2540e6c6fdb6c234891b3f071266d6dc,
+    type: 3}
+  highlightHoveredComponents: 1
+  m_onComponentClicked:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 637342122}
+        m_TargetAssemblyTypeName: ViewportController, Assembly-CSharp
+        m_MethodName: SetCameraViewport
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &410927092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3edf650656442ec8d478c80598220ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &410927093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e47bf03dbe1ee148acddf6bfd4c4896, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &410927094
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: be86b18e7b424976817e350756f64c7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &410927095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 410927087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f14a83d40b65407988e2809cfe00319c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &422507616
 GameObject:
   m_ObjectHideFlags: 0
@@ -977,7 +1113,7 @@ Canvas:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 422507616}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_RenderMode: 1
   m_Camera: {fileID: 1505343037}
@@ -1067,6 +1203,15 @@ PrefabInstance:
       propertyPath: m_Name
       value: GizmoRenderer
       objectReference: {fileID: 0}
+    - target: {fileID: 1378467028300716, guid: 5814e191475da55449e996c6052e2ef7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114355531903325768, guid: 5814e191475da55449e996c6052e2ef7,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 114355531903325768, guid: 5814e191475da55449e996c6052e2ef7,
         type: 3}
       propertyPath: m_onComponentClicked.m_PersistentCalls.m_Calls.Array.size
@@ -1096,6 +1241,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_onComponentClicked.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
       value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 114500537324731862, guid: 5814e191475da55449e996c6052e2ef7,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224153425668364128, guid: 5814e191475da55449e996c6052e2ef7,
         type: 3}
@@ -1200,17 +1350,17 @@ PrefabInstance:
     - target: {fileID: 224808028645613936, guid: 5814e191475da55449e996c6052e2ef7,
         type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224808028645613936, guid: 5814e191475da55449e996c6052e2ef7,
         type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224808028645613936, guid: 5814e191475da55449e996c6052e2ef7,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: -1
       objectReference: {fileID: 0}
     - target: {fileID: 224808028645613936, guid: 5814e191475da55449e996c6052e2ef7,
         type: 3}
@@ -2420,7 +2570,7 @@ MonoBehaviour:
   m_ContentType: 2
   m_InputType: 0
   m_AsteriskChar: 42
-  m_KeyboardType: 4
+  m_KeyboardType: 2
   m_LineType: 0
   m_HideMobileInput: 0
   m_CharacterValidation: 1
@@ -2702,7 +2852,7 @@ PrefabInstance:
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 0
+      value: 554.6
       objectReference: {fileID: 0}
     - target: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
         type: 3}
@@ -3476,7 +3626,7 @@ MonoBehaviour:
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
-  m_ChildControlHeight: 1
+  m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
@@ -4980,3 +5130,4 @@ SceneRoots:
   - {fileID: 859746866}
   - {fileID: 1117215167}
   - {fileID: 1822645382}
+  - {fileID: 410927089}

@@ -175,7 +175,7 @@ public class PoscarFormat : IFormat
             lines.Append($"{baseVectors[i].x:f8} {baseVectors[i].y:f8} {baseVectors[i].z:f8}\n");
         }
 
-        var elementCounts = structure.GroupAtoms().ToArray();
+        var elementCounts = ChemicalFormulaUtils.GroupAtoms(structure.Atoms).ToArray();
         lines.Append(string.Join(" ", elementCounts.Select(x => x.Key)));
         lines.Append("\n");
 
