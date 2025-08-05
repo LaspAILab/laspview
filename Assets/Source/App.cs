@@ -52,7 +52,7 @@ public class App : MonoBehaviour
     // Queue for scheduling tasks on the main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
 
-    private bool loadedStructuresDirty = false, firstStructureLoaded = false;
+    private bool firstStructureLoaded = false;
 #endif
 
     public ViewportController Viewport;
@@ -90,8 +90,6 @@ public class App : MonoBehaviour
     public Dictionary<string, StructureFile> OpenFileList { get; } = new();
 
     public StructureFile CurrentFile { get; private set; }
-
-    public int CurrentStructureIndex { get; private set; }
 
     void Awake()
     {
@@ -131,22 +129,6 @@ public class App : MonoBehaviour
     {
         2, 8, 8, 18, 18, 32, 32
     };
-
-    // Sort elements by common valance, used for printing chemical formula
-    public static (int, int) GetElementPeriodAndValance(string elem)
-    {
-        int elementNumber = Elements[elem].Number;
-
-        int index = 0, period = 1;
-        while (elementNumber > ElementsPerRow[index])
-        {
-            elementNumber -= ElementsPerRow[index++];
-            period++;
-        }
-
-        int valance = elementNumber <= ElementsPerRow[period - 1] - 4 ? elementNumber : (elementNumber - 8);
-        return (period, valance);
-    }
 
     private void ReadPeriodicTable()
     {
@@ -207,45 +189,6 @@ public class App : MonoBehaviour
     }
 #endif
 
-    public bool SwitchStructure(int index)
-    {
-#if !UNITY_WEBGL
-        CurrentFile.ListMutex.WaitOne();
-#endif
-        index = Mathf.Clamp(index, 0, CurrentFile.StructureCount - 1);
-        if (index == CurrentStructureIndex)
-        {
-#if !UNITY_WEBGL
-            CurrentFile.ListMutex.ReleaseMutex();
-#endif
-            return false;
-        }
-
-        CurrentStructureIndex = index;
-        CrystalStructure currentStructure = CurrentFile.Structures[index];
-#if !UNITY_WEBGL
-        CurrentFile.ListMutex.ReleaseMutex();
-#endif
-
-#if UNITY_WEBGL
-        CrystalStructureView structureView = new(currentStructure);
-        Viewport.OpenStructureView(structureView);
-        ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
-#else
-        Task.Run(() =>
-        {
-            CrystalStructureView structureView = new(currentStructure);
-            ScheduleTask(() =>
-            {
-                Viewport.OpenStructureView(structureView);
-                ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount, currentStructure.Energy);
-            });
-        });
-#endif
-
-        return true;
-    }
-
     public void AddFile(StructureFile structureFile, string filename)
     {
         if (OpenFileList.ContainsValue(structureFile) || OpenFileList.ContainsKey(filename))
@@ -293,20 +236,20 @@ public class App : MonoBehaviour
         }
 
 #else
-        firstStructureLoaded = false;
         Task.Run(() =>
         {
             StructureFile currentFile = new();
             if (openAfterLoad)
             {
                 CurrentFile = currentFile;
+                currentFile.IsOpenStructureQueued = true;
             }
             try
             {
                 AddFile(currentFile, filename);
                 if (openAfterLoad)
                 {
-                    formatReader.Read(currentFile, content, _ => { loadedStructuresDirty = true; });
+                    formatReader.Read(currentFile, content, _ => { currentFile.NewStructureLoadedNotifier = true; });
                 }
                 else
                 {
@@ -331,13 +274,7 @@ public class App : MonoBehaviour
         }
 
         CurrentFile = OpenFileList[filename];
-        CurrentStructureIndex = 0;
-
-        CrystalStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
-        Viewport.OpenStructureView(structureView);
-        ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
-            CurrentFile.Structures[CurrentStructureIndex].Energy);
-        Viewport.RefocusCamera();
+        StructureSequenceController.Instance.ResetStructure();
     }
 
     public void NewEmpty()
@@ -347,14 +284,7 @@ public class App : MonoBehaviour
         crystalStructure.Energy = 0;
         crystalStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });
         CurrentFile.Structures.Add(crystalStructure);
-
-        if (CurrentFile.StructureCount > 0)
-        {
-            CrystalStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
-            Viewport.OpenStructureView(structureView);
-            ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
-                CurrentFile.Structures[CurrentStructureIndex].Energy);
-        }
+        StructureSequenceController.Instance.ResetStructure();
     }
 
     void Update()
@@ -367,29 +297,22 @@ public class App : MonoBehaviour
             action();
         }
 
-        if (loadedStructuresDirty)
+        if (CurrentFile != null && CurrentFile.NewStructureLoadedNotifier)
         {
-            loadedStructuresDirty = false;
+            CurrentFile.NewStructureLoadedNotifier = false;
 
             CurrentFile.ListMutex.WaitOne();
             int numLoadedStructures = CurrentFile.StructureCount;
-            CrystalStructure currentStructure = CurrentFile.Structures[CurrentStructureIndex];
             CurrentFile.ListMutex.ReleaseMutex();
 
-            if (!firstStructureLoaded)
+            if (CurrentFile.IsOpenStructureQueued)
             {
-                CurrentStructureIndex = 0;
-
-                CrystalStructureView structureView = new(currentStructure);
-                Viewport.OpenStructureView(structureView);
-                Viewport.RefocusCamera();
-                firstStructureLoaded = true;
-                ConFun.UpdateStructureInfo(CurrentStructureIndex, numLoadedStructures,
-                    currentStructure.Energy);
+                StructureSequenceController.Instance.ResetStructure();
+                CurrentFile.IsOpenStructureQueued = false;
             }
             else
             {
-                ConFun.UpdateStructureInfo(null, numLoadedStructures, currentStructure.Energy);
+                OverlayUiController.Instance.UpdateStructureIndex(null, numLoadedStructures);
             }
 
             OverlayUiController.Instance.PrintStatusLog($"Reading arc file: {numLoadedStructures} structures loaded");

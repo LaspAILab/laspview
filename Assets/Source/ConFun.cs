@@ -50,18 +50,6 @@ public class ConFun : MonoBehaviour
         }
     }
 
-    public static void UpdateStructureInfo(int? newStructureIndex, int totalStructs, float energy)
-    {
-        if (newStructureIndex.HasValue)
-        {
-            var input = structureText.transform.GetChild(1).GetComponent<InputField>();
-            input.SetTextWithoutNotify((newStructureIndex + 1).ToString());
-        }
-
-        structureText.transform.GetChild(3).GetComponent<Text>().text = totalStructs.ToString();
-        structureText.transform.GetChild(5).GetComponent<Text>().text = energy.ToString("f3");
-    }
-
     public static void UpdateStatusLabel(string str, bool addLog = true)
     {
         statusLabel.text = str;
@@ -76,8 +64,8 @@ public class ConFun : MonoBehaviour
         var indexInput = structureText.transform.GetChild(1).GetComponent<InputField>();
         if (int.TryParse(indexInput.text, out int index) && App.Instance != null)
         {
-            App.Instance.SwitchStructure(index - 1);
-            indexInput.SetTextWithoutNotify((App.Instance.CurrentStructureIndex + 1).ToString());
+            StructureSequenceController.Instance.SwitchStructure(index - 1);
+            indexInput.SetTextWithoutNotify((StructureSequenceController.Instance.CurrentStructureIndex + 1).ToString());
         }
     }
 }

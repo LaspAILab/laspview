@@ -161,6 +161,20 @@ public class StructureFile
 #if !UNITY_WEBGL
     public Mutex ListMutex;
 #endif
+    
+    // Notifier for when a new structure is appended to this file
+    public bool NewStructureLoadedNotifier
+    {
+        get;
+        set;
+    } = false;
+
+    // Whether it is queued to open the first structure after loaded
+    public bool IsOpenStructureQueued
+    {
+        get;
+        set;
+    } = false;
 
     public List<CrystalStructure> Structures { get; private set; }
 

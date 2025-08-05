@@ -6,6 +6,22 @@ using UnityEngine;
 
 public static class ChemicalFormulaUtils
 {
+    // Sort elements by common valance, used for printing chemical formula
+    public static (int, int) GetElementPeriodAndValance(string elem)
+    {
+        int elementNumber = App.Elements[elem].Number;
+
+        int index = 0, period = 1;
+        while (elementNumber > App.ElementsPerRow[index])
+        {
+            elementNumber -= App.ElementsPerRow[index++];
+            period++;
+        }
+
+        int valance = elementNumber <= App.ElementsPerRow[period - 1] - 4 ? elementNumber : (elementNumber - 8);
+        return (period, valance);
+    }
+    
     public static Dictionary<string, List<Atom>> GroupAtoms(List<Atom> atoms)
     {
         var groupedAtoms = new Dictionary<string, List<Atom>>();
@@ -29,8 +45,8 @@ public static class ChemicalFormulaUtils
 
         Array.Sort(groupedAtoms, (a, b) =>
         {
-            var (periodA, valanceA) = App.GetElementPeriodAndValance(a.Key);
-            var (periodB, valanceB) = App.GetElementPeriodAndValance(b.Key);
+            var (periodA, valanceA) = GetElementPeriodAndValance(a.Key);
+            var (periodB, valanceB) = GetElementPeriodAndValance(b.Key);
 
             return valanceA != valanceB ? valanceB.CompareTo(valanceA) : periodA.CompareTo(periodB);
         });

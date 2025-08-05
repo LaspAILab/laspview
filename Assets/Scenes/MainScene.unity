@@ -1814,6 +1814,7 @@ GameObject:
   - component: {fileID: 637342124}
   - component: {fileID: 637342125}
   - component: {fileID: 637342126}
+  - component: {fileID: 637342127}
   m_Layer: 0
   m_Name: App Container
   m_TagString: Untagged
@@ -2005,6 +2006,18 @@ MonoBehaviour:
   dottedLinePrefab: {fileID: 1557633542005051401, guid: 654e35de32327494e889958459527085,
     type: 3}
   dottedLineParent: {fileID: 1822645381}
+--- !u!114 &637342127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637342118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 831774ce2903cec49b36eb49198410ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &639427471 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4855446089999835755, guid: 0aec73c7d48ab9148b1798c94cfaf048,
