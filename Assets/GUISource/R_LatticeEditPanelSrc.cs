@@ -33,9 +33,7 @@ public class R_LatticeEditPanelSrc : MonoBehaviour
         lengthsInput.SetValue(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
         anglesInput.SetValue(structure.LatticeParams[3], structure.LatticeParams[4], structure.LatticeParams[5]);
     }
-
     
-
     public void UpdateAtomsCount(CrystalStructure structure)
     {
         string chemicalFormula = ChemicalFormulaUtils.GetChemicalFormula(structure.Atoms, 50);

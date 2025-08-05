@@ -47,7 +47,7 @@ public class OptionsPanelController : MonoBehaviour
 
     void OnPlayIntervalChange(ChangeEvent<float> e)
     {
-        
+        StructureSequenceController.Instance.PlayInterval = e.newValue;
     }
 
     void OnShowLatticeChange(ChangeEvent<bool> e)

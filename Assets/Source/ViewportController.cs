@@ -24,7 +24,7 @@ public enum CrossCellBondPolicy
     BodyDiagonal,
 }
 
-internal enum ToolType
+public enum ToolType
 {
     Select,
     BoxSelect,
@@ -196,6 +196,9 @@ public class ViewportController : MonoBehaviour
     public void OpenStructureView(CrystalStructureView structureView)
     {
         CurrentStructureView = structureView;
+        // Update UI
+        OverlayUiController.Instance.UpdateStructureInfo(CurrentStructureView.Structure);
+        
         CurrentStructureView.GenerateBonds();
 
         R_AtomEditPanelSrc.S.SetCurrentStructure(CurrentStructureView.Structure);
@@ -684,6 +687,7 @@ public class ViewportController : MonoBehaviour
         }
 
         currentTool = newTool;
+        OverlayUiController.Instance.OnToolChange(newTool);
     }
 
     void HandleKeyboardEvents()
