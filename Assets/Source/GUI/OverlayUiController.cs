@@ -10,17 +10,20 @@ public class OverlayUiController : MonoBehaviour
     
     private VisualElement root;
     private VisualElement centerPanel;
+    private VisualElement aboutPanel;
     
-    // TOP BAR BEGINS
     private VisualElement filePanel;
     private VisualElement projectPanel;
     private VisualElement optionsPanel;
     private VisualElement editPanel;
     
+    // TOP BAR BEGINS
     private Button fileButton;
     private Button projectButton;
     private Button optionsButton;
     private Button editButton;
+    
+    private Button aboutButton;
     // TOP BAR ENDS
     
     // BOTTOM BAR BEGINS
@@ -51,20 +54,28 @@ public class OverlayUiController : MonoBehaviour
         viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         
         root = GetComponent<UIDocument>().rootVisualElement;
+        aboutPanel = root.Q<VisualElement>("AboutPanel");
         centerPanel = root.Q<VisualElement>("CenterPanel");
+        
+        var exitAboutButton = aboutPanel.Q<Button>("ExitButton");
+        exitAboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
         
         filePanel = root.Q<VisualElement>("FilePanel");
         projectPanel = root.Q<VisualElement>("ProjectPanel");
         optionsPanel = root.Q<VisualElement>("OptionsPanel");
-        // editPanel = root.Q<VisualElement>("EditPanel");
+        editPanel = root.Q<VisualElement>("EditPanel");
         
         fileButton = root.Q<Button>("FileButton");
-        fileButton.RegisterCallback<ClickEvent>(OpenFilePanel);
+        fileButton.RegisterCallback<ClickEvent>(ToggleFilePanel);
         projectButton = root.Q<Button>("ProjectButton");
-        projectButton.RegisterCallback<ClickEvent>(OpenProjectPanel);
+        projectButton.RegisterCallback<ClickEvent>(ToggleProjectPanel);
         optionsButton = root.Q<Button>("OptionsButton");
-        optionsButton.RegisterCallback<ClickEvent>(OpenOptionsPanel);
+        optionsButton.RegisterCallback<ClickEvent>(ToggleOptionsPanel);
         editButton = root.Q<Button>("EditButton");
+        editButton.RegisterCallback<ClickEvent>(ToggleEditPanel);
+        
+        aboutButton = root.Q<Button>("AboutButton");
+        aboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
         
         structureMinusButton = root.Q<Button>("StructureMinus");
         structureMinusButton.RegisterCallback<ClickEvent>(OnPreviousStructureClicked);
@@ -98,7 +109,7 @@ public class OverlayUiController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        OpenFilePanel(null);
+        
     }
 
     public void PrintStatusLog(string str, bool addToUnityLog = true)
@@ -220,25 +231,76 @@ public class OverlayUiController : MonoBehaviour
         editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
     }
     
-    void OpenFilePanel(ClickEvent _)
+    void ToggleFilePanel(ClickEvent _)
     {
-        CloseAllLeftPanels();
-        filePanel.style.display = DisplayStyle.Flex;
-        fileButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        if (filePanel.resolvedStyle.display == DisplayStyle.None)
+        {
+            CloseAllLeftPanels();
+            filePanel.style.display = DisplayStyle.Flex;
+            fileButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+        else
+        {
+            filePanel.style.display = DisplayStyle.None;
+            fileButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
     }
 
-    void OpenProjectPanel(ClickEvent _)
+    void ToggleProjectPanel(ClickEvent _)
     {
-        CloseAllLeftPanels();
-        projectPanel.style.display = DisplayStyle.Flex;
-        projectButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
-        
+        if (projectPanel.resolvedStyle.display == DisplayStyle.None)
+        {
+            CloseAllLeftPanels();
+            projectPanel.style.display = DisplayStyle.Flex;
+            projectButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+        else
+        {
+            projectPanel.style.display = DisplayStyle.None;
+            projectButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
     }
 
-    void OpenOptionsPanel(ClickEvent _)
+    void ToggleOptionsPanel(ClickEvent _)
     {
-        CloseAllLeftPanels();
-        optionsPanel.style.display = DisplayStyle.Flex;
-        optionsButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        if (optionsPanel.resolvedStyle.display == DisplayStyle.None)
+        {
+            CloseAllLeftPanels();
+            optionsPanel.style.display = DisplayStyle.Flex;
+            optionsButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+        else
+        {
+            optionsPanel.style.display = DisplayStyle.None;
+            optionsButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+    }
+    
+    void ToggleEditPanel(ClickEvent _)
+    {
+        if (editPanel.resolvedStyle.display == DisplayStyle.None)
+        {
+            editPanel.style.display = DisplayStyle.Flex;
+            editButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+        else
+        {
+            editPanel.style.display = DisplayStyle.None;
+            editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+    }
+    
+    void ToggleAboutPanel(ClickEvent _)
+    {
+        if (aboutPanel.resolvedStyle.display == DisplayStyle.None)
+        {
+            aboutPanel.style.display = DisplayStyle.Flex;
+            aboutButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+        else
+        {
+            aboutPanel.style.display = DisplayStyle.None;
+            aboutButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
     }
 }
