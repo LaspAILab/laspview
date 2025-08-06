@@ -1,0 +1,18 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
+    <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input" />
+    <ui:VisualElement style="flex-grow: 1; margin-top: 5px; margin-bottom: 5px;">
+        <ui:Label text="Lattice" class="display-option-subtitle" />
+        <Vec3InputControl text="Lengths" class="edit-panel-item" />
+        <Vec3InputControl text="Angles" class="edit-panel-item" />
+        <ui:Toggle label="Keep fractional coords" class="edit-panel-item" />
+        <ui:Button text="Change lattice" class="edit-panel-button edit-panel-item" />
+        <Vec3InputControl text="Repeats" value="1,1,1" class="edit-panel-item" />
+        <ui:Button text="Generate supercell" class="edit-panel-button edit-panel-item" />
+        <ui:Label text="Atom" class="display-option-subtitle" />
+        <ui:TextField label="Element" placeholder-text="H" class="edit-panel-item" />
+        <ui:Toggle label="Fractional coords" class="edit-panel-item" />
+        <Vec3InputControl text="Coordinates" value="0,0,0" name="CoordsControl" class="edit-panel-item" />
+        <ui:Button text="Add atom" class="edit-panel-button edit-panel-item" />
+    </ui:VisualElement>
+</ui:UXML>
