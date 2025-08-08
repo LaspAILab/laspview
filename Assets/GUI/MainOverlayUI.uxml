@@ -4,6 +4,7 @@
     <ui:Template name="OptionsPanelUI" src="project://database/Assets/GUI/OptionsPanelUI.uxml?fileID=9197481963319205126&amp;guid=81c1a7024a0a7ff439a430fdde25a116&amp;type=3#OptionsPanelUI" />
     <ui:Template name="AboutPanel" src="project://database/Assets/GUI/AboutPanel.uxml?fileID=9197481963319205126&amp;guid=ccaab4f1a06a39646963ad35f6a1d4b7&amp;type=3#AboutPanel" />
     <ui:Template name="EditPanelUI" src="project://database/Assets/GUI/EditPanelUI.uxml?fileID=9197481963319205126&amp;guid=07866727b8be997458cf7c44dea24471&amp;type=3#EditPanelUI" />
+    <ui:Template name="PeriodicTableControl" src="project://database/Assets/GUI/PeriodicTableControl/PeriodicTableControl.uxml?fileID=9197481963319205126&amp;guid=06bb632aa38eace4ea9f72de01e8d669&amp;type=3#PeriodicTableControl" />
     <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
     <ui:VisualElement name="TopBar" enabled="true" style="flex-grow: 1; height: 65px; background-color: rgb(255, 255, 255); position: absolute; top: 0; left: 0; right: 0; border-bottom-width: 2px; border-bottom-color: rgb(124, 124, 124); align-content: auto; flex-direction: row;">
         <ui:VisualElement enabled="true" name="Icon" focusable="false" style="flex-grow: 0; background-image: url(&quot;project://database/Assets/GUIIcon/lasp%20(2).png?fileID=2800000&amp;guid=c5ae5a4f1fb24cf4795cdfb018ca702e&amp;type=3#lasp (2)&quot;); height: 45px; width: 45px; align-content: auto; align-self: center; align-items: stretch; flex-direction: column; position: relative; margin-left: 20px;" />
@@ -41,6 +42,8 @@
     <ui:VisualElement name="LeftInfoPanel" picking-mode="Ignore" class="transparent-panel" style="flex-grow: 1; left: 150px; margin-left: 0; max-width: 400px;">
         <ui:Label text="Energy: 5.7" name="EnergyLabel" picking-mode="Ignore" class="info-label" />
         <ui:Label text="Atom count: 118" name="AtomCountLabel" picking-mode="Ignore" class="info-label" style="white-space: normal;" />
+        <ui:Label text="Selected: 0" name="SelectionLabel" picking-mode="Ignore" class="info-label" style="white-space: normal;" />
+        <ui:Label name="AdditionalInfoLabel" picking-mode="Ignore" class="info-label" style="white-space: normal;" />
     </ui:VisualElement>
     <ui:VisualElement name="FilePanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: 0; width: 250px; display: flex;">
         <ui:Instance template="FilePanelUI" />
@@ -55,10 +58,20 @@
     <ui:VisualElement picking-mode="Ignore" enabled="true" style="position: absolute; flex-grow: 1; justify-content: center; width: auto; height: auto; top: 0; bottom: 0; left: 0; right: 0;">
         <ui:VisualElement name="CenterPanel" picking-mode="Ignore" class="center-panel-pan" style="flex-grow: 0; width: 320px; height: 320px; align-self: center; background-color: rgba(185, 185, 185, 0.48); border-top-left-radius: 40px; border-top-right-radius: 40px; border-bottom-right-radius: 40px; border-bottom-left-radius: 40px; display: flex; transition-duration: 0.15s; opacity: 0; transition-property: opacity;" />
     </ui:VisualElement>
-    <ui:VisualElement enabled="true" name="AboutPanel" picking-mode="Ignore" style="position: absolute; flex-grow: 1; justify-content: center; top: 0; bottom: 0; right: 0; left: 0; display: none;">
+    <ui:VisualElement enabled="true" name="AboutPanel" style="position: absolute; flex-grow: 1; justify-content: center; top: 0; bottom: 0; right: 0; left: 0; display: none;">
         <ui:Instance template="AboutPanel" style="width: 30%; align-self: center; height: auto; max-height: 60%;" />
     </ui:VisualElement>
     <ui:VisualElement name="EditPanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: auto; width: 450px; display: none; right: 0;">
         <ui:Instance template="EditPanelUI" />
+    </ui:VisualElement>
+    <ui:VisualElement enabled="true" name="PeriodicTablePanel" style="position: absolute; flex-grow: 1; justify-content: center; width: auto; height: auto; top: 0; bottom: 0; left: 0; right: 0; align-items: center; display: none;">
+        <ui:VisualElement class="window-frame" style="flex-grow: 0; padding-left: 10px; padding-top: 10px; padding-right: 10px; padding-bottom: 10px;">
+            <ui:VisualElement style="flex-grow: 0; flex-direction: row; padding-left: 10px; padding-right: 5px; border-bottom-width: 2px; border-bottom-color: rgb(179, 179, 179); flex-shrink: 0; margin-bottom: 5px;">
+                <ui:Label text="Periodic table picker" style="font-size: 18px; -unity-font-definition: url(&quot;project://database/Assets/GUI/Fonts/MonaspaceArgon-Bold.otf?fileID=12800000&amp;guid=39d04e98a75588e41b389a6c49179526&amp;type=3#MonaspaceArgon-Bold&quot;); align-self: center;" />
+                <ui:VisualElement style="flex-grow: 1;" />
+                <ui:Button name="ExitPeriodicButton" class="transparent-button" style="width: 30px; height: 30px; padding-top: 0; padding-right: 0; padding-left: 0; padding-bottom: 0; margin-left: 0; margin-right: 0; background-image: url(&quot;project://database/Assets/GUIIcon/cancel.png?fileID=2800000&amp;guid=a794ba63a6b8ae348ae1e6dde13c8000&amp;type=3#cancel&quot;); background-size: 80% 80%; border-top-right-radius: 5px;" />
+            </ui:VisualElement>
+            <ui:Instance template="PeriodicTableControl" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 public class OverlayUiController : MonoBehaviour
@@ -11,6 +15,8 @@ public class OverlayUiController : MonoBehaviour
     private VisualElement root;
     private VisualElement centerPanel;
     private VisualElement aboutPanel;
+    private VisualElement periodicTablePanel;
+    private PeriodicTableControl periodicTableControl;
     
     private VisualElement filePanel;
     private VisualElement projectPanel;
@@ -46,6 +52,8 @@ public class OverlayUiController : MonoBehaviour
     // INFO PANEL BEGINS
     private Label energyLabel;
     private Label atomCountLabel;
+    private Label selectionLabel;
+    private Label additionalInfoLabel;
     // INFO PANEL ENDS
 
     void Awake()
@@ -54,11 +62,27 @@ public class OverlayUiController : MonoBehaviour
         viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         
         root = GetComponent<UIDocument>().rootVisualElement;
-        aboutPanel = root.Q<VisualElement>("AboutPanel");
         centerPanel = root.Q<VisualElement>("CenterPanel");
         
-        var exitAboutButton = aboutPanel.Q<Button>("ExitButton");
+        aboutPanel = root.Q<VisualElement>("AboutPanel");
+        // Close the about panel if empty parts are clicked
+        aboutPanel.RegisterCallback<ClickEvent>(ToggleAboutPanel);
+        // Avoid duplicate handling of the same click event
+        aboutPanel.Children().First().RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
+        
+        // Same as above
+        periodicTablePanel = root.Q<VisualElement>("PeriodicTablePanel");
+        periodicTablePanel.RegisterCallback<ClickEvent>(ClosePeriodicTable);
+        periodicTablePanel.Children().First().RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
+        periodicTableControl = periodicTablePanel.Q<PeriodicTableControl>();
+        // Use `GetComponent` over `EditPanelController.Instance` in case the latter hasn't been inited yet
+        periodicTableControl.ElementClickedEvent += GetComponent<EditPanelController>().OnElementSubmit;
+        
+        var exitAboutButton = aboutPanel.Q<Button>("ExitAboutButton");
         exitAboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
+        
+        var exitPeriodicButton = root.Q<Button>("ExitPeriodicButton");
+        exitPeriodicButton.RegisterCallback<ClickEvent>(ClosePeriodicTable);
         
         filePanel = root.Q<VisualElement>("FilePanel");
         projectPanel = root.Q<VisualElement>("ProjectPanel");
@@ -104,6 +128,8 @@ public class OverlayUiController : MonoBehaviour
         
         energyLabel = root.Q<Label>("EnergyLabel");
         atomCountLabel = root.Q<Label>("AtomCountLabel");
+        selectionLabel = root.Q<Label>("SelectionLabel");
+        additionalInfoLabel = root.Q<Label>("AdditionalInfoLabel");
     }
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -162,6 +188,68 @@ public class OverlayUiController : MonoBehaviour
         string formula = ChemicalFormulaUtils.GetChemicalFormula(structure.Atoms, 50);
         
         atomCountLabel.text = $"Atom Count: {structure.Atoms.Count} ({formula})";
+    }
+
+    public void UpdateSelectionInfo(List<SelectionItem> selection)
+    {
+        EditPanelController.Instance.UpdateSelectionInfo(selection);
+
+        if (selection.Count > 0)
+        {
+            string formula = ChemicalFormulaUtils.GetChemicalFormula(selection.Select(x => x.Atom.SourceAtom).ToList());
+            selectionLabel.text = $"Selected: {selection.Count} ({formula})";
+        }
+        else
+        {
+            selectionLabel.text = "No atoms selected";
+        }
+        
+        if (selection.Count is 0 or > 4)
+        {
+            additionalInfoLabel.text = "";
+            return;
+        }
+
+        var sortedSelection = selection.OrderBy(x => x.SelectIndex).ToList();
+        if (selection.Count == 1)
+        {
+            string fixedState = sortedSelection[0].Atom.SourceAtom.Flags switch
+            {
+                AtomFlags.Fixed => "Fixed",
+                AtomFlags.React => "React",
+                _ => "Free"
+            };
+            additionalInfoLabel.text =
+                $"{sortedSelection[0].Atom.Symbol} {sortedSelection[0].Atom.SourceAtom.Coordinates} {fixedState}";
+        }
+        else if (selection.Count == 2)
+        {
+            var length = Vector3.Distance(sortedSelection[0].Position, sortedSelection[1].Position);
+            additionalInfoLabel.text =
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} dist: {length} A";
+        }
+        else if (selection.Count == 3)
+        {
+            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
+            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
+
+            var angle = Vector3.Angle(vec1, vec2);
+            additionalInfoLabel.text =
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} angle: {angle:f3} degrees";
+        }
+        else if (selection.Count == 4)
+        {
+            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
+            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
+            Vector3 vec3 = sortedSelection[3].Position - sortedSelection[2].Position;
+
+            Vector3 normal1 = Vector3.Cross(vec1, vec2);
+            Vector3 normal2 = Vector3.Cross(-vec2, vec3);
+
+            var angle = Vector3.Angle(normal1, normal2);
+            additionalInfoLabel.text =
+                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} dihedral angle: {angle:f3} degrees";
+        }
     }
     
     void OnFocusClicked(ClickEvent evt)
@@ -302,5 +390,15 @@ public class OverlayUiController : MonoBehaviour
             aboutPanel.style.display = DisplayStyle.None;
             aboutButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
+    }
+    
+    public void ShowPeriodicTable(ClickEvent _)
+    {
+        periodicTablePanel.style.display = DisplayStyle.Flex;
+    }
+    
+    public void ClosePeriodicTable(ClickEvent _)
+    {
+        periodicTablePanel.style.display = DisplayStyle.None;
     }
 }
