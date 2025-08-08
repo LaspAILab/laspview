@@ -31,7 +31,8 @@ public enum ToolType
     MoveView,
     RotateView,
     MoveAtom,
-    RotateAtom
+    RotateAtom,
+    ReplaceAtom
 }
 
 public class ViewportController : MonoBehaviour
@@ -148,7 +149,7 @@ public class ViewportController : MonoBehaviour
         // do something with the dropped file names. aPos will contain the 
         // mouse position within the window where the files has been dropped.
         ConFun.UpdateStatusLabel("Dropped files: " + string.Join(" ", aFiles));
-        L_FilePanelSrc.FilesRead(aFiles.ToArray());
+        FilePanelController.FilesRead(aFiles.ToArray());
     }
 #endif
 
@@ -198,18 +199,16 @@ public class ViewportController : MonoBehaviour
         CurrentStructureView = structureView;
         // Update UI
         OverlayUiController.Instance.UpdateStructureInfo(CurrentStructureView.Structure);
-        
+        EditPanelController.Instance.UpdateLattice(CurrentStructureView.Structure);
         CurrentStructureView.GenerateBonds();
 
-        R_AtomEditPanelSrc.S.SetCurrentStructure(CurrentStructureView.Structure);
         undoManager = new(CurrentStructureView);
-        selectionManager = new(R_AtomEditPanelSrc.S.UpdateSelection);
+        selectionManager = new(OverlayUiController.Instance.UpdateSelectionInfo);
 
         latticeTransforms = null;
         colliderManager.SetLatticeTransforms(LatticeTransforms);
         colliderManager.CreateCollidersForStructure(CurrentStructureView);
-        R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Structure);
-        R_LatticeEditPanelSrc.S.UpdateLattice(structureView.Structure);
+
         structureRenderer.SetStructureView(structureView, LatticeTransforms);
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
         latticeCorner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
@@ -338,6 +337,21 @@ public class ViewportController : MonoBehaviour
         UpdateCameraPos();
     }
 
+    public void BeginReplaceAtom()
+    {
+        Debug.Log("Begin replace atom");
+        ReplaceCurrentTool(ToolType.ReplaceAtom);
+    }
+
+    public void EndReplaceAtom()
+    {
+        Debug.Log("End replace atom");
+        if (currentTool == ToolType.ReplaceAtom)
+        {
+            ReplaceCurrentTool(ToolType.Select);
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ResizeViewport(float deltaViewportSize)
     {
@@ -431,9 +445,12 @@ public class ViewportController : MonoBehaviour
 
         if (raycastOnUI)
         {
-            // Cancel any ongoing mouse operations
-            ReplaceCurrentTool(ToolType.Select);
-
+            if (currentTool != ToolType.ReplaceAtom)
+            {
+                // Cancel any ongoing mouse operations
+                ReplaceCurrentTool(ToolType.Select);
+            }
+            
             // Submit operation if mouse has released
             if (isMovingAtom)
             {
@@ -499,15 +516,16 @@ public class ViewportController : MonoBehaviour
         switch (op.Flags)
         {
             case UpdateFlags.UpdateAtom:
-                R_AtomEditPanelSrc.S.UpdateSelection(selectionManager.Selection.ToList());
-                R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Structure);
+                OverlayUiController.Instance.UpdateStructureInfo(CurrentStructureView.Structure);
+                OverlayUiController.Instance.UpdateSelectionInfo(selectionManager.Selection.ToList());
+                EditPanelController.Instance.UpdateActiveAtom();
                 shallUpdateRenderer = true;
                 break;
             case UpdateFlags.UpdateLattice:
-                R_LatticeEditPanelSrc.S.UpdateLattice(CurrentStructureView.Structure);
-                R_LatticeEditPanelSrc.S.UpdateAtomsCount(CurrentStructureView.Structure);
+                EditPanelController.Instance.UpdateLattice(CurrentStructureView.Structure);
+                OverlayUiController.Instance.UpdateStructureInfo(CurrentStructureView.Structure);
                 // Update display properties since they may have changed due to lattice reform
-                R_AtomEditPanelSrc.S.DisplayActiveAtomProperties();
+                EditPanelController.Instance.UpdateActiveAtom();
                 RecalculateBonds();
                 shallUpdateRenderer = true;
                 shallUpdateLattice = true;
@@ -595,57 +613,6 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void UpdateBondingInfoDisplay()
-    {
-        if (selectionManager.SelectedAtoms.Count is 0 or > 4)
-        {
-            return;
-        }
-
-        var sortedSelection = selectionManager.Selection.ToList();
-        sortedSelection.Sort((a, b) => a.SelectIndex.CompareTo(b.SelectIndex));
-
-        if (selectionManager.SelectedAtoms.Count == 1)
-        {
-            string fixedState = sortedSelection[0].Atom.SourceAtom.Flags switch
-            {
-                AtomFlags.Fixed => "Fixed",
-                AtomFlags.React => "React",
-                _ => "Free"
-            };
-            ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol} {sortedSelection[0].Atom.SourceAtom.Coordinates} ({fixedState})");
-        }
-        else if (selectionManager.SelectedAtoms.Count == 2)
-        {
-            var length = Vector3.Distance(sortedSelection[0].Position, sortedSelection[1].Position);
-            ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol} dist: {length} A");
-        }
-        else if (selectionManager.SelectedAtoms.Count == 3)
-        {
-            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
-            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
-
-            var angle = Vector3.Angle(vec1, vec2);
-            ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} angle: {angle:f3} degrees");
-        }
-        else if (selectionManager.SelectedAtoms.Count == 4)
-        {
-            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
-            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
-            Vector3 vec3 = sortedSelection[3].Position - sortedSelection[2].Position;
-
-            Vector3 normal1 = Vector3.Cross(vec1, vec2);
-            Vector3 normal2 = Vector3.Cross(-vec2, vec3);
-
-            var angle = Vector3.Angle(normal1, normal2);
-            ConFun.UpdateStatusLabel(
-                $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} dihedral angle: {angle:f3} degrees");
-        }
-    }
-
     Vector3 GetGeometryCenter(IEnumerable<SelectionItem> atoms)
     {
         Vector3 center = Vector3.zero;
@@ -683,6 +650,9 @@ public class ViewportController : MonoBehaviour
                 mouseDownTime = -1;
                 shallUpdateRenderer = true;
                 break;
+            case ToolType.ReplaceAtom:
+                EditPanelController.Instance.EndReplaceAtom();
+                break;
             // Add any tool that may require manual canceling
         }
 
@@ -705,6 +675,11 @@ public class ViewportController : MonoBehaviour
             var deltaCenter = activeCamera.transform.TransformDirection(PAN_SPEED * move);
             cameraCenter += deltaCenter;
             UpdateCameraPos();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            ReplaceCurrentTool(ToolType.Select);
         }
 
         if ((Input.GetKeyUp(KeyCode.Delete) || Input.GetKeyUp(KeyCode.Backspace)) && !selectionManager.IsEmpty)
@@ -838,7 +813,6 @@ public class ViewportController : MonoBehaviour
                     selectionManager.Select(hoveredAtom);
                 }
 
-                UpdateBondingInfoDisplay();
                 shallUpdateRenderer = true;
             }
             else if (!shiftDown && !altDown)
@@ -847,6 +821,14 @@ public class ViewportController : MonoBehaviour
                 {
                     shallUpdateRenderer = true;
                 }
+            }
+        }
+
+        if (Input.GetKeyUp(KeyCode.Mouse1) && currentTool == ToolType.ReplaceAtom)
+        {
+            if (raycastAtom.Count > 0)
+            {
+                SubmitOperation(new SetElementOperation(hoveredAtom.Atom, EditPanelController.Instance.ReplacedElement));
             }
         }
 
@@ -943,7 +925,6 @@ public class ViewportController : MonoBehaviour
                 Rect boxRect = Rect.MinMaxRect(minX, minY, maxX, maxY);
                 selectionBoxDrawer.DrawBox(boxRect);
                 shallUpdateRenderer = shallUpdateRenderer || UpdateBoxSelection(boxRect);
-                UpdateBondingInfoDisplay();
             }
             else
             {
@@ -952,13 +933,10 @@ public class ViewportController : MonoBehaviour
                 temporarySelectionManager = null;
 
                 ReplaceCurrentTool(ToolType.Select);
-                if (selectionManager.Selection.Count == 2)
-                {
-                    UpdateBondingInfoDisplay();
-                }
             }
         }
-        else if (Input.GetKey(KeyCode.Mouse1) && !isMovingAtom && !isRotatingAtom && mouseDownTime > 0 &&
+        else if (Input.GetKey(KeyCode.Mouse1) && !isMovingAtom && !isRotatingAtom &&
+                 currentTool != ToolType.ReplaceAtom && mouseDownTime > 0 &&
                  Time.time - mouseDownTime > BOX_SELECT_THRESHOLD)
         {
             mouseDownTime = Time.time;

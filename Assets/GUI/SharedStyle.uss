@@ -251,6 +251,11 @@
     background-color: rgb(185, 172, 231);
 }
 
+.active-edit-panel-button {
+    background-color: rgb(97, 59, 231);
+    color: rgb(255, 255, 255);
+}
+
 .edit-panel-item #unity-text-input {
     font-size: 16px;
 }
@@ -268,4 +273,13 @@ Toggle VisualElement {
     padding-bottom: 1px;
     padding-left: 1px;
     font-size: 16px;
+}
+
+.window-frame {
+    flex-grow: 1;
+    background-color: rgb(255, 255, 255);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
 }
