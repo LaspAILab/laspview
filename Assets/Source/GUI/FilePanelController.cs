@@ -33,7 +33,7 @@ public class FilePanelController : MonoBehaviour
         saveAllButton.RegisterCallback<ClickEvent>(OnSaveAllButtonClick);
     }
     
-    static void FilesRead(string[] paths)
+    public static void FilesRead(string[] paths)
     {
         // Automatically open the first file after loaded
         bool isFirst = true;

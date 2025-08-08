@@ -1,0 +1,38 @@
+VisualElement {
+}
+
+.-periodic-table-button {
+    width: 40px;
+    height: 40px;
+    background-color: rgb(253, 247, 255);
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-left-color: rgb(206, 206, 206);
+    border-right-color: rgb(206, 206, 206);
+    border-top-color: rgb(206, 206, 206);
+    border-bottom-color: rgb(206, 206, 206);
+    font-size: 20px;
+    margin-left: 2px;
+    margin-right: 2px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.-periodic-table-button:hover {
+    background-color: rgb(255, 217, 253);
+}
+
+.-periodic-table-button:active {
+    background-color: rgb(165, 147, 231);
+    color: rgb(255, 255, 255);
+}
