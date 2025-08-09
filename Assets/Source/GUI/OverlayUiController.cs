@@ -7,8 +7,11 @@ using UnityEngine.UIElements;
 
 public class OverlayUiController : MonoBehaviour
 {
+    const string VERSION_NUMBER = "2.0.0";
+    
     public static OverlayUiController Instance;
     private ViewportController viewport;
+    private UIDocument document;
     
     const string ACTIVE_BUTTON_CLASS_NAME = "active-title-button";
     
@@ -28,7 +31,7 @@ public class OverlayUiController : MonoBehaviour
     private Button projectButton;
     private Button optionsButton;
     private Button editButton;
-    
+
     private Button aboutButton;
     // TOP BAR ENDS
     
@@ -60,8 +63,9 @@ public class OverlayUiController : MonoBehaviour
     {
         Instance = this;
         viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
-        
-        root = GetComponent<UIDocument>().rootVisualElement;
+
+        document = GetComponent<UIDocument>();
+        root = document.rootVisualElement;
         centerPanel = root.Q<VisualElement>("CenterPanel");
         
         aboutPanel = root.Q<VisualElement>("AboutPanel");
@@ -97,9 +101,18 @@ public class OverlayUiController : MonoBehaviour
         optionsButton.RegisterCallback<ClickEvent>(ToggleOptionsPanel);
         editButton = root.Q<Button>("EditButton");
         editButton.RegisterCallback<ClickEvent>(ToggleEditPanel);
-        
+
+        var uiScalePlusButton = root.Q<Button>("UIScalePlus");
+        uiScalePlusButton.RegisterCallback<ClickEvent>(OnUIScaleAdjust);
+        var uiScaleMinusButton = root.Q<Button>("UIScaleMinus");
+        uiScaleMinusButton.RegisterCallback<ClickEvent>(OnUIScaleAdjust);
         aboutButton = root.Q<Button>("AboutButton");
         aboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
+        
+        var aboutVersionLabel = aboutPanel.Q<Label>("VersionLabel");
+        aboutVersionLabel.text = aboutVersionLabel.text.Replace("%v", VERSION_NUMBER);
+        var aboutOsLabel = aboutPanel.Q<Label>("OSLabel");
+        aboutOsLabel.text = aboutOsLabel.text.Replace("%os", SystemInfo.operatingSystem);
         
         structureMinusButton = root.Q<Button>("StructureMinus");
         structureMinusButton.RegisterCallback<ClickEvent>(OnPreviousStructureClicked);
@@ -130,12 +143,6 @@ public class OverlayUiController : MonoBehaviour
         atomCountLabel = root.Q<Label>("AtomCountLabel");
         selectionLabel = root.Q<Label>("SelectionLabel");
         additionalInfoLabel = root.Q<Label>("AdditionalInfoLabel");
-    }
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
     }
 
     public void PrintStatusLog(string str, bool addToUnityLog = true)
@@ -250,6 +257,18 @@ public class OverlayUiController : MonoBehaviour
             additionalInfoLabel.text =
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} dihedral angle: {angle:f3} degrees";
         }
+    }
+
+    void OnUIScaleAdjust(ClickEvent evt)
+    {
+        if (evt.target is Button button)
+        {
+            float delta = button.text == "+" ? 0.1f : -0.1f;
+            float newValue = Mathf.Clamp(document.panelSettings.scale + delta, 0.1f, 3f);
+            Debug.Log($"Set UI Scale: {newValue}");
+            document.panelSettings.scale = newValue;
+        }
+        
     }
     
     void OnFocusClicked(ClickEvent evt)

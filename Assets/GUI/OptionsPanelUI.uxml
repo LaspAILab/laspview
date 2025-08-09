@@ -16,10 +16,10 @@
             </Bindings>
         </ui:EnumField>
         <ui:Slider label="Stick radius" value="42" high-value="100" show-input-field="true" name="StickRadius" class="display-option-item" />
-        <ui:Toggle label="Show highlight" name="ShowHighlight" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
+        <ui:Toggle label="Show highlight" name="ShowHighlight" value="true" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
         <ui:Label text="Bond calculation" enable-rich-text="false" class="display-option-subtitle" />
-        <ui:Toggle label="Show H bonds" name="ShowHBonds" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
-        <ui:Slider label="Bond tolerance" value="1.26" high-value="100" show-input-field="true" name="BondTolerance" class="display-option-item" />
+        <ui:Toggle label="Show H bonds" name="ShowHBonds" value="true" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
+        <ui:Slider label="Bond tolerance" value="1.26" high-value="3" show-input-field="true" name="BondTolerance" class="display-option-item" />
         <ui:EnumField label="Cross-cell calculation" value="Adjacent" type="CrossCellBondPolicy, Assembly-CSharp" name="BondPolicy" class="display-option-item">
             <Bindings>
                 <ui:DataBinding property="value" data-source-path="BondPolicy" binding-mode="ToSource" />
