@@ -149,7 +149,7 @@
     background-position-x: left 30px;
     -unity-background-scale-mode: scale-to-fit;
     padding-left: 60px;
-    background-image: url("project://database/Assets/GUIIcon/crystal-meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal-meth");
+    background-image: url("project://database/Assets/Icons/crystal-meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal-meth");
     -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&guid=cd56282d3b0ad7b4aba00251bfaf2e0a&type=3#MonaspaceArgon-Regular");
     border-top-width: 1px;
     border-bottom-width: 0;
@@ -206,12 +206,12 @@
 }
 
 .center-panel-pan {
-    background-image: url("project://database/Assets/GUIIcon/pan.png?fileID=2800000&guid=d4c0a399cf9ef7846adc018c38e7393b&type=3#pan");
+    background-image: url("project://database/Assets/Icons/pan.png?fileID=2800000&guid=d4c0a399cf9ef7846adc018c38e7393b&type=3#pan");
     background-size: 80% 80%;
 }
 
 .center-panel-rotate {
-    background-image: url("project://database/Assets/GUIIcon/rotate.png?fileID=2800000&guid=e4da5028e0216c649930f6e41376bf1d&type=3#rotate");
+    background-image: url("project://database/Assets/Icons/rotate.png?fileID=2800000&guid=e4da5028e0216c649930f6e41376bf1d&type=3#rotate");
     background-size: 60% 60%;
 }
 
@@ -282,4 +282,12 @@ Toggle VisualElement {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-top-color: rgb(208, 208, 208);
+    border-left-color: rgb(208, 208, 208);
+    border-right-color: rgb(208, 208, 208);
+    border-bottom-color: rgb(208, 208, 208);
 }

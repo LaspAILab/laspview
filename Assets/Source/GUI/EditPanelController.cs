@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
 public class EditPanelController : MonoBehaviour
@@ -37,6 +38,11 @@ public class EditPanelController : MonoBehaviour
 
     private FloatField displayRadiusInput;
     private TextField displayColorInput;
+
+    private VisualElement flagsRow;
+    private Button clearFlagsButton;
+    private Button fixedFlagButton;
+    private Button reactFlagButton;
 
     void Awake()
     {
@@ -74,6 +80,14 @@ public class EditPanelController : MonoBehaviour
         displayRadiusInput = editPanelRoot.Q<FloatField>("DisplayRadiusInput");
         displayRadiusInput.RegisterValueChangedCallback(OnRadiusSubmit);
         displayColorInput = editPanelRoot.Q<TextField>("DisplayColorInput");
+        
+        flagsRow = editPanelRoot.Q<VisualElement>("FlagsRow");
+        clearFlagsButton = editPanelRoot.Q<Button>("ClearFlagsButton");
+        clearFlagsButton.RegisterCallback<ClickEvent>(OnSetFlagsClicked);
+        fixedFlagButton = editPanelRoot.Q<Button>("FixedFlagButton");
+        fixedFlagButton.RegisterCallback<ClickEvent>(OnSetFlagsClicked);
+        reactFlagButton = editPanelRoot.Q<Button>("ReactFlagButton");
+        reactFlagButton.RegisterCallback<ClickEvent>(OnSetFlagsClicked);
     }
 
     public void UpdateSelectionInfo(List<SelectionItem> selection)
@@ -94,6 +108,7 @@ public class EditPanelController : MonoBehaviour
             // Hide display property inputs
             displayRadiusInput.style.display = DisplayStyle.None;
             displayColorInput.style.display = DisplayStyle.None;
+            flagsRow.style.display = DisplayStyle.None;
             return;
         }
 
@@ -106,6 +121,7 @@ public class EditPanelController : MonoBehaviour
             addAtomButton.style.display = DisplayStyle.None;
             displayRadiusInput.style.display = DisplayStyle.Flex;
             displayColorInput.style.display = DisplayStyle.Flex;
+            flagsRow.style.display = DisplayStyle.Flex;
 
             return;
         }
@@ -119,6 +135,7 @@ public class EditPanelController : MonoBehaviour
         addAtomButton.style.display = DisplayStyle.None;
         displayRadiusInput.style.display = DisplayStyle.None;
         displayColorInput.style.display = DisplayStyle.None;
+        flagsRow.style.display = DisplayStyle.Flex;
     }
 
     public void OnElementSubmit(string element)
@@ -157,7 +174,6 @@ public class EditPanelController : MonoBehaviour
 
     public void EndReplaceAtom()
     {
-        Debug.Log("End replace atom impl");
         replaceElementButton.RemoveFromClassList("active-edit-panel-button");
         ReplacedElement = null;
     }
@@ -261,5 +277,30 @@ public class EditPanelController : MonoBehaviour
         App.Instance.Viewport.SubmitOperation(new AddAtomOperation(fractionalToggle.value
             ? currentStructure.FractionalToCartesian(coords)
             : coords, element, 0));
+    }
+
+    void OnSetFlagsClicked(ClickEvent evt)
+    {
+        if (App.Instance.Viewport.CurrentStructureView == null)
+        {
+            return;
+        }
+        
+        if(evt.target is not Button button)
+        {
+            return;
+        }
+        
+        AtomFlags flags = button.text switch
+        {
+            "None" => AtomFlags.None,
+            "Fixed" => AtomFlags.Fixed,
+            "React" => AtomFlags.React,
+            _ => AtomFlags.None,
+        };
+
+        Assert.IsFalse(App.Instance.Viewport.selectionManager.IsEmpty);
+        App.Instance.Viewport.SubmitOperation(
+            new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, flags));
     }
 }

@@ -148,7 +148,7 @@ public class ViewportController : MonoBehaviour
     {
         // do something with the dropped file names. aPos will contain the 
         // mouse position within the window where the files has been dropped.
-        ConFun.UpdateStatusLabel("Dropped files: " + string.Join(" ", aFiles));
+        OverlayUiController.Instance.PrintStatusLog("Dropped files: " + string.Join(" ", aFiles));
         FilePanelController.FilesRead(aFiles.ToArray());
     }
 #endif
@@ -339,13 +339,11 @@ public class ViewportController : MonoBehaviour
 
     public void BeginReplaceAtom()
     {
-        Debug.Log("Begin replace atom");
         ReplaceCurrentTool(ToolType.ReplaceAtom);
     }
 
     public void EndReplaceAtom()
     {
-        Debug.Log("End replace atom");
         if (currentTool == ToolType.ReplaceAtom)
         {
             ReplaceCurrentTool(ToolType.Select);
@@ -704,21 +702,21 @@ public class ViewportController : MonoBehaviour
             if (Input.GetKey(KeyCode.Z) && !ignoreKeyCodes.Contains(KeyCode.Z))
             {
                 // Undo
-                ConFun.UpdateStatusLabel("Undo!");
+                OverlayUiController.Instance.PrintStatusLog("Undo!");
                 op = undoManager.Undo();
                 selectionManager.RemoveInvalid();
                 ignoreKeyCodes.Add(KeyCode.Z);
             }
             else if (Input.GetKey(KeyCode.Y) && !ignoreKeyCodes.Contains(KeyCode.Y))
             {
-                ConFun.UpdateStatusLabel("Redo!");
+                OverlayUiController.Instance.PrintStatusLog("Redo!");
                 op = undoManager.Redo();
                 selectionManager.RemoveInvalid();
                 ignoreKeyCodes.Add(KeyCode.Y);
             }
             else if (Input.GetKey(KeyCode.X) && !ignoreKeyCodes.Contains(KeyCode.X))
             {
-                ConFun.UpdateStatusLabel("Cut!");
+                OverlayUiController.Instance.PrintStatusLog("Cut!");
                 SaveCurrentSelectionToClipboard();
                 SubmitOperation(new RemoveAtomsOperation(selectionManager.SelectedAtoms));
                 selectionManager.ClearSelection();
@@ -726,7 +724,7 @@ public class ViewportController : MonoBehaviour
             }
             else if (Input.GetKey(KeyCode.C) && !ignoreKeyCodes.Contains(KeyCode.C))
             {
-                ConFun.UpdateStatusLabel("Copy!");
+                OverlayUiController.Instance.PrintStatusLog("Copy!");
                 SaveCurrentSelectionToClipboard();
                 pasteOffset = Vector3.zero;
                 selectionManager.ClearSelection();
@@ -734,7 +732,7 @@ public class ViewportController : MonoBehaviour
             }
             else if (Input.GetKey(KeyCode.V) && !ignoreKeyCodes.Contains(KeyCode.V))
             {
-                ConFun.UpdateStatusLabel("Paste!");
+                OverlayUiController.Instance.PrintStatusLog("Paste!");
                 // Add some noise to avoid pasting to the same position
                 float rand = (float)randomGenerator.NextDouble();
                 pasteOffset += new Vector3(0.8f + 0.4f * rand, 0.8f + 0.4f * rand, 0);
