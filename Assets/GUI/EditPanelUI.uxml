@@ -20,5 +20,10 @@
         <ui:Button text="Add atom" name="AddAtomButton" class="edit-panel-button edit-panel-item" />
         <ui:FloatField label="Display radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="display: none;" />
         <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none;" />
+        <ui:VisualElement name="FlagsRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: none;">
+            <ui:Button text="Clear" name="ClearFlagsButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;" />
+            <ui:Button text="Fixed" name="FixedFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;" />
+            <ui:Button text="React" name="ReactFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

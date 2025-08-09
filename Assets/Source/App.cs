@@ -51,8 +51,6 @@ public class App : MonoBehaviour
 #if !UNITY_WEBGL
     // Queue for scheduling tasks on the main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
-
-    private bool firstStructureLoaded = false;
 #endif
 
     public ViewportController Viewport;
@@ -111,16 +109,8 @@ public class App : MonoBehaviour
         // OpenArc(lines.Split('\n'));
         SendJSEvent("OnUnityLoad", "");
 #else
-        bool hasConfigFileName = ConFun.GlobalConfig.TryGetValue("arc_default", out string filename);
-        if (hasConfigFileName && File.Exists(Path.Join(Application.dataPath, filename)))
-        {
-            OpenArc(File.ReadAllLines(Path.Join(Application.dataPath, filename)), "Default.arc", true);
-        }
-        else
-        {
-            string lines = Resources.Load<TextAsset>("DefaultArc").text;
-            OpenArc(lines.Split('\n'), "Default.arc", true);
-        }
+        string lines = Resources.Load<TextAsset>("PeriodicTable").text;
+        OpenArc(lines.Split('\n'), "PeriodicTable.arc", true);
 #endif
     }
 
@@ -269,7 +259,7 @@ public class App : MonoBehaviour
     {
         if (!OpenFileList.ContainsKey(filename))
         {
-            ConFun.UpdateStatusLabel("Requested file {filename} not found");
+            OverlayUiController.Instance.PrintStatusLog("Requested file {filename} not found");
             return;
         }
 
