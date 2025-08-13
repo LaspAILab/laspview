@@ -18,6 +18,7 @@ public class OverlayUiController : MonoBehaviour
     private VisualElement root;
     private VisualElement centerPanel;
     private VisualElement aboutPanel;
+    private VisualElement leftInfoPanel;
     private VisualElement periodicTablePanel;
     private PeriodicTableControl periodicTableControl;
     
@@ -73,6 +74,7 @@ public class OverlayUiController : MonoBehaviour
         aboutPanel.RegisterCallback<ClickEvent>(ToggleAboutPanel);
         // Avoid duplicate handling of the same click event
         aboutPanel.Children().First().RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
+        leftInfoPanel = root.Q<VisualElement>("LeftInfoPanel");
         
         // Same as above
         periodicTablePanel = root.Q<VisualElement>("PeriodicTablePanel");
@@ -190,7 +192,7 @@ public class OverlayUiController : MonoBehaviour
 
     public void UpdateStructureInfo(CrystalStructure structure)
     {
-        energyLabel.text = $"Energy: {structure.Energy} kJ";
+        energyLabel.text = $"Energy: {structure.Energy} eV";
         
         string formula = ChemicalFormulaUtils.GetChemicalFormula(structure.Atoms, 50);
         
@@ -199,16 +201,18 @@ public class OverlayUiController : MonoBehaviour
 
     public void UpdateSelectionInfo(List<SelectionItem> selection)
     {
-        EditPanelController.Instance.UpdateSelectionInfo(selection);
+        var distinctSelection = selection.Distinct(new SelectionItemComparator()).ToList();
+        EditPanelController.Instance.UpdateSelectionInfo(distinctSelection);
 
         if (selection.Count > 0)
         {
-            string formula = ChemicalFormulaUtils.GetChemicalFormula(selection.Select(x => x.Atom.SourceAtom).ToList());
-            selectionLabel.text = $"Selected: {selection.Count} ({formula})";
+            leftInfoPanel.style.display = DisplayStyle.Flex;
+            string formula = ChemicalFormulaUtils.GetChemicalFormula(distinctSelection.Select(x => x.Atom.SourceAtom).ToList());
+            selectionLabel.text = $"Selected: {distinctSelection.Count} ({formula})";
         }
         else
         {
-            selectionLabel.text = "No atoms selected";
+            leftInfoPanel.style.display = DisplayStyle.None;
         }
         
         if (selection.Count is 0 or > 4)

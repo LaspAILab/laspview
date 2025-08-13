@@ -5,6 +5,8 @@ public class ColliderScript : MonoBehaviour, IPoolable
 {
     public AtomView Atom = null;
 
+    public (int, int, int) CellIndex;
+    
     public Vector3 latticeOffset;
     public Vector3 ActualPosition => Atom.Position + latticeOffset;
 
@@ -36,10 +38,11 @@ public class ColliderScript : MonoBehaviour, IPoolable
         isUsed = false;
     }
 
-    public void SetAtom(AtomView atom, Vector3 position, float radius)
+    public void SetAtom(AtomView atom, Vector3 position, (int, int, int) cellIndex, float radius)
     {
         Atom = atom;
         latticeOffset = position - Atom.Position;
+        CellIndex = cellIndex;
         colliderComponent.center = position;
         colliderComponent.radius = radius / 2;
     }

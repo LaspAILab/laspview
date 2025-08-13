@@ -228,7 +228,7 @@ public class App : MonoBehaviour
 #else
         Task.Run(() =>
         {
-            StructureFile currentFile = new();
+            StructureFile currentFile = new(filename);
             if (openAfterLoad)
             {
                 CurrentFile = currentFile;
@@ -259,7 +259,7 @@ public class App : MonoBehaviour
     {
         if (!OpenFileList.ContainsKey(filename))
         {
-            OverlayUiController.Instance.PrintStatusLog("Requested file {filename} not found");
+            OverlayUiController.Instance.PrintStatusLog($"Requested file {filename} not found");
             return;
         }
 
@@ -269,7 +269,7 @@ public class App : MonoBehaviour
 
     public void NewEmpty()
     {
-        CurrentFile = new();
+        CurrentFile = new("Empty");
         CrystalStructure crystalStructure = new();
         crystalStructure.Energy = 0;
         crystalStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });
@@ -305,7 +305,7 @@ public class App : MonoBehaviour
                 OverlayUiController.Instance.UpdateStructureIndex(null, numLoadedStructures);
             }
 
-            OverlayUiController.Instance.PrintStatusLog($"Reading arc file: {numLoadedStructures} structures loaded");
+            OverlayUiController.Instance.PrintStatusLog($"Reading {CurrentFile.Filename}: {numLoadedStructures} structures loaded");
         }
 #endif
     }

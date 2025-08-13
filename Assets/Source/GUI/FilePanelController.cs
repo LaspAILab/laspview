@@ -90,7 +90,8 @@ public class FilePanelController : MonoBehaviour
                 return;
             }
 
-            StructureFile newStructureFile = new();
+            // File name is irrevalent here, needn't set
+            StructureFile newStructureFile = new("");
             newStructureFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
             string str = formatSaver.Write(newStructureFile);
             File.WriteAllText(path, str);

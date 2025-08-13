@@ -57,7 +57,7 @@ public class ColliderManager : MonoBehaviour
                     atomColliders[i, j, k] = colliderPool.BorrowObject();
                     collidersAlive++;
                     var atomPos = new Vector4(atomView.Position.x, atomView.Position.y, atomView.Position.z, 1);
-                    atomColliders[i, j, k].SetAtom(atomView, latticeTransforms[i, j, k] * atomPos,
+                    atomColliders[i, j, k].SetAtom(atomView, latticeTransforms[i, j, k] * atomPos, (i, j, k),
                         Mathf.Max(atomView.Radius, MinColliderRadius));
                 }
             }
@@ -78,7 +78,7 @@ public class ColliderManager : MonoBehaviour
                 {
                     var atomPos = new Vector4(atomView.Position.x, atomView.Position.y, atomView.Position.z, 1);
                     atomColliders[i, j, k].SetAtom(atomView, latticeTransforms[i, j, k] * atomPos,
-                        Mathf.Max(atomView.Radius, MinColliderRadius));
+                        (i, j, k), Mathf.Max(atomView.Radius, MinColliderRadius));
                 }
             }
         }

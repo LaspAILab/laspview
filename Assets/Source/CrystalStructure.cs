@@ -180,8 +180,15 @@ public class StructureFile
 
     public int StructureCount => Structures.Count;
 
-    public StructureFile()
+    public string Filename
     {
+        get;
+        private set;
+    }
+
+    public StructureFile(string filename)
+    {
+        Filename = filename;
         Structures = new();
 #if !UNITY_WEBGL
         ListMutex = new();

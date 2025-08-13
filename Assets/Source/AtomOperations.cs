@@ -312,7 +312,8 @@ public class AddAtomsOperation : IOperation
         App.Instance.Viewport.selectionManager.ReplaceSelection(addedAtoms.Select(x => new SelectionItem
         {
             Atom = x,
-            LatticeOffset = Vector3.zero
+            LatticeOffset = Vector3.zero,
+            CellIndex = (0, 0, 0)
         }));
 
         return true;

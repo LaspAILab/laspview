@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-
 public enum AtomFlags
 {
     None = 0,
@@ -67,7 +66,7 @@ public class AtomView : ITransform, IEquatable<AtomView>
     {
         SourceAtom = atom;
         Symbol = atom.Symbol;
-        IsSelected = false;
+        SelectedCellIndex = null;
         Position = ClipAtomCoords(atom.Coordinates, structure, true);
         radius = App.Elements[atom.Symbol].Radius;
         DisplayColor = App.Elements[atom.Symbol].Color;
@@ -102,7 +101,8 @@ public class AtomView : ITransform, IEquatable<AtomView>
         internal set;
     }
 
-    public bool IsSelected { get; set; }
+    // Indicates which copy of this atom is selected, null if none is selected
+    public (int, int, int)? SelectedCellIndex = null;
 
     public float Radius
     {

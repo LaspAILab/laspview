@@ -129,9 +129,9 @@ public class StructureRenderer : MonoBehaviour
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    Color GetAtomColor(AtomView atom)
+    Color GetAtomColor(AtomView atom, int aIndex, int bIndex, int cIndex)
     {
-        return atom.IsSelected ? Color.yellow : atom.DisplayColor;
+        return atom.SelectedCellIndex != null ? Color.yellow : atom.DisplayColor;
     }
 
     Vector4 GetRimColor(AtomFlags flags)
@@ -153,39 +153,6 @@ public class StructureRenderer : MonoBehaviour
         RecollectDrawBatches();
     }
 
-    // Duplicate render items, to render multiple lattices
-    private void ReplicateBuffers(ref InstancingData instancingData, int repeatA, int repeatB, int repeatC)
-    {
-        if (latticeTransforms == null)
-        {
-            return;
-        }
-
-        int instanceCount = instancingData.InstanceCount;
-        for (int i = 0; i < repeatA; i++)
-        {
-            for (int j = 0; j < repeatB; j++)
-            {
-                for (int k = 0; k < repeatC; k++)
-                {
-                    if (i == 0 && j == 0 && k == 0)
-                    {
-                        continue;
-                    }
-
-                    for (int count = 0; count < instanceCount; count++)
-                    {
-                        instancingData.Transforms.Add(latticeTransforms[i, j, k] * instancingData.Transforms[count]);
-                        instancingData.Colors.Add(instancingData.Colors[count]);
-                        instancingData.RimColors.Add(instancingData.RimColors[count]);
-                    }
-                }
-            }
-        }
-
-        Assert.AreEqual(instancingData.InstanceCount, instanceCount * repeatA * repeatB * repeatC);
-    }
-
     internal void SetStructureView(CrystalStructureView structureView, Matrix4x4[,,] newLatticeTransforms)
     {
         CurrentStructureView = structureView;
@@ -201,47 +168,63 @@ public class StructureRenderer : MonoBehaviour
     {
         Profiler.BeginSample("Collect draw batch");
 
-        int repeatA = 1, repeatB = 1, repeatC = 1;
-        if (latticeTransforms != null)
-        {
-            repeatA = latticeTransforms.GetLength(0);
-            repeatB = latticeTransforms.GetLength(1);
-            repeatC = latticeTransforms.GetLength(2);
-        }
+        int repeatA, repeatB, repeatC;
 
+        latticeTransforms ??= new [,,] {{{ Matrix4x4.identity }}};
+        repeatA = latticeTransforms.GetLength(0);
+        repeatB = latticeTransforms.GetLength(1);
+        repeatC = latticeTransforms.GetLength(2);
+        
         // GC.Collect();
         atomInstancingData.Clear();
         atomInstancingData.Capacity = CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC;
-        foreach (var item in CurrentStructureView.Atoms)
-        {
-            atomInstancingData.Add(item.Transform, GetAtomColor(item), GetRimColor(item.SourceAtom.Flags));
-        }
-
+        
         bondInstancingData.Clear();
-        bondInstancingData.Capacity = CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC;
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.WaitOne();
 #endif
-        foreach (var item in CurrentStructureView.Bonds)
+        bondInstancingData.Capacity = CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC;
+        
+        for (int i = 0; i < repeatA; i++)
         {
-            // Add blue rim for bonds only if two atoms are both fixed
-            Vector4 rimColor = GetRimColor(item.FromAtom.SourceAtom.Flags == item.ToAtom.SourceAtom.Flags ? item.FromAtom.SourceAtom.Flags
-                : AtomFlags.None);
-            bondInstancingData.Add(item.Transform, GetAtomColor(item.FromAtom), rimColor);
+            for (int j = 0; j < repeatB; j++)
+            {
+                for (int k = 0; k < repeatC; k++)
+                {
+                    Matrix4x4 transformMatrix = latticeTransforms[i, j, k];
+                    
+                    foreach (var item in CurrentStructureView.Atoms)
+                    {
+                        atomInstancingData.Transforms.Add(transformMatrix * item.Transform);
+                        atomInstancingData.Colors.Add(GetAtomColor(item, i,j,k));
+                        atomInstancingData.RimColors.Add(GetRimColor(item.SourceAtom.Flags));
+                    }
+                    
+                    foreach (var item in CurrentStructureView.Bonds)
+                    {
+                        bondInstancingData.Transforms.Add(transformMatrix * item.Transform);
+                        bondInstancingData.Colors.Add(GetAtomColor(item.FromAtom, i, j, k));
+                        // Add blue rim for bonds only if two atoms are both fixed
+                        bondInstancingData.RimColors.Add(GetRimColor(item.FromAtom.SourceAtom.Flags == item.ToAtom.SourceAtom.Flags ? item.FromAtom.SourceAtom.Flags
+                            : AtomFlags.None));
+                    }
+                }
+            }
         }
+        
+        Assert.AreEqual(atomInstancingData.InstanceCount, CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC);
+        Assert.AreEqual(bondInstancingData.InstanceCount, CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC);
+        
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.ReleaseMutex();
 #endif
-
-        ReplicateBuffers(ref atomInstancingData, repeatA, repeatB, repeatC);
-        ReplicateBuffers(ref bondInstancingData, repeatA, repeatB, repeatC);
         Profiler.EndSample();
     }
 
-    internal void RenderSingleAtom(AtomView atom, Vector3 pos, float radius)
+    internal void RenderSingleAtom(AtomView atom, Vector3 pos, (int, int, int) cellIndex, float radius)
     {
         var props = new MaterialPropertyBlock();
-        props.SetColor(BaseColor, GetAtomColor(atom));
+        props.SetColor(BaseColor, GetAtomColor(atom, cellIndex.Item1, cellIndex.Item2, cellIndex.Item3));
         props.SetColor(RimColor, GetRimColor(atom.SourceAtom.Flags));
         renderParams.matProps = props;
         var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * radiusScale * Vector3.one);
