@@ -14,11 +14,14 @@ public struct SelectionItem : IEquatable<SelectionItem>
     // An atom may have multiple copies in the viewport, 
     // so we have to clarify which copy did we select
     public Vector3 LatticeOffset;
+
+    public (int, int, int) CellIndex;
+    
     public Vector3 Position => Atom.Position + LatticeOffset;
     
     public bool Equals(SelectionItem other)
     {
-        return Atom.Equals(other.Atom);
+        return Atom.Equals(other.Atom) && CellIndex == other.CellIndex;
     }
     
     public override bool Equals(object obj)
@@ -29,6 +32,29 @@ public struct SelectionItem : IEquatable<SelectionItem>
     public override int GetHashCode()
     {
         return Atom.GetHashCode();
+    }
+
+    public static SelectionItem CreateFromCollider(ColliderScript colliderScript)
+    {
+        return new SelectionItem
+        {
+            Atom = colliderScript.Atom, 
+            LatticeOffset = colliderScript.latticeOffset, 
+            CellIndex = colliderScript.CellIndex
+        };
+    }
+}
+
+class SelectionItemComparator : IEqualityComparer<SelectionItem>
+{
+    public bool Equals(SelectionItem x, SelectionItem y)
+    {
+        return x.Atom.Equals(y.Atom);
+    }
+
+    public int GetHashCode(SelectionItem obj)
+    {
+        return obj.Atom.GetHashCode();
     }
 }
 
@@ -53,15 +79,15 @@ public class SelectionManager
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsSelected(AtomView atomView)
+    public bool IsSelected(AtomView atomView, (int, int, int) cellIndex)
     {
-        return Selection.Contains(new SelectionItem { Atom = atomView });
+        return Selection.Contains(new SelectionItem { Atom = atomView, CellIndex = cellIndex });
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Select(SelectionItem item)
     {
-        item.Atom.IsSelected = true;
+        item.Atom.SelectedCellIndex = item.CellIndex;
         item.SelectIndex = selectionIndex++;
         bool result = Selection.Add(item);
 
@@ -107,10 +133,10 @@ public class SelectionManager
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Deselect(AtomView atomView)
+    public bool Deselect(AtomView atomView, (int, int, int) cellIndex)
     {
-        atomView.IsSelected = false;
-        bool result = Selection.Remove(new SelectionItem { Atom = atomView });
+        atomView.SelectedCellIndex = null;
+        bool result = Selection.Remove(new SelectionItem { Atom = atomView, CellIndex = cellIndex});
 
         if (result)
         {
@@ -134,7 +160,7 @@ public class SelectionManager
 
         foreach (var item in Selection)
         {
-            item.Atom.IsSelected = false;
+            item.Atom.SelectedCellIndex = null;
         }
 
         Selection.Clear();
@@ -158,6 +184,8 @@ public class SelectionManager
     {
         Selection.RemoveWhere(x => !x.Atom.InLattice);
     }
+    
+    public IEnumerable<SelectionItem> DistinctSelection => Selection.Distinct(new SelectionItemComparator());
 
-    public List<AtomView> SelectedAtoms => Selection.Select(x => x.Atom).ToList();
+    public List<AtomView> SelectedAtoms => Selection.Select(x => x.Atom).Distinct().ToList();
 }

@@ -5,8 +5,10 @@ VisualElement {
     -unity-font-definition: url("project://database/Assets/TextMesh%20Pro/Fonts/LiberationSans.ttf?fileID=12800000&guid=e3265ab4bf004d28a9537516768c1c75&type=3#LiberationSans");
 }
 
-.-vec3-input-float-field{
-    width: 60px;
+.-vec3-input-float-field {
+    width: 65px;
     margin-right: 0;
     margin-left: 5px;
+    white-space: normal;
+    text-overflow: clip;
 }

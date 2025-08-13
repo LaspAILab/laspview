@@ -284,9 +284,9 @@ public class ViewportController : MonoBehaviour
             if (item.Position.x > latticeCorner.x || item.Position.y > latticeCorner.y ||
                 item.Position.z > latticeCorner.z)
             {
-                // Transfer selection to the first copy of the corresponding atom
+                // Transfer selection to the root version of the atom
                 selectionManager.Selection.Remove(item);
-                selectionManager.Selection.Add(new SelectionItem { Atom = item.Atom, LatticeOffset = Vector3.zero });
+                selectionManager.Selection.Add(new SelectionItem { Atom = item.Atom, LatticeOffset = Vector3.zero, CellIndex = (0, 0, 0) });
             }
         }
 
@@ -394,36 +394,26 @@ public class ViewportController : MonoBehaviour
         bool selectionChanged = false;
         foreach (var item in colliderManager.colliderRegistry)
         {
-            bool isSelected = temporarySelectionManager.IsSelected(item.Key);
-            bool anyColliderInBox = false;
-            ColliderScript colliderInBox = null;
-
             foreach (var col in item.Value)
             {
                 Vector3 pos = activeCamera.WorldToScreenPoint(col.ActualPosition);
+                bool isSelected = temporarySelectionManager.IsSelected(item.Key, col.CellIndex);
                 if (currentRect.Contains(pos))
                 {
-                    colliderInBox = col;
-                    anyColliderInBox = true;
-                    break;
+                    if (!isSelected)
+                    {
+                        temporarySelectionManager.Select(SelectionItem.CreateFromCollider(col));
+                        selectionChanged = true;
+                    }
                 }
-            }
-
-            if (!isSelected && anyColliderInBox)
-            {
-                temporarySelectionManager.Select(new SelectionItem
+                else
                 {
-                    Atom = item.Key,
-                    LatticeOffset = colliderInBox.latticeOffset,
-                });
-                selectionChanged = true;
-                continue;
-            }
-
-            if (!anyColliderInBox && isSelected)
-            {
-                temporarySelectionManager.Deselect(item.Key);
-                selectionChanged = true;
+                    if (isSelected)
+                    {
+                        temporarySelectionManager.Deselect(item.Key, col.CellIndex);
+                        selectionChanged = true;
+                    }
+                }
             }
         }
 
@@ -468,10 +458,9 @@ public class ViewportController : MonoBehaviour
             {
                 if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
                 {
-                    raycastResult.Add(new SelectionItem
-                        { Atom = colliderScript.Atom, LatticeOffset = colliderScript.latticeOffset });
+                    raycastResult.Add(SelectionItem.CreateFromCollider(colliderScript));
                     structureRenderer.RenderSingleAtom(colliderScript.Atom, colliderScript.ActualPosition,
-                        colliderScript.Atom.Radius + 0.5f);
+                        colliderScript.CellIndex, colliderScript.Atom.Radius + 0.5f);
                 }
             }
 
@@ -558,13 +547,6 @@ public class ViewportController : MonoBehaviour
 
     void OnRotateAtoms(Vector3 mousePos, bool submit = false)
     {
-        if (rotationalRelativePos.Length != selectionManager.Selection.Count)
-        {
-            Debug.LogWarning("Selection count shouldn't have changed during rotation. ");
-            isRotatingAtom = false;
-            return;
-        }
-
         if (submit)
         {
             var newPositions = rotationalRelativePos.Select(x => rotateCenter + x).ToList();
@@ -628,7 +610,7 @@ public class ViewportController : MonoBehaviour
     void SaveCurrentSelectionToClipboard()
     {
         // Atoms are added to clipboard by reference, remember to copy them when pasting! 
-        clipboard = selectionManager.Selection.Select(x => x.Atom.SourceAtom).ToList();
+        clipboard = selectionManager.DistinctSelection.Select(x => x.Atom.SourceAtom).ToList();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -761,7 +743,7 @@ public class ViewportController : MonoBehaviour
             ignoreKeyCodes.Clear();
         }
     }
-
+    
     void HandleMouseEvents(List<SelectionItem> raycastAtom)
     {
         SelectionItem hoveredAtom = raycastAtom.Count > 0 ? raycastAtom[0] : new SelectionItem { Atom = null };
@@ -792,11 +774,11 @@ public class ViewportController : MonoBehaviour
         {
             if (raycastAtom.Count > 0)
             {
-                if (selectionManager.IsSelected(hoveredAtom.Atom))
+                if (selectionManager.IsSelected(hoveredAtom.Atom, hoveredAtom.CellIndex))
                 {
                     if (shiftDown)
                     {
-                        selectionManager.Deselect(hoveredAtom.Atom);
+                        selectionManager.Deselect(hoveredAtom.Atom, hoveredAtom.CellIndex);
                     }
                     // Do nothing if the same atom is selected again without Shift pressed
                 }
@@ -981,7 +963,8 @@ public class ViewportController : MonoBehaviour
                     opStartMousePos = Input.mousePosition;
                     isRotatingAtom = true;
 
-                    rotatedAtoms = selectionManager.Selection.ToArray();
+                    // Acquire a distinct list of atoms selected
+                    rotatedAtoms = selectionManager.DistinctSelection.ToArray();
                     rotationalRelativePos = new Vector3[rotatedAtoms.Length];
 
                     rotateCenter = GetGeometryCenter(rotatedAtoms);
@@ -1000,7 +983,7 @@ public class ViewportController : MonoBehaviour
 #if !UNITY_WEBGL
                 CurrentStructureView.BondMutex.WaitOne();
 #endif
-                foreach (var item in selectionManager.Selection)
+                foreach (var item in selectionManager.DistinctSelection)
                 {
                     CurrentStructureView.UpdateAtomBondsNoLock(item.Atom, App.Instance.BondTolerance, true);
                 }

@@ -71,15 +71,24 @@ public partial class Vec3InputControl : VisualElement, INotifyValueChanged<Vecto
         };
         Add(whitespace);
 
-        xInput = new FloatField();
+        xInput = new FloatField
+        {
+            maxLength = 5
+        };
         xInput.AddToClassList(INPUT_FIELD_CLASS);
         Add(xInput);
         
-        yInput = new FloatField();
+        yInput = new FloatField
+        {
+            maxLength = 5
+        };;
         yInput.AddToClassList(INPUT_FIELD_CLASS);
         Add(yInput);
         
-        zInput = new FloatField();
+        zInput = new FloatField
+        {
+            maxLength = 5
+        };;
         zInput.AddToClassList(INPUT_FIELD_CLASS);
         Add(zInput);
         
