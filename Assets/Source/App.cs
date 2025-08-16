@@ -44,16 +44,18 @@ public class App : MonoBehaviour
 {
     public static App Instance;
 
-    public static bool IsRunningOnMacOS = false;
+    [NonSerialized] public static bool IsRunningOnMacOS = false;
 
-    public static Dictionary<string, ElementData> Elements;
+    [NonSerialized] public static Dictionary<string, ElementData> Elements;
+
+    [NonSerialized] public ViewportController viewport;
+
+    [NonSerialized] public OperationManager operationManager;
 
 #if !UNITY_WEBGL
     // Queue for scheduling tasks on the main thread
     private readonly ConcurrentQueue<Action> callbackQueue = new();
 #endif
-
-    public ViewportController Viewport;
 
     public float BondTolerance
     {
@@ -66,7 +68,7 @@ public class App : MonoBehaviour
             }
 
             CrystalStructureView.BondTolerance = value;
-            Viewport.RecalculateBonds();
+            viewport.RecalculateBonds();
         }
     }
 
@@ -81,7 +83,7 @@ public class App : MonoBehaviour
             }
 
             CrystalStructureView.CrossCellPolicy = value;
-            Viewport.RecalculateBonds();
+            viewport.RecalculateBonds();
         }
     }
 
@@ -93,12 +95,13 @@ public class App : MonoBehaviour
     {
         ReadPeriodicTable();
         Instance = this;
-        Viewport = GetComponent<ViewportController>();
+        viewport = GetComponent<ViewportController>();
 
         // We have to invert input axis on mac os
-        IsRunningOnMacOS = SystemInfo.operatingSystem.Contains("Mac OS") || SystemInfo.operatingSystem.Contains("MacOS");
+        IsRunningOnMacOS = SystemInfo.operatingSystem.Contains("Mac OS") ||
+                           SystemInfo.operatingSystem.Contains("MacOS");
         Debug.Log("Running on OS: " + SystemInfo.operatingSystem);
-        Debug.Log("Is Mac OS: "+IsRunningOnMacOS);
+        Debug.Log("Is Mac OS: " + IsRunningOnMacOS);
     }
 
     private void Start()
@@ -154,8 +157,9 @@ public class App : MonoBehaviour
     {
         try
         {
-            StructureFile newFile = new();
-            newFile.Structures.Add(Viewport.CurrentStructureView.Structure);
+            // File name not relevant here
+            StructureFile newFile = new("");
+            newFile.Structures.Add(viewport.CurrentStructureView.Structure);
             string str = IFormat.GetFormatIO(".arc").Write(newFile);
             SendJSEvent("ArcFileRecv", str);
         }
@@ -179,18 +183,18 @@ public class App : MonoBehaviour
     }
 #endif
 
-    public void AddFile(StructureFile structureFile, string filename)
+    void AddFile(StructureFile structureFile)
     {
-        if (OpenFileList.ContainsValue(structureFile) || OpenFileList.ContainsKey(filename))
+        if (OpenFileList.ContainsValue(structureFile) || OpenFileList.ContainsKey(structureFile.Filename))
         {
             return;
         }
 
-        OpenFileList.Add(filename, structureFile);
+        OpenFileList.Add(structureFile.Filename, structureFile);
 #if UNITY_WEBGL
-        ProjectPanelController.Instance.AddProjectFile(filename);
+        ProjectPanelController.Instance.AddProjectFile(structureFile.Filename);
 #else
-        ScheduleTask(() => ProjectPanelController.Instance.AddProjectFile(filename));
+        ScheduleTask(() => ProjectPanelController.Instance.AddProjectFile(structureFile.Filename));
 #endif
     }
 
@@ -204,25 +208,20 @@ public class App : MonoBehaviour
         }
 
 #if UNITY_WEBGL
-        CurrentFile = new();
-        AddFile(CurrentFile, filename);
+        CurrentFile = new(filename);
+        AddFile(CurrentFile);
 
         formatReader.Read(CurrentFile, content);
 
-        CurrentStructureIndex = 0;
-        if (CurrentFile.StructureCount > 0)
+        if (CurrentFile.StructureCount == 0)
         {
-            ConFun.UpdateStatusLabel($"Reading arc file: {CurrentFile.StructureCount} structures loaded");
-            ConFun.UpdateStructureInfo(CurrentStructureIndex, CurrentFile.StructureCount,
-                CurrentFile.Structures[CurrentStructureIndex].Energy);
-
-            CrystalStructureView structureView = new(CurrentFile.Structures[CurrentStructureIndex]);
-            Viewport.OpenStructureView(structureView);
-            Viewport.RefocusCamera();
+            OverlayUiController.Instance.PrintStatusLog("Cannot open empty file");
         }
         else
         {
-            ConFun.UpdateStatusLabel($"Cannot open empty file");
+            OverlayUiController.Instance.PrintStatusLog(
+                $"Reading {CurrentFile.Filename}: {CurrentFile.StructureCount} structures loaded");
+            StructureSequenceController.Instance.ResetStructure();
         }
 
 #else
@@ -234,9 +233,10 @@ public class App : MonoBehaviour
                 CurrentFile = currentFile;
                 currentFile.IsOpenStructureQueued = true;
             }
+
             try
             {
-                AddFile(currentFile, filename);
+                AddFile(currentFile);
                 if (openAfterLoad)
                 {
                     formatReader.Read(currentFile, content, _ => { currentFile.NewStructureLoadedNotifier = true; });
@@ -297,15 +297,23 @@ public class App : MonoBehaviour
 
             if (CurrentFile.IsOpenStructureQueued)
             {
-                StructureSequenceController.Instance.ResetStructure();
-                CurrentFile.IsOpenStructureQueued = false;
+                if (CurrentFile.StructureCount == 0)
+                {
+                    OverlayUiController.Instance.PrintStatusLog("Cannot read empty file");
+                }
+                else
+                {
+                    StructureSequenceController.Instance.ResetStructure();
+                    CurrentFile.IsOpenStructureQueued = false;
+                }
             }
             else
             {
                 OverlayUiController.Instance.UpdateStructureIndex(null, numLoadedStructures);
             }
 
-            OverlayUiController.Instance.PrintStatusLog($"Reading {CurrentFile.Filename}: {numLoadedStructures} structures loaded");
+            OverlayUiController.Instance.PrintStatusLog(
+                $"Reading {CurrentFile.Filename}: {numLoadedStructures} structures loaded");
         }
 #endif
     }

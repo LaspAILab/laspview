@@ -40,6 +40,7 @@ public class StructureSequenceController : MonoBehaviour
         var currentFile = App.Instance.CurrentFile;
         CrystalStructureView structureView = new(currentFile.Structures[CurrentStructureIndex]);
         OverlayUiController.Instance.UpdateStructureIndex(0, currentFile.StructureCount);
+        App.Instance.operationManager = new(structureView);
         viewport.OpenStructureView(structureView);
         viewport.RefocusCamera();
     }
@@ -72,8 +73,9 @@ public class StructureSequenceController : MonoBehaviour
 
 #if UNITY_WEBGL
         CrystalStructureView structureView = new(currentStructure);
-        Viewport.OpenStructureView(structureView);
-        ConFun.UpdateStructureInfo(CurrentStructureIndex, currentFile.StructureCount, currentStructure.Energy);
+        OverlayUiController.Instance.UpdateStructureIndex(CurrentStructureIndex, currentFile.StructureCount);
+        App.Instance.operationManager = new(structureView);
+        viewport.OpenStructureView(structureView);
 #else
         Task.Run(() =>
         {
@@ -81,6 +83,7 @@ public class StructureSequenceController : MonoBehaviour
             App.Instance.ScheduleTask(() =>
             {
                 OverlayUiController.Instance.UpdateStructureIndex(CurrentStructureIndex, currentFile.StructureCount);
+                App.Instance.operationManager = new(structureView);
                 viewport.OpenStructureView(structureView);
             });
         });

@@ -17,6 +17,17 @@
         </ui:VisualElement>
         <ui:Toggle label="Fractional coords" name="FractionalToggle" class="edit-panel-item" />
         <Vec3InputControl text="Coordinates" value="0,0,0" name="CoordsInput" class="edit-panel-item" />
+        <ui:VisualElement name="MoveTools" style="flex-grow: 0; flex-direction: row; margin-left: 15px; margin-right: 15px; margin-top: 2px; margin-bottom: 2px;">
+            <ui:Label text="Move tools" style="font-size: 20px;" />
+            <ui:VisualElement style="flex-grow: 1; margin-left: 12px; min-height: 80px; margin-bottom: 4px;">
+                <ui:Label text="Step size" style="font-size: 16px; -unity-text-align: lower-right; flex-grow: 1; align-self: flex-end;" />
+                <ui:FloatField value="0.1" name="MoveStepSizeInput" style="font-size: 14px; margin-top: 0; margin-bottom: 0; align-self: flex-end;" />
+                <ui:Button text="←" name="MoveLeftButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="top: 22px; position: absolute; -unity-text-align: lower-center;" />
+                <ui:Button text="↑" name="MoveUpButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 44px; position: absolute;" />
+                <ui:Button text="→" name="MoveRightButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 88px; top: 22px; position: absolute; bottom: auto;" />
+                <ui:Button text="↓" name="MoveDownButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 44px; position: absolute; top: 40px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
         <ui:Button text="Add atom" name="AddAtomButton" class="edit-panel-button edit-panel-item" />
         <ui:FloatField label="Display radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="display: none;" />
         <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none;" />

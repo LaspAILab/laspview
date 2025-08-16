@@ -56,7 +56,7 @@ public class CrystalStructure
         {
             Index = AtomIndex++,
             Symbol = elemSymbol,
-            Coordinates = coords,
+            Coordinates = ClipAtomCoords(coords, true),
             Charge = charge,
             Flags = flags
         };
@@ -106,14 +106,14 @@ public class CrystalStructure
             new Vector4(0, 0, 0, 1));
         InvLatticeMatrix = LatticeMatrix.inverse;
     }
-    
+
     public void SetLattice(Vector3[] baseVectors)
     {
         if (baseVectors.Length != 3)
         {
             throw new ArgumentException("Lattice must have exactly 3 base vectors.");
         }
-        
+
         LatticeParams = new float[6];
         LatticeParams[0] = baseVectors[0].magnitude;
         LatticeParams[1] = baseVectors[1].magnitude;
@@ -137,7 +137,7 @@ public class CrystalStructure
         {
             baseVectors[i] = new Vector3(LatticeMatrix[0, i], LatticeMatrix[1, i], LatticeMatrix[2, i]);
         }
-        
+
         return baseVectors;
     }
 
@@ -154,6 +154,37 @@ public class CrystalStructure
         tmp = InvLatticeMatrix * tmp;
         return (Vector3)tmp;
     }
+
+    /// <summary>
+    /// Clip the position of the atom
+    /// </summary>
+    /// <param name="posCartesian">The cartesian position of the atom</param>
+    /// <param name="structure">The parent structure of the atom</param>
+    /// <param name="repeat">If true, then use repeat, else use clamp</param>
+    /// <returns></returns>
+    public Vector3 ClipAtomCoords(Vector3 posCartesian, bool repeat = true)
+    {
+        // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
+        Vector3 fract = CartesianToFractional(posCartesian);
+        if (repeat)
+        {
+            fract = new Vector3(
+                fract.x - Mathf.Floor(fract.x),
+                fract.y - Mathf.Floor(fract.y),
+                fract.z - Mathf.Floor(fract.z)
+            );
+        }
+        else
+        {
+            fract = new Vector3(
+                Mathf.Clamp01(fract.x),
+                Mathf.Clamp01(fract.y),
+                Mathf.Clamp01(fract.z)
+            );
+        }
+
+        return FractionalToCartesian(fract);
+    }
 }
 
 public class StructureFile
@@ -161,30 +192,18 @@ public class StructureFile
 #if !UNITY_WEBGL
     public Mutex ListMutex;
 #endif
-    
+
     // Notifier for when a new structure is appended to this file
-    public bool NewStructureLoadedNotifier
-    {
-        get;
-        set;
-    } = false;
+    public bool NewStructureLoadedNotifier { get; set; } = false;
 
     // Whether it is queued to open the first structure after loaded
-    public bool IsOpenStructureQueued
-    {
-        get;
-        set;
-    } = false;
+    public bool IsOpenStructureQueued { get; set; } = false;
 
     public List<CrystalStructure> Structures { get; private set; }
 
     public int StructureCount => Structures.Count;
 
-    public string Filename
-    {
-        get;
-        private set;
-    }
+    public string Filename { get; private set; }
 
     public StructureFile(string filename)
     {
@@ -200,7 +219,7 @@ public class StructureFile
 #if !UNITY_WEBGL
         ListMutex.Dispose();
 #endif
-        Debug.Log("Disposing arc file");
+        Debug.Log($"Disposing structure file {Filename}");
     }
 }
 
@@ -261,12 +280,8 @@ public class CrystalStructureView
     public Mutex BondMutex;
 #endif
 
-    public PointOctree<AtomView> AccelerationOctree
-    {
-        get;
-        private set;
-    }
-    
+    public PointOctree<AtomView> AccelerationOctree { get; private set; }
+
     private float maxAtomRadius = 0f;
 
     public CrystalStructureView(CrystalStructure structure)
@@ -314,7 +329,7 @@ public class CrystalStructureView
             atomView.SourceAtom.Coordinates = posCartesian;
         }
 
-        atomView.Position = AtomView.ClipAtomCoords(posCartesian, Structure, repeat);
+        atomView.Position = Structure.ClipAtomCoords(posCartesian, repeat);
         atomView.InvalidateTransform();
         AccelerationOctree.Remove(atomView);
         AccelerationOctree.Add(atomView, atomView.Position);

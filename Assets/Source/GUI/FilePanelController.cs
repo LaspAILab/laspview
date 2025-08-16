@@ -1,13 +1,18 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using SFB;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UIElements;
 
 public class FilePanelController : MonoBehaviour
 {
     private VisualElement filePanelRoot;
-    
-    public static ExtensionFilter[] Extensions = new[]
+
+    public static ExtensionFilter[] Extensions =
     {
         new ExtensionFilter("Structure Files", "txt", "arc", "car", "poscar", "cif"),
         new ExtensionFilter("Arc Files", "txt", "arc", "car"),
@@ -15,24 +20,86 @@ public class FilePanelController : MonoBehaviour
         new ExtensionFilter("Cif Files", "cif"),
         new ExtensionFilter("All Files", "*"),
     };
-    
+
+#if UNITY_WEBGL
+    //
+    // WebGL
+    //
+    private DropdownField formatSelector;
+
+    [DllImport("__Internal")]
+    private static extern void UploadFile(string gameObjectName, string methodName, string filter, bool multiple);
+
+    [DllImport("__Internal")]
+    private static extern void DownloadFile(string gameObjectName, string methodName, string filename, byte[] byteArray,
+        int byteArraySize);
+
+    // Called from browser
+    public void OnFileUpload(string url)
+    {
+        StartCoroutine(OutputRoutine(url.Split(';')));
+    }
+
+    private IEnumerator OutputRoutine(string[] files)
+    {
+        foreach (var file in files)
+        {
+            // Url, filename
+            var parts = file.Split('|');
+            Debug.Log($"Loading file {parts[1]}, url: {parts[0]}");
+            var loader = UnityWebRequest.Get(parts[0]);
+            yield return loader.SendWebRequest();
+
+            if (loader.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogWarning("WebGL upload error: " + loader.error);
+            }
+            else
+            {
+                App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]));
+            }
+        }
+    }
+
+    // Called from browser
+    public void OnFileDownload()
+    {
+        OverlayUiController.Instance.PrintStatusLog("File successfully downloaded");
+    }
+
+    public void DownloadStructureFile(StructureFile structure, string filename)
+    {
+        string str = IFormat.GetFormatIO(filename).Write(structure);
+        var bytes = Encoding.UTF8.GetBytes(str);
+        DownloadFile(gameObject.name, "OnFileDownload", filename, bytes, bytes.Length);
+    }
+#endif
+
     void Start()
     {
         filePanelRoot = GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("FilePanel");
 
         var newEmptyButton = filePanelRoot.Q<Button>("NewEmptyButton");
         newEmptyButton.RegisterCallback<ClickEvent>(OnNewEmptyButtonClick);
-        
+
         var openFileButton = filePanelRoot.Q<Button>("OpenFileButton");
         openFileButton.RegisterCallback<ClickEvent>(OnOpenFileButtonClick);
-        
+
         var saveCurrentButton = filePanelRoot.Q<Button>("SaveCurrentButton");
         saveCurrentButton.RegisterCallback<ClickEvent>(OnSaveCurrentButtonClick);
-        
+
         var saveAllButton = filePanelRoot.Q<Button>("SaveAllButton");
         saveAllButton.RegisterCallback<ClickEvent>(OnSaveAllButtonClick);
+
+#if UNITY_WEBGL
+        // Enable the format selector in that WebGL doesn't have a save file dialog
+        formatSelector = filePanelRoot.Q<DropdownField>("WebFormatSelector");
+        formatSelector.style.display = DisplayStyle.Flex;
+        formatSelector.choices = Extensions[0].Extensions.ToList();
+        formatSelector.value = "txt";
+#endif
     }
-    
+
     public static void FilesRead(string[] paths)
     {
         // Automatically open the first file after loaded
@@ -43,12 +110,12 @@ public class FilePanelController : MonoBehaviour
             isFirst = false;
         }
     }
-    
+
     void OnNewEmptyButtonClick(ClickEvent _)
     {
         App.Instance.NewEmpty();
     }
-    
+
     void OnOpenFileButtonClick(ClickEvent _)
     {
         // Open file with filter
@@ -62,19 +129,18 @@ public class FilePanelController : MonoBehaviour
         FilesRead(paths);
 #endif
     }
-    
+
     void OnSaveCurrentButtonClick(ClickEvent _)
     {
-        if (App.Instance.Viewport.CurrentStructureView == null)
+        if (App.Instance.viewport.CurrentStructureView == null)
         {
             return;
         }
 
-#if UNITY_WEBGL && !UNITY_EDITOR
-        StructureFile newFile = new();
-        newFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
-        pendingFile = newFile;
-        AskForSaveFormat(gameObject.name, "WebFileDownloadCallback");
+#if UNITY_WEBGL
+        StructureFile newFile = new("");
+        newFile.Structures.Add(App.Instance.viewport.CurrentStructureView.Structure);
+        DownloadStructureFile(newFile, "result." + formatSelector.value);
 #else
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
         {
@@ -92,13 +158,13 @@ public class FilePanelController : MonoBehaviour
 
             // File name is irrevalent here, needn't set
             StructureFile newStructureFile = new("");
-            newStructureFile.Structures.Add(App.Instance.Viewport.CurrentStructureView.Structure);
+            newStructureFile.Structures.Add(App.Instance.viewport.CurrentStructureView.Structure);
             string str = formatSaver.Write(newStructureFile);
             File.WriteAllText(path, str);
         });
 #endif
     }
-    
+
     void OnSaveAllButtonClick(ClickEvent _)
     {
         if (App.Instance.CurrentFile == null)
@@ -106,9 +172,8 @@ public class FilePanelController : MonoBehaviour
             return;
         }
 
-#if UNITY_WEBGL && !UNITY_EDITOR
-        pendingFile = App.Instance.CurrentFile;
-        AskForSaveFormat(gameObject.name, "WebFileDownloadCallback");
+#if UNITY_WEBGL
+        DownloadStructureFile(App.Instance.CurrentFile, "result." + formatSelector.value);
 #else
         StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
         {
