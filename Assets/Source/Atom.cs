@@ -31,43 +31,12 @@ interface ITransform
 
 public class AtomView : ITransform, IEquatable<AtomView>
 {
-    /// <summary>
-    /// Clip the position of the atom
-    /// </summary>
-    /// <param name="posCartesian">The cartesian position of the atom</param>
-    /// <param name="structure">The parent structure of the atom</param>
-    /// <param name="repeat">If true, then use repeat, else use clamp</param>
-    /// <returns></returns>
-    public static Vector3 ClipAtomCoords(Vector3 posCartesian, CrystalStructure structure, bool repeat)
-    {
-        // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
-        Vector3 fract = structure.CartesianToFractional(posCartesian);
-        if (repeat)
-        {
-            fract = new Vector3(
-                fract.x - Mathf.Floor(fract.x),
-                fract.y - Mathf.Floor(fract.y),
-                fract.z - Mathf.Floor(fract.z)
-            );
-        }
-        else
-        {
-            fract = new Vector3(
-                Mathf.Clamp01(fract.x),
-                Mathf.Clamp01(fract.y),
-                Mathf.Clamp01(fract.z)
-            );
-        }
-
-        return structure.FractionalToCartesian(fract);
-    }
-
     public AtomView(Atom atom, CrystalStructure structure)
     {
         SourceAtom = atom;
         Symbol = atom.Symbol;
         SelectedCellIndex = null;
-        Position = ClipAtomCoords(atom.Coordinates, structure, true);
+        Position = structure.ClipAtomCoords(atom.Coordinates, true);
         radius = App.Elements[atom.Symbol].Radius;
         DisplayColor = App.Elements[atom.Symbol].Color;
         transformCache = null;

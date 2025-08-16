@@ -8,9 +8,10 @@ using UnityEngine.UIElements;
 public class EditPanelController : MonoBehaviour
 {
     public static EditPanelController Instance;
-
+    
     [NonSerialized] public string ReplacedElement = null;
     
+    private Camera mainCamera;
     private VisualElement editPanelRoot;
     private ViewportController viewport;
     private CrystalStructure currentStructure;
@@ -43,6 +44,14 @@ public class EditPanelController : MonoBehaviour
     private Button clearFlagsButton;
     private Button fixedFlagButton;
     private Button reactFlagButton;
+    
+    // Move control
+    private VisualElement moveTools;
+    private Button moveUpButton;
+    private Button moveDownButton;
+    private Button moveLeftButton;
+    private Button moveRightButton;
+    private FloatField moveStepSizeInput;
 
     void Awake()
     {
@@ -52,6 +61,8 @@ public class EditPanelController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        mainCamera = Camera.main;
+        
         viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         editPanelRoot = GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("EditPanel");
 
@@ -88,6 +99,17 @@ public class EditPanelController : MonoBehaviour
         fixedFlagButton.RegisterCallback<ClickEvent>(OnSetFlagsClicked);
         reactFlagButton = editPanelRoot.Q<Button>("ReactFlagButton");
         reactFlagButton.RegisterCallback<ClickEvent>(OnSetFlagsClicked);
+        
+        moveTools = editPanelRoot.Q<VisualElement>("MoveTools");
+        moveUpButton = editPanelRoot.Q<Button>("MoveUpButton");
+        moveUpButton.RegisterCallback<ClickEvent>(OnMoveButtonClicked);
+        moveDownButton = editPanelRoot.Q<Button>("MoveDownButton");
+        moveDownButton.RegisterCallback<ClickEvent>(OnMoveButtonClicked);
+        moveLeftButton = editPanelRoot.Q<Button>("MoveLeftButton");
+        moveLeftButton.RegisterCallback<ClickEvent>(OnMoveButtonClicked);
+        moveRightButton = editPanelRoot.Q<Button>("MoveRightButton");
+        moveRightButton.RegisterCallback<ClickEvent>(OnMoveButtonClicked);
+        moveStepSizeInput = editPanelRoot.Q<FloatField>("MoveStepSizeInput");
     }
 
     public void UpdateSelectionInfo(List<SelectionItem> selection)
@@ -109,6 +131,7 @@ public class EditPanelController : MonoBehaviour
             displayRadiusInput.style.display = DisplayStyle.None;
             displayColorInput.style.display = DisplayStyle.None;
             flagsRow.style.display = DisplayStyle.None;
+            moveTools.style.display = DisplayStyle.None;
             return;
         }
 
@@ -122,6 +145,7 @@ public class EditPanelController : MonoBehaviour
             displayRadiusInput.style.display = DisplayStyle.Flex;
             displayColorInput.style.display = DisplayStyle.Flex;
             flagsRow.style.display = DisplayStyle.Flex;
+            moveTools.style.display = DisplayStyle.Flex;
 
             return;
         }
@@ -129,12 +153,14 @@ public class EditPanelController : MonoBehaviour
         // If multiple atoms selected, hide all controls
         activeAtom = null;
         
-        multiselectLabel.style.display = DisplayStyle.Flex;
         fractionalToggle.style.display = DisplayStyle.None;
         coordsInput.style.display = DisplayStyle.None;
         addAtomButton.style.display = DisplayStyle.None;
         displayRadiusInput.style.display = DisplayStyle.None;
         displayColorInput.style.display = DisplayStyle.None;
+        
+        moveTools.style.display = DisplayStyle.Flex;
+        multiselectLabel.style.display = DisplayStyle.Flex;
         flagsRow.style.display = DisplayStyle.Flex;
     }
 
@@ -143,7 +169,7 @@ public class EditPanelController : MonoBehaviour
         elementInput.SetValueWithoutNotify(element);
         if (activeAtom != null)
         {
-            App.Instance.Viewport.SubmitOperation(new SetElementOperation(activeAtom, element));
+            App.Instance.operationManager.SubmitOperation(new SetElementOperation(activeAtom, element));
         }
         
         OverlayUiController.Instance.ClosePeriodicTable(null);
@@ -188,7 +214,7 @@ public class EditPanelController : MonoBehaviour
             return;
         }
         
-        App.Instance.Viewport.SubmitOperation(new SuperCellOperation((int)repeats.x, (int)repeats.y, (int)repeats.z));
+        App.Instance.operationManager.SubmitOperation(new SuperCellOperation((int)repeats.x, (int)repeats.y, (int)repeats.z));
     }
     
     void OnChangeLatticeClicked(ClickEvent evt)
@@ -209,7 +235,7 @@ public class EditPanelController : MonoBehaviour
         }
 
         float[] latticeParams = { lengths.x, lengths.y, lengths.z, angles.x, angles.y, angles.z };
-        App.Instance.Viewport.SubmitOperation(new ChangeLatticeOperation(latticeParams, !keepFractionalToggle.value));
+        App.Instance.operationManager.SubmitOperation(new ChangeLatticeOperation(latticeParams, !keepFractionalToggle.value));
     }
     
     void OnFractionalToggleChanged(ChangeEvent<bool> evt)
@@ -240,7 +266,7 @@ public class EditPanelController : MonoBehaviour
         
         Vector3 coords = coordsInput.value;
 
-        App.Instance.Viewport.SubmitOperation(new SetPositionOperation(activeAtom, fractionalToggle.value
+        App.Instance.operationManager.SubmitOperation(new SetPositionOperation(activeAtom, fractionalToggle.value
             ? currentStructure.FractionalToCartesian(coords)
             : coords));
     }
@@ -259,7 +285,7 @@ public class EditPanelController : MonoBehaviour
         
         activeAtom.Radius = evt.newValue;
         ColliderManager.Instance.UpdateColliderForAtom(activeAtom);
-        App.Instance.Viewport.structureRenderer.RecollectDrawBatches();
+        App.Instance.viewport.structureRenderer.RecollectDrawBatches();
     }
 
     void OnAddAtomClicked(ClickEvent evt)
@@ -274,14 +300,14 @@ public class EditPanelController : MonoBehaviour
             return;
         }
 
-        App.Instance.Viewport.SubmitOperation(new AddAtomOperation(fractionalToggle.value
+        App.Instance.operationManager.SubmitOperation(new AddAtomOperation(fractionalToggle.value
             ? currentStructure.FractionalToCartesian(coords)
             : coords, element, 0));
     }
 
     void OnSetFlagsClicked(ClickEvent evt)
     {
-        if (App.Instance.Viewport.CurrentStructureView == null)
+        if (App.Instance.viewport.CurrentStructureView == null)
         {
             return;
         }
@@ -299,8 +325,30 @@ public class EditPanelController : MonoBehaviour
             _ => AtomFlags.None,
         };
 
-        Assert.IsFalse(App.Instance.Viewport.selectionManager.IsEmpty);
-        App.Instance.Viewport.SubmitOperation(
-            new SetFixedOperation(App.Instance.Viewport.selectionManager.SelectedAtoms, flags));
+        Assert.IsFalse(App.Instance.viewport.selectionManager.IsEmpty);
+        App.Instance.operationManager.SubmitOperation(
+            new SetFixedOperation(App.Instance.viewport.selectionManager.SelectedAtoms, flags));
+    }
+
+    void OnMoveButtonClicked(ClickEvent evt)
+    {
+        if (evt.target is Button btn)
+        {
+            Vector3 moveDirection = btn.name switch
+            {
+                "MoveUpButton" => Vector3.up,
+                "MoveDownButton" => Vector3.down,
+                "MoveLeftButton" => Vector3.left,
+                "MoveRightButton" => Vector3.right,
+                _ => Vector3.zero
+            };
+
+            // Transform to screen space
+            moveDirection = mainCamera.transform.TransformDirection(moveDirection);
+            moveDirection *= moveStepSizeInput.value;
+            
+            App.Instance.operationManager.SubmitOperation(
+                new TranslateAtomsOperation(App.Instance.viewport.selectionManager.SelectedAtoms, moveDirection));
+        }
     }
 }

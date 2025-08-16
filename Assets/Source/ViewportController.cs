@@ -43,9 +43,9 @@ public class ViewportController : MonoBehaviour
     [NonSerialized] public StructureRenderer structureRenderer;
     [NonSerialized] public HBondRenderer hBondRenderer;
     [NonSerialized] public LatticeRenderer latticeRenderer;
+    // Todo: this should have been decoupled from Viewport, into App
     [NonSerialized] public SelectionManager selectionManager = null;
     [NonSerialized] public ColliderManager colliderManager;
-    [NonSerialized] public UndoManager undoManager = null;
     [NonSerialized] private Camera activeCamera;
     [NonSerialized] private SelectionBoxDrawer selectionBoxDrawer;
 
@@ -202,7 +202,7 @@ public class ViewportController : MonoBehaviour
         EditPanelController.Instance.UpdateLattice(CurrentStructureView.Structure);
         CurrentStructureView.GenerateBonds();
 
-        undoManager = new(CurrentStructureView);
+        App.Instance.operationManager.OnOperationPerformed += OnOperationDone;
         selectionManager = new(OverlayUiController.Instance.UpdateSelectionInfo);
 
         latticeTransforms = null;
@@ -213,12 +213,6 @@ public class ViewportController : MonoBehaviour
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
         latticeCorner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
         hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
-    }
-
-    public void SubmitOperation(IOperation op)
-    {
-        undoManager.SubmitOperation(op);
-        OnOperationDone(op);
     }
 
     public void UpdateLatticeTransformMatrix()
@@ -530,7 +524,7 @@ public class ViewportController : MonoBehaviour
             // Careful with assignment behavior: we have to copy assign the selection here! 
             IOperation op = new TranslateAtomsOperation(selectionManager.SelectedAtoms,
                 dragTotalTranslation);
-            SubmitOperation(op);
+            App.Instance.operationManager.SubmitOperation(op);
 
             isMovingAtom = false;
         }
@@ -552,7 +546,7 @@ public class ViewportController : MonoBehaviour
             var newPositions = rotationalRelativePos.Select(x => rotateCenter + x).ToList();
             // Careful with assignment behavior: we have to copy assign the selection here! 
             IOperation op = new RepositionAtomsOperation(rotatedAtoms.Select(x => x.Atom).ToList(), newPositions);
-            SubmitOperation(op);
+            App.Instance.operationManager.SubmitOperation(op);
 
             isRotatingAtom = false;
         }
@@ -666,7 +660,7 @@ public class ViewportController : MonoBehaviour
         {
             IOperation op = new RemoveAtomsOperation(selectionManager.SelectedAtoms);
             selectionManager.ClearSelection();
-            SubmitOperation(op);
+            App.Instance.operationManager.SubmitOperation(op);
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
@@ -677,22 +671,20 @@ public class ViewportController : MonoBehaviour
 
         if (ctrlDown)
         {
-            IOperation op = null;
-
             // WebGL build running on Mac OS cannot report key up/down signals correctly, 
             // This is a workaround
             if (Input.GetKey(KeyCode.Z) && !ignoreKeyCodes.Contains(KeyCode.Z))
             {
                 // Undo
                 OverlayUiController.Instance.PrintStatusLog("Undo!");
-                op = undoManager.Undo();
+                App.Instance.operationManager.Undo();
                 selectionManager.RemoveInvalid();
                 ignoreKeyCodes.Add(KeyCode.Z);
             }
             else if (Input.GetKey(KeyCode.Y) && !ignoreKeyCodes.Contains(KeyCode.Y))
             {
                 OverlayUiController.Instance.PrintStatusLog("Redo!");
-                op = undoManager.Redo();
+                App.Instance.operationManager.Redo();
                 selectionManager.RemoveInvalid();
                 ignoreKeyCodes.Add(KeyCode.Y);
             }
@@ -700,7 +692,7 @@ public class ViewportController : MonoBehaviour
             {
                 OverlayUiController.Instance.PrintStatusLog("Cut!");
                 SaveCurrentSelectionToClipboard();
-                SubmitOperation(new RemoveAtomsOperation(selectionManager.SelectedAtoms));
+                App.Instance.operationManager.SubmitOperation(new RemoveAtomsOperation(selectionManager.SelectedAtoms));
                 selectionManager.ClearSelection();
                 ignoreKeyCodes.Add(KeyCode.X);
             }
@@ -728,13 +720,8 @@ public class ViewportController : MonoBehaviour
                     Symbol = x.Symbol
                 }).ToList();
 
-                SubmitOperation(new AddAtomsOperation(newAtoms));
+                App.Instance.operationManager.SubmitOperation(new AddAtomsOperation(newAtoms));
                 ignoreKeyCodes.Add(KeyCode.V);
-            }
-
-            if (op != null)
-            {
-                OnOperationDone(op);
             }
         }
         else
@@ -808,7 +795,7 @@ public class ViewportController : MonoBehaviour
         {
             if (raycastAtom.Count > 0)
             {
-                SubmitOperation(new SetElementOperation(hoveredAtom.Atom, EditPanelController.Instance.ReplacedElement));
+                App.Instance.operationManager.SubmitOperation(new SetElementOperation(hoveredAtom.Atom, EditPanelController.Instance.ReplacedElement));
             }
         }
 

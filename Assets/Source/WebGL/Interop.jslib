@@ -10,15 +10,5 @@
             }
         });
         document.dispatchEvent(event);
-    },
-
-    AskForSaveFormat: function (gameObjectNamePtr, methodNamePtr) {
-        gameObjectName = UTF8ToString(gameObjectNamePtr);
-        methodName = UTF8ToString(methodNamePtr);
-        
-        var format = prompt("Which format? (supported: txt, arc, car, poscar, cif)", "txt");
-        if (format != null) {
-            SendMessage(gameObjectName, methodName, "result." + format);
-        }
     }
 });
