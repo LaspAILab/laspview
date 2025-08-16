@@ -260,6 +260,18 @@
     font-size: 16px;
 }
 
+.edit-direction-button {
+    height: 36px;
+    flex-grow: 0;
+    font-size: 24px;
+    -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceArgon-Bold.otf?fileID=12800000&guid=39d04e98a75588e41b389a6c49179526&type=3#MonaspaceArgon-Bold");
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
+    width: 36px;
+}
+
 Toggle VisualElement {
     flex-direction: row-reverse;
 }
@@ -290,4 +302,24 @@ Toggle VisualElement {
     border-left-color: rgb(208, 208, 208);
     border-right-color: rgb(208, 208, 208);
     border-bottom-color: rgb(208, 208, 208);
+}
+
+DropdownField Label {
+    font-size: 20px;
+    min-width: 90px;
+}
+
+EnumField Label {
+    font-size: 20px;
+    min-width: 120px;
+}
+
+SliderInt Label {
+    font-size: 20px;
+    min-width: 120px;
+}
+
+Slider Label {
+    font-size: 20px;
+    min-width: 120px;
 }

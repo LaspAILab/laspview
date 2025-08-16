@@ -46,13 +46,16 @@ public abstract class IOperation
     public abstract UpdateFlags Flags { get; }
 }
 
-public class UndoManager
+public class OperationManager
 {
+    public delegate void OnOperationPerformedEvent(IOperation operation);
+    public event OnOperationPerformedEvent OnOperationPerformed;
+
     private List<IOperation> operationStack;
     private int stackTop = -1;
     private CrystalStructureView structureView;
 
-    public UndoManager(CrystalStructureView structureView)
+    public OperationManager(CrystalStructureView structureView)
     {
         operationStack = new();
         this.structureView = structureView;
@@ -68,6 +71,7 @@ public class UndoManager
         }
 
         operation.Do(structureView);
+        OnOperationPerformed?.Invoke(operation);
         operationStack.Add(operation);
         stackTop++;
     }
@@ -81,6 +85,7 @@ public class UndoManager
 
         IOperation operation = operationStack[stackTop--];
         operation.Undo(structureView);
+        OnOperationPerformed?.Invoke(operation);
         return operation;
     }
 
@@ -93,6 +98,7 @@ public class UndoManager
 
         IOperation operation = operationStack[++stackTop];
         operation.Do(structureView);
+        OnOperationPerformed?.Invoke(operation);
         return operation;
     }
 }
