@@ -79,6 +79,8 @@ public class CifFormat : IFormat
         // Read atom list column format specification
         int columnIndex = 0;
         int xColumnIndex = -1, yColumnIndex = -1, zColumnIndex = -1, elementIndex = -1, labelIndex = -1;
+        
+        bool isCartCoords = false, isFractCoords = false;
         while (true)
         {
             line = IFormat.GetNextLine(linesEnumerator);
@@ -87,19 +89,35 @@ public class CifFormat : IFormat
             if (match.Success)
             {
                 var dataTag = match.Groups[1].Value;
+                
                 switch (dataTag.ToLower())
                 {
                     case "_atom_site_label":
                         labelIndex = columnIndex;
                         break;
+                    case "_atom_site_fract_x":
+                        xColumnIndex = columnIndex;
+                        isFractCoords = true;
+                        break;
+                    case "_atom_site_fract_y":
+                        yColumnIndex = columnIndex;
+                        isFractCoords = true;
+                        break;
+                    case "_atom_site_fract_z":
+                        zColumnIndex = columnIndex;
+                        isFractCoords = true;
+                        break;
                     case "_atom_site_cartn_x":
                         xColumnIndex = columnIndex;
+                        isCartCoords = true;
                         break;
                     case "_atom_site_cartn_y":
                         yColumnIndex = columnIndex;
+                        isCartCoords = true;
                         break;
                     case "_atom_site_cartn_z":
                         zColumnIndex = columnIndex;
+                        isCartCoords = true;
                         break;
                     case "_atom_site_type_symbol":
                         elementIndex = columnIndex;
@@ -127,6 +145,12 @@ public class CifFormat : IFormat
             Debug.LogError("Atom column specification missing key fields. ");
             return;
         }
+        
+        if (isFractCoords && isCartCoords)
+        {
+            Debug.LogError("Coordinates must be in either cartesian or fractional format, but these two cannot be mixed. ");
+            return;
+        }
 
         CrystalStructure crystalStructure = new();
         crystalStructure.SetLattice(latticeParams);
@@ -142,10 +166,16 @@ public class CifFormat : IFormat
 
             if (!App.Elements.ContainsKey(element))
             {
-                Debug.LogError($"Unknown element symbol `{element}`");
+                Debug.LogWarning($"Unknown element symbol `{element}`, skipping. ");
+                continue;
             }
 
+            if (isFractCoords)
+            {
+                coords = crystalStructure.FractionalToCartesian(coords);
+            }
             crystalStructure.AddAtom(element, coords, 0);
+            
         } while ((line = IFormat.GetNextLine(linesEnumerator)) != null);
 
 #if UNITY_WEBGL

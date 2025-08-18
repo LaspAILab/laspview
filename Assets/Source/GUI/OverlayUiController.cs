@@ -16,7 +16,6 @@ public class OverlayUiController : MonoBehaviour
     const string ACTIVE_BUTTON_CLASS_NAME = "active-title-button";
     
     private VisualElement root;
-    private VisualElement centerPanel;
     private VisualElement aboutPanel;
     private VisualElement leftInfoPanel;
     private VisualElement periodicTablePanel;
@@ -67,7 +66,6 @@ public class OverlayUiController : MonoBehaviour
 
         document = GetComponent<UIDocument>();
         root = document.rootVisualElement;
-        centerPanel = root.Q<VisualElement>("CenterPanel");
         
         aboutPanel = root.Q<VisualElement>("AboutPanel");
         // Close the about panel if empty parts are clicked
@@ -145,6 +143,11 @@ public class OverlayUiController : MonoBehaviour
         atomCountLabel = root.Q<Label>("AtomCountLabel");
         selectionLabel = root.Q<Label>("SelectionLabel");
         additionalInfoLabel = root.Q<Label>("AdditionalInfoLabel");
+        
+#if UNITY_WEBGL
+        // Scale down the UI a little bit on browser as the default looks too big
+        document.panelSettings.scale = 1.05f;
+#endif
     }
 
     public void PrintStatusLog(string str, bool addToUnityLog = true)
@@ -154,26 +157,6 @@ public class OverlayUiController : MonoBehaviour
         if (addToUnityLog)
         {
             Debug.Log(str);
-        }
-    }
-
-    public void OnToolChange(ToolType newTool)
-    {
-        switch (newTool)
-        {
-            case ToolType.MoveView:
-                centerPanel.style.opacity = 1;
-                centerPanel.RemoveFromClassList("center-panel-rotate");
-                centerPanel.AddToClassList("center-panel-pan");
-                break;
-            case ToolType.RotateView:
-                centerPanel.style.opacity = 1;
-                centerPanel.RemoveFromClassList("center-panel-pan");
-                centerPanel.AddToClassList("center-panel-rotate");
-                break;
-            default:
-                centerPanel.style.opacity = 0;
-                break;
         }
     }
 

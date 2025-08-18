@@ -108,8 +108,6 @@ public class App : MonoBehaviour
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
         WebGLInput.captureAllKeyboardInput = false;
-        // string lines = Resources.Load<TextAsset>("DefaultArc").text;
-        // OpenArc(lines.Split('\n'));
         SendJSEvent("OnUnityLoad", "");
 #else
         string lines = Resources.Load<TextAsset>("PeriodicTable").text;
@@ -211,7 +209,15 @@ public class App : MonoBehaviour
         CurrentFile = new(filename);
         AddFile(CurrentFile);
 
-        formatReader.Read(CurrentFile, content);
+        try
+        {
+            formatReader.Read(CurrentFile, content);
+        }
+        catch (Exception e)
+        {
+            OverlayUiController.Instance.PrintStatusLog($"Failed to read structure file: {filename}");
+            Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
+        }
 
         if (CurrentFile.StructureCount == 0)
         {
@@ -248,6 +254,7 @@ public class App : MonoBehaviour
             }
             catch (Exception e)
             {
+                OverlayUiController.Instance.PrintStatusLog($"Failed to read structure file: {filename}");
                 Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
             }
         });
