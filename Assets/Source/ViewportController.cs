@@ -631,7 +631,6 @@ public class ViewportController : MonoBehaviour
         }
 
         currentTool = newTool;
-        OverlayUiController.Instance.OnToolChange(newTool);
     }
 
     void HandleKeyboardEvents()
