@@ -15,7 +15,8 @@
                 <ui:DataBinding property="value" data-source-path="DisplayStyle" binding-mode="ToSource" />
             </Bindings>
         </ui:EnumField>
-        <ui:Slider label="Stick radius" value="42" high-value="100" show-input-field="true" name="StickRadius" class="display-option-item" />
+        <ui:Slider label="Ball radius" value="1" high-value="2.5" show-input-field="true" name="BallRadius" class="display-option-item" />
+        <ui:Slider label="Stick radius" value="0.35" high-value="2" show-input-field="true" name="StickRadius" class="display-option-item" />
         <ui:Toggle label="Show highlight" name="ShowHighlight" value="true" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
         <ui:Label text="Bond calculation" enable-rich-text="false" class="display-option-subtitle" />
         <ui:Toggle label="Show H bonds" name="ShowHBonds" value="true" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />

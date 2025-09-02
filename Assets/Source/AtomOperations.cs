@@ -247,6 +247,7 @@ public class SetHiddenOperation : IOperation
         for (int i = 0; i < targetAtoms.Count; i++)
         {
             targetAtoms[i].IsHidden = isHidden;
+            HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtoms[i]);
         }
 
         return true;
@@ -257,6 +258,7 @@ public class SetHiddenOperation : IOperation
         for (int i = 0; i < targetAtoms.Count; i++)
         {
             targetAtoms[i].IsHidden = !isHidden;
+            HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtoms[i]);
         }
 
         return true;
