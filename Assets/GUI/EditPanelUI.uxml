@@ -1,7 +1,7 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
     <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input" />
-    <ui:VisualElement style="flex-grow: 1; margin-top: 5px; margin-bottom: 10px;">
+    <ui:ScrollView horizontal-scroller-visibility="Hidden" style="margin-top: 5px; margin-bottom: 10px; flex-grow: 1;">
         <ui:Label text="Lattice" class="display-option-subtitle" />
         <Vec3InputControl text="Lengths" name="LatticeLengthsInput" class="edit-panel-item" />
         <Vec3InputControl text="Angles" name="LatticeAnglesInput" class="edit-panel-item" />
@@ -29,12 +29,17 @@
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:Button text="Add atom" name="AddAtomButton" class="edit-panel-button edit-panel-item" />
-        <ui:FloatField label="Display radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="display: none;" />
-        <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none;" />
         <ui:VisualElement name="FlagsRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: none;">
             <ui:Button text="Clear" name="ClearFlagsButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;" />
             <ui:Button text="Fixed" name="FixedFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;" />
             <ui:Button text="React" name="ReactFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;" />
         </ui:VisualElement>
-    </ui:VisualElement>
+        <ui:Label text="Display" class="display-option-subtitle" />
+        <ui:FloatField label="Display Radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="justify-content: space-between;" />
+        <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none; justify-content: space-between;" />
+        <ui:VisualElement name="HideRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: flex;">
+            <ui:Button text="Hide selected&#10;" name="HideSelectedButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;" />
+            <ui:Button text="Restore all hidden" name="RestoreAllButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 0; flex-grow: 2;" />
+        </ui:VisualElement>
+    </ui:ScrollView>
 </ui:UXML>

@@ -185,6 +185,42 @@ public class CrystalStructure
 
         return FractionalToCartesian(fract);
     }
+
+    public CrystalStructure DeepClone()
+    {
+        var copy = new CrystalStructure
+        {
+            Energy = Energy,
+            Conv = Conv,
+            PathId = PathId,
+            NumStr = NumStr,
+            NumMinimum = NumMinimum,
+            NoPathway = NoPathway,
+            // Matrices are value types, so no need to clone
+            LatticeMatrix = LatticeMatrix,
+            InvLatticeMatrix = InvLatticeMatrix,
+            // Do a clone of the lattice params
+            LatticeParams = LatticeParams.ToArray(),
+            AtomIndex = AtomIndex,
+            // Reserve space
+            Atoms = new List<Atom>(Atoms.Count)
+        };
+
+        // Deep clone all atoms
+        foreach (var atom in Atoms)
+        {
+            copy.Atoms.Add(new Atom
+            {
+                Index = atom.Index,
+                Symbol = atom.Symbol,
+                Coordinates = atom.Coordinates,
+                Charge = atom.Charge,
+                Flags = atom.Flags
+            });
+        }
+
+        return copy;
+    }
 }
 
 public class StructureFile

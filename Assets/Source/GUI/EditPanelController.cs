@@ -37,9 +37,6 @@ public class EditPanelController : MonoBehaviour
     private Vec3InputControl coordsInput;
     private Button addAtomButton;
 
-    private FloatField displayRadiusInput;
-    private TextField displayColorInput;
-
     private VisualElement flagsRow;
     private Button clearFlagsButton;
     private Button fixedFlagButton;
@@ -52,6 +49,12 @@ public class EditPanelController : MonoBehaviour
     private Button moveLeftButton;
     private Button moveRightButton;
     private FloatField moveStepSizeInput;
+    
+    // Display section
+    private FloatField displayRadiusInput;
+    private TextField displayColorInput;
+    private Button hideSelectedButton;
+    private Button restoreAllButton;
 
     void Awake()
     {
@@ -88,9 +91,6 @@ public class EditPanelController : MonoBehaviour
         
         addAtomButton = editPanelRoot.Q<Button>("AddAtomButton");
         addAtomButton.RegisterCallback<ClickEvent>(OnAddAtomClicked);
-        displayRadiusInput = editPanelRoot.Q<FloatField>("DisplayRadiusInput");
-        displayRadiusInput.RegisterValueChangedCallback(OnRadiusSubmit);
-        displayColorInput = editPanelRoot.Q<TextField>("DisplayColorInput");
         
         flagsRow = editPanelRoot.Q<VisualElement>("FlagsRow");
         clearFlagsButton = editPanelRoot.Q<Button>("ClearFlagsButton");
@@ -110,6 +110,14 @@ public class EditPanelController : MonoBehaviour
         moveRightButton = editPanelRoot.Q<Button>("MoveRightButton");
         moveRightButton.RegisterCallback<ClickEvent>(OnMoveButtonClicked);
         moveStepSizeInput = editPanelRoot.Q<FloatField>("MoveStepSizeInput");
+        
+        displayRadiusInput = editPanelRoot.Q<FloatField>("DisplayRadiusInput");
+        displayRadiusInput.RegisterValueChangedCallback(OnRadiusSubmit);
+        displayColorInput = editPanelRoot.Q<TextField>("DisplayColorInput");
+        hideSelectedButton = editPanelRoot.Q<Button>("HideSelectedButton");
+        hideSelectedButton.RegisterCallback<ClickEvent>(OnHideSelectedClicked);
+        restoreAllButton = editPanelRoot.Q<Button>("RestoreAllButton");
+        restoreAllButton.RegisterCallback<ClickEvent>(OnRestoreAllClicked);
     }
 
     public void UpdateSelectionInfo(List<SelectionItem> selection)
@@ -196,6 +204,7 @@ public class EditPanelController : MonoBehaviour
             : activeAtom.SourceAtom.Coordinates);
         
         displayRadiusInput.SetValueWithoutNotify(activeAtom.Radius);
+        displayColorInput.SetValueWithoutNotify(activeAtom.DisplayColor.ToString());
     }
 
     public void EndReplaceAtom()
@@ -327,7 +336,7 @@ public class EditPanelController : MonoBehaviour
 
         Assert.IsFalse(App.Instance.viewport.selectionManager.IsEmpty);
         App.Instance.operationManager.SubmitOperation(
-            new SetFixedOperation(App.Instance.viewport.selectionManager.SelectedAtoms, flags));
+            new SetFlagOperation(App.Instance.viewport.selectionManager.SelectedAtoms, flags));
     }
 
     void OnMoveButtonClicked(ClickEvent evt)
@@ -350,5 +359,18 @@ public class EditPanelController : MonoBehaviour
             App.Instance.operationManager.SubmitOperation(
                 new TranslateAtomsOperation(App.Instance.viewport.selectionManager.SelectedAtoms, moveDirection));
         }
+    }
+    
+    void OnHideSelectedClicked(ClickEvent evt)
+    {
+        App.Instance.operationManager.SubmitOperation(
+            new SetHiddenOperation(App.Instance.viewport.selectionManager.SelectedAtoms, true));
+    }
+    
+    void OnRestoreAllClicked(ClickEvent evt)
+    {
+        // Make all atom displayed again
+        App.Instance.operationManager.SubmitOperation(
+            new SetHiddenOperation(App.Instance.viewport.CurrentStructureView.Atoms, false));
     }
 }

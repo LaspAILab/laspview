@@ -226,11 +226,12 @@ public class App : MonoBehaviour
         else
         {
             OverlayUiController.Instance.PrintStatusLog(
-                $"Reading {CurrentFile.Filename}: {CurrentFile.StructureCount} structures loaded");
+                $"Loaded `{CurrentFile.Filename}` ({CurrentFile.StructureCount} items)");
             StructureSequenceController.Instance.ResetStructure();
         }
 
 #else
+        OverlayUiController.Instance.PrintStatusLog($"Loading `{filename}` in background");
         Task.Run(() =>
         {
             StructureFile currentFile = new(filename);
@@ -257,6 +258,11 @@ public class App : MonoBehaviour
                 OverlayUiController.Instance.PrintStatusLog($"Failed to read structure file: {filename}");
                 Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
             }
+            
+            callbackQueue.Enqueue(()=>
+            {
+                OverlayUiController.Instance.PrintStatusLog($"Finished loading `{filename}` ({currentFile.StructureCount} items)");
+            });
         });
 #endif
     }
@@ -266,12 +272,13 @@ public class App : MonoBehaviour
     {
         if (!OpenFileList.ContainsKey(filename))
         {
-            OverlayUiController.Instance.PrintStatusLog($"Requested file {filename} not found");
+            OverlayUiController.Instance.PrintStatusLog($"Requested file `{filename}` not found");
             return;
         }
 
         CurrentFile = OpenFileList[filename];
         StructureSequenceController.Instance.ResetStructure();
+        OverlayUiController.Instance.PrintStatusLog($"Displaying file `{filename}`");
     }
 
     public void NewEmpty()
@@ -282,6 +289,7 @@ public class App : MonoBehaviour
         crystalStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });
         CurrentFile.Structures.Add(crystalStructure);
         StructureSequenceController.Instance.ResetStructure();
+        OverlayUiController.Instance.PrintStatusLog("New file created");
     }
 
     void Update()
@@ -318,9 +326,6 @@ public class App : MonoBehaviour
             {
                 OverlayUiController.Instance.UpdateStructureIndex(null, numLoadedStructures);
             }
-
-            OverlayUiController.Instance.PrintStatusLog(
-                $"Reading {CurrentFile.Filename}: {numLoadedStructures} structures loaded");
         }
 #endif
     }

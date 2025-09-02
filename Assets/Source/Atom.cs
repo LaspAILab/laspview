@@ -70,6 +70,12 @@ public class AtomView : ITransform, IEquatable<AtomView>
         internal set;
     }
 
+    public bool IsHidden
+    {
+        get;
+        set;
+    } = false;
+
     // Indicates which copy of this atom is selected, null if none is selected
     public (int, int, int)? SelectedCellIndex = null;
 

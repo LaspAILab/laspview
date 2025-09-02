@@ -194,13 +194,13 @@ public class SetElementOperation : IOperation
     public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
 }
 
-public class SetFixedOperation : IOperation
+public class SetFlagOperation : IOperation
 {
     private List<AtomView> targetAtoms;
     private AtomFlags[] oldFlags;
     private AtomFlags newFlag;
 
-    public SetFixedOperation(List<AtomView> targetAtoms, AtomFlags newFlag)
+    public SetFlagOperation(List<AtomView> targetAtoms, AtomFlags newFlag)
     {
         this.targetAtoms = targetAtoms;
         this.newFlag = newFlag;
@@ -223,6 +223,40 @@ public class SetFixedOperation : IOperation
         for (int i = 0; i < targetAtoms.Count; i++)
         {
             targetAtoms[i].SourceAtom.Flags = oldFlags[i];
+        }
+
+        return true;
+    }
+
+    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
+}
+
+public class SetHiddenOperation : IOperation
+{
+    private List<AtomView> targetAtoms;
+    private bool isHidden;
+
+    public SetHiddenOperation(List<AtomView> targetAtoms, bool isHidden)
+    {
+        this.targetAtoms = targetAtoms;
+        this.isHidden = isHidden;
+    }
+
+    protected override bool DoImpl(CrystalStructureView structureView)
+    {
+        for (int i = 0; i < targetAtoms.Count; i++)
+        {
+            targetAtoms[i].IsHidden = isHidden;
+        }
+
+        return true;
+    }
+
+    protected override bool UndoImpl(CrystalStructureView structureView)
+    {
+        for (int i = 0; i < targetAtoms.Count; i++)
+        {
+            targetAtoms[i].IsHidden = !isHidden;
         }
 
         return true;
