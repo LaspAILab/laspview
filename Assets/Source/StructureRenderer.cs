@@ -195,6 +195,11 @@ public class StructureRenderer : MonoBehaviour
                     
                     foreach (var item in CurrentStructureView.Atoms)
                     {
+                        if (item.IsHidden)
+                        {
+                            continue;
+                        }
+                        
                         atomInstancingData.Transforms.Add(transformMatrix * item.Transform);
                         atomInstancingData.Colors.Add(GetAtomColor(item, i,j,k));
                         atomInstancingData.RimColors.Add(GetRimColor(item.SourceAtom.Flags));
@@ -202,6 +207,11 @@ public class StructureRenderer : MonoBehaviour
                     
                     foreach (var item in CurrentStructureView.Bonds)
                     {
+                        if(item.FromAtom.IsHidden || item.ToAtom.IsHidden)
+                        {
+                            continue;
+                        }
+                        
                         bondInstancingData.Transforms.Add(transformMatrix * item.Transform);
                         bondInstancingData.Colors.Add(GetAtomColor(item.FromAtom, i, j, k));
                         // Add blue rim for bonds only if two atoms are both fixed
@@ -211,9 +221,6 @@ public class StructureRenderer : MonoBehaviour
                 }
             }
         }
-        
-        Assert.AreEqual(atomInstancingData.InstanceCount, CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC);
-        Assert.AreEqual(bondInstancingData.InstanceCount, CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC);
         
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.ReleaseMutex();

@@ -60,6 +60,8 @@ class SelectionItemComparator : IEqualityComparer<SelectionItem>
 
 public class SelectionManager
 {
+    // This member may contain duplicate atoms, use with caution!!!
+    // In most cases `SelectedAtoms` should be used instead
     public HashSet<SelectionItem> Selection { get; private set; }
 
     private Action<List<SelectionItem>> onSelectionChanged;
@@ -182,7 +184,14 @@ public class SelectionManager
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveInvalid()
     {
-        Selection.RemoveWhere(x => !x.Atom.InLattice);
+        // Copy the iterator to list in advance to avoid iterator being invalidated after removing
+        foreach (var item in Selection.Where(item => !item.Atom.InLattice || item.Atom.IsHidden).ToList())
+        {
+            item.Atom.SelectedCellIndex = null;
+            Selection.Remove(item);
+        }
+        
+        onSelectionChanged?.Invoke(Selection.ToList());
     }
     
     public IEnumerable<SelectionItem> DistinctSelection => Selection.Distinct(new SelectionItemComparator());

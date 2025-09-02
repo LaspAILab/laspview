@@ -61,7 +61,7 @@ public static class ChemicalFormulaUtils
         foreach (var atomType in groupedAtoms)
         {
             int count = atomType.Value;
-            formulaBuilder.Append($"{atomType.Key}{(count == 1 ? "" : "<size=10>" + count + "</size>")}");
+            formulaBuilder.Append($"{atomType.Key}{(count == 1 ? "" : count)}");
             textLength += atomType.Key.Length + Mathf.CeilToInt(Mathf.Log10(count + 1));
             
             if (maxLength > 0 && textLength > maxLength)
