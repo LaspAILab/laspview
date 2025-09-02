@@ -7,6 +7,7 @@ using RuntimeSceneGizmo;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using B83.Win32;
+using UnityEngine.UIElements;
 using Random = System.Random;
 
 public enum DisplayStyleType
@@ -474,8 +475,10 @@ public class ViewportController : MonoBehaviour
         }
 
         var currentSelectedElement = EventSystem.current.currentSelectedGameObject;
+        // UI toolkit magic for judging whether the current selected element is UI
         bool isKeyboardCapturedByUI = currentSelectedElement != null &&
-                                      currentSelectedElement.GetComponent<RectTransform>() != null;
+                                      currentSelectedElement.name == "OverlayPanelSettings";
+        
         // Ignore keyboard events if a UI element is focused
         if (!isKeyboardCapturedByUI)
         {

@@ -226,7 +226,7 @@ public class App : MonoBehaviour
         else
         {
             OverlayUiController.Instance.PrintStatusLog(
-                $"Loaded `{CurrentFile.Filename}` ({CurrentFile.StructureCount} items)");
+                $"Displaying file `{CurrentFile.Filename}` ({CurrentFile.StructureCount} items)");
             StructureSequenceController.Instance.ResetStructure();
         }
 
@@ -261,7 +261,7 @@ public class App : MonoBehaviour
             
             callbackQueue.Enqueue(()=>
             {
-                OverlayUiController.Instance.PrintStatusLog($"Finished loading `{filename}` ({currentFile.StructureCount} items)");
+                OverlayUiController.Instance.PrintStatusLog($"Displaying file `{filename}` ({currentFile.StructureCount} items)");
             });
         });
 #endif

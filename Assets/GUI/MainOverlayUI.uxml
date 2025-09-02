@@ -43,7 +43,7 @@
             <ui:Button text="Idle. " enable-rich-text="false" name="StatusLabel" class="transparent-button" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&amp;guid=cd56282d3b0ad7b4aba00251bfaf2e0a&amp;type=3#MonaspaceArgon-Regular&quot;); text-overflow: ellipsis; width: 700px; -unity-text-align: middle-right;" />
         </ui:VisualElement>
     </ui:VisualElement>
-    <ui:VisualElement name="FilePanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: 0; width: 250px; display: flex;">
+    <ui:VisualElement name="FilePanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: 0; width: 300px; display: flex;">
         <ui:Instance template="FilePanelUI" />
     </ui:VisualElement>
     <ui:VisualElement name="ProjectPanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: 0; width: 350px; display: none;">
