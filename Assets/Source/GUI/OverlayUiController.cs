@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 public class OverlayUiController : MonoBehaviour
 {
-    const string VERSION_NUMBER = "2.0.1";
+    const string VERSION_NUMBER = "2.0.3";
     
     public static OverlayUiController Instance;
     private ViewportController viewport;
@@ -40,8 +40,10 @@ public class OverlayUiController : MonoBehaviour
     private Button structurePlusButton;
     private IntegerField currentStructureInput;
     private Label totalStructuresLabel;
+    private Button copyAppendButton;
     
     private Button focusButton;
+    private Button focusSelectedButton;
     private Button playButton;
     private Button pauseButton;
     private Button nextButton;
@@ -119,10 +121,15 @@ public class OverlayUiController : MonoBehaviour
         structurePlusButton = root.Q<Button>("StructurePlus");
         structurePlusButton.RegisterCallback<ClickEvent>(OnNextStructureClicked);
         currentStructureInput = root.Q<IntegerField>("CurrentStructure");
+        currentStructureInput.RegisterValueChangedCallback(OnStructureIndexSubmit);
         totalStructuresLabel = root.Q<Label>("TotalStructures");
+        copyAppendButton = root.Q<Button>("CopyAppendButton");
+        copyAppendButton.RegisterCallback<ClickEvent>(OnCopyAppendClicked);
         
         focusButton = root.Q<Button>("FocusButton");
         focusButton.RegisterCallback<ClickEvent>(OnFocusClicked);
+        focusSelectedButton = root.Q<Button>("FocusSelectedButton");
+        focusSelectedButton.RegisterCallback<ClickEvent>(OnFocusSelectedClicked);
         
         playButton = root.Q<Button>("PlayButton");
         playButton.RegisterCallback<ClickEvent>(OnPlayClicked);
@@ -146,7 +153,7 @@ public class OverlayUiController : MonoBehaviour
         
 #if UNITY_WEBGL
         // Scale down the UI a little bit on browser as the default looks too big
-        document.panelSettings.scale = 1.05f;
+        document.panelSettings.scale = 0.96f;
 #endif
     }
 
@@ -257,10 +264,41 @@ public class OverlayUiController : MonoBehaviour
         }
         
     }
+
+    void OnStructureIndexSubmit(ChangeEvent<int> evt)
+    {
+        StructureSequenceController.Instance.SwitchStructure(evt.newValue - 1);
+    }
+    
+    void OnCopyAppendClicked(ClickEvent evt)
+    {
+        var newStructure = StructureSequenceController.Instance.CurrentStructure.DeepClone();
+        App.Instance.CurrentFile.Structures.Add(newStructure);
+        UpdateStructureIndex(null, App.Instance.CurrentFile.StructureCount);
+    }
     
     void OnFocusClicked(ClickEvent evt)
     {
         viewport.RefocusCamera();
+    }
+    
+    void OnFocusSelectedClicked(ClickEvent evt)
+    {
+        if (viewport.selectionManager.IsEmpty)
+        {
+            return;
+        }
+        
+        // Calculate the average position of select atoms
+        Vector3 center = Vector3.zero;
+        var selectedAtoms = viewport.selectionManager.SelectedAtoms;
+        foreach (var item in selectedAtoms)
+        {
+            center += item.Position;
+        }
+        center /= selectedAtoms.Count;
+        
+        viewport.FocusCameraOnPoint(center);
     }
     
     void OnPlayClicked(ClickEvent evt)

@@ -297,6 +297,12 @@ public class ViewportController : MonoBehaviour
         UpdateCameraPos();
     }
 
+    public void FocusCameraOnPoint(Vector3 point)
+    {
+        cameraCenter = point;
+        UpdateCameraPos();
+    }
+
     public void SetCameraViewport(GizmoComponent direction)
     {
         Vector3 forward = Vector3.forward, up = Vector3.up;
@@ -390,6 +396,11 @@ public class ViewportController : MonoBehaviour
         {
             foreach (var col in item.Value)
             {
+                if (col.Atom.IsHidden)
+                {
+                    continue;
+                }
+                
                 Vector3 pos = activeCamera.WorldToScreenPoint(col.ActualPosition);
                 bool isSelected = temporarySelectionManager.IsSelected(item.Key, col.CellIndex);
                 if (currentRect.Contains(pos))
@@ -450,7 +461,8 @@ public class ViewportController : MonoBehaviour
             var raycasts = Physics.RaycastAll(mouseRay, activeCamera.farClipPlane, 1 << atomsLayer);
             foreach (var hitInfo in raycasts)
             {
-                if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript))
+                if (hitInfo.collider.gameObject.TryGetComponent<ColliderScript>(out var colliderScript) 
+                    && !colliderScript.Atom.IsHidden)
                 {
                     raycastResult.Add(SelectionItem.CreateFromCollider(colliderScript));
                     structureRenderer.RenderSingleAtom(colliderScript.Atom, colliderScript.ActualPosition,
@@ -498,7 +510,6 @@ public class ViewportController : MonoBehaviour
         {
             case UpdateFlags.UpdateAtom:
                 OverlayUiController.Instance.UpdateStructureInfo(CurrentStructureView.Structure);
-                OverlayUiController.Instance.UpdateSelectionInfo(selectionManager.Selection.ToList());
                 EditPanelController.Instance.UpdateActiveAtom();
                 shallUpdateRenderer = true;
                 break;
@@ -531,9 +542,9 @@ public class ViewportController : MonoBehaviour
         else
         {
             // Preview, move AtomView only
-            foreach (var item in selectionManager.Selection)
+            foreach (var item in selectionManager.SelectedAtoms)
             {
-                CurrentStructureView.SetAtomPosition(item.Atom, item.Atom.SourceAtom.Coordinates + dragTotalTranslation,
+                CurrentStructureView.SetAtomPosition(item, item.SourceAtom.Coordinates + dragTotalTranslation,
                     true);
             }
         }

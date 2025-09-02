@@ -258,6 +258,7 @@
 
 .edit-panel-item #unity-text-input {
     font-size: 16px;
+    max-width: 200px;
 }
 
 .edit-direction-button {
@@ -284,7 +285,7 @@ Toggle VisualElement {
     padding-right: 1px;
     padding-bottom: 1px;
     padding-left: 1px;
-    font-size: 16px;
+    font-size: 20px;
 }
 
 .window-frame {
