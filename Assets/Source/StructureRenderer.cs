@@ -60,7 +60,7 @@ public class StructureRenderer : MonoBehaviour
 
     public CrystalStructureView CurrentStructureView { get; private set; } = null;
 
-    private float stickRadius = 0.35f, radiusScale = 1f;
+    private float stickRadius = 0.35f, ballRadiusScale = 1f;
     private Matrix4x4[,,] latticeTransforms = null;
 
     private InstancingData atomInstancingData = new InstancingData
@@ -95,7 +95,7 @@ public class StructureRenderer : MonoBehaviour
         };
     }
 
-    public void SetBondStyle(float stickRadius)
+    public void SetBondRadius(float stickRadius)
     {
         if (Mathf.Approximately(this.stickRadius, stickRadius))
         {
@@ -112,14 +112,14 @@ public class StructureRenderer : MonoBehaviour
         RecollectDrawBatches();
     }
 
-    public void SetAtomStyle(float radiusScale)
+    public void SetAtomRadius(float radiusScale)
     {
-        if (Mathf.Approximately(this.radiusScale, radiusScale))
+        if (Mathf.Approximately(this.ballRadiusScale, radiusScale))
         {
             return;
         }
 
-        this.radiusScale = radiusScale;
+        this.ballRadiusScale = radiusScale;
         foreach (var item in CurrentStructureView.Atoms)
         {
             item.CreateTransformCache(radiusScale);
@@ -234,7 +234,7 @@ public class StructureRenderer : MonoBehaviour
         props.SetColor(BaseColor, GetAtomColor(atom, cellIndex.Item1, cellIndex.Item2, cellIndex.Item3));
         props.SetColor(RimColor, GetRimColor(atom.SourceAtom.Flags));
         renderParams.matProps = props;
-        var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * radiusScale * Vector3.one);
+        var transformMat = Matrix4x4.TRS(pos, Quaternion.identity, radius * ballRadiusScale * Vector3.one);
         Graphics.RenderMesh(renderParams, AtomMesh, 0, transformMat);
     }
 

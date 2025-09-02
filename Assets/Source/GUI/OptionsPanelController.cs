@@ -32,6 +32,12 @@ public class OptionsPanelController : MonoBehaviour
         var displayStyleControl = optionsPanelRoot.Q<EnumField>("DisplayStyle");
         displayStyleControl.RegisterValueChangedCallback(OnDisplayStyleChange);
         
+        var ballRadiusControl = optionsPanelRoot.Q<Slider>("BallRadius");
+        ballRadiusControl.RegisterValueChangedCallback(OnBallRadiusChange);
+        
+        var stickRadiusControl = optionsPanelRoot.Q<Slider>("StickRadius");
+        stickRadiusControl.RegisterValueChangedCallback(OnStickRadiusChange);
+        
         var showHighlightControl = optionsPanelRoot.Q<Toggle>("ShowHighlight");
         showHighlightControl.RegisterValueChangedCallback(OnShowHighlightChange);
         
@@ -84,6 +90,16 @@ public class OptionsPanelController : MonoBehaviour
                 viewport.structureRenderer.SetDisplayType(false, true);
                 break;
         }
+    }
+
+    void OnBallRadiusChange(ChangeEvent<float> e)
+    {
+        viewport.structureRenderer.SetAtomRadius(e.newValue);
+    }
+    
+    void OnStickRadiusChange(ChangeEvent<float> e)
+    {
+        viewport.structureRenderer.SetBondRadius(e.newValue);
     }
 
     void OnShowHighlightChange(ChangeEvent<bool> e)

@@ -48,7 +48,7 @@ public static class CrystalHBondExtension
 
             foreach (var otherAtom in nearbyAtoms)
             {
-                if (otherAtom.Symbol is not ("F" or "O" or "N"))
+                if (otherAtom.Symbol is not ("F" or "O" or "N") || otherAtom.IsHidden)
                 {
                     continue;
                 }
@@ -70,6 +70,11 @@ public static class CrystalHBondExtension
 
         foreach (var atom in structureView.Atoms)
         {
+            if (atom.IsHidden)
+            {
+                continue;
+            }
+            
             structureView.UpdateHBondSingleAtom(atom, ref bondList, maxDistance);
         }
     }
