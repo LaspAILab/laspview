@@ -23,22 +23,49 @@ public class CifFormat : IFormat
 
         // a, b, c, alpha, beta, gamma
         float[] latticeParams = { -1, -1, -1, -1, -1, -1 };
+        bool isReadingList = false;
+        
+        List<string> listDefinition = new();
 
         // Read lattice paramaters
         while (true)
         {
             line = IFormat.GetNextLine(linesEnumerator);
 
-            if (line == "loop_")
+            if (line == null)
             {
-                break;
+                Debug.LogError("End of file reached but atom column definition is still not found. ");
+                return;
             }
 
-            var match = DATA_REGEX.Match(line);
-            if (match.Success)
+            string trimmedLine = line.Trim();
+            if (trimmedLine.ToLower() == "loop_")
             {
-                var dataTag = match.Groups[1].Value;
-                var dataValue = match.Groups[2].Value;
+                isReadingList = true;
+                // We only need the last table, which is the header for the atom table
+                listDefinition.Clear();
+                continue;
+            }
+            
+            if (isReadingList)
+            {
+                var varMatch = VARIABLE_REGEX.Match(trimmedLine);
+                if (varMatch.Success)
+                {
+                    var dataTag = varMatch.Groups[1].Value;
+                    
+                    listDefinition.Add(dataTag.ToLower());
+                    continue;
+                }
+
+                isReadingList = false;
+            }
+
+            var dataMatch = DATA_REGEX.Match(trimmedLine);
+            if (dataMatch.Success)
+            {
+                var dataTag = dataMatch.Groups[1].Value;
+                var dataValue = dataMatch.Groups[2].Value;
 
                 switch (dataTag.ToLower())
                 {
@@ -67,6 +94,12 @@ public class CifFormat : IFormat
             }
             else
             {
+                if (listDefinition.Any(x => x.StartsWith("_atom")) && IFormat.SplitWhiteSpace(line).Length == listDefinition.Count)
+                {
+                    // If the atom column definition is already present and the table begins
+                    break;
+                }
+
                 Debug.LogWarning($"Ignoring line `{line}`");
             }
         }
@@ -77,62 +110,47 @@ public class CifFormat : IFormat
         }
 
         // Read atom list column format specification
-        int columnIndex = 0;
         int xColumnIndex = -1, yColumnIndex = -1, zColumnIndex = -1, elementIndex = -1, labelIndex = -1;
-        
         bool isCartCoords = false, isFractCoords = false;
-        while (true)
+        
+        for (int columnIndex = 0; columnIndex < listDefinition.Count; columnIndex++)
         {
-            line = IFormat.GetNextLine(linesEnumerator);
-
-            var match = VARIABLE_REGEX.Match(line);
-            if (match.Success)
+            switch (listDefinition[columnIndex])
             {
-                var dataTag = match.Groups[1].Value;
-                
-                switch (dataTag.ToLower())
-                {
-                    case "_atom_site_label":
-                        labelIndex = columnIndex;
-                        break;
-                    case "_atom_site_fract_x":
-                        xColumnIndex = columnIndex;
-                        isFractCoords = true;
-                        break;
-                    case "_atom_site_fract_y":
-                        yColumnIndex = columnIndex;
-                        isFractCoords = true;
-                        break;
-                    case "_atom_site_fract_z":
-                        zColumnIndex = columnIndex;
-                        isFractCoords = true;
-                        break;
-                    case "_atom_site_cartn_x":
-                        xColumnIndex = columnIndex;
-                        isCartCoords = true;
-                        break;
-                    case "_atom_site_cartn_y":
-                        yColumnIndex = columnIndex;
-                        isCartCoords = true;
-                        break;
-                    case "_atom_site_cartn_z":
-                        zColumnIndex = columnIndex;
-                        isCartCoords = true;
-                        break;
-                    case "_atom_site_type_symbol":
-                        elementIndex = columnIndex;
-                        break;
-                    default:
-                        Debug.Log($"Ignoring unknown column `{dataTag}`");
-                        break;
-                }
+                case "_atom_site_label":
+                    labelIndex = columnIndex;
+                    break;
+                case "_atom_site_fract_x":
+                    xColumnIndex = columnIndex;
+                    isFractCoords = true;
+                    break;
+                case "_atom_site_fract_y":
+                    yColumnIndex = columnIndex;
+                    isFractCoords = true;
+                    break;
+                case "_atom_site_fract_z":
+                    zColumnIndex = columnIndex;
+                    isFractCoords = true;
+                    break;
+                case "_atom_site_cartn_x":
+                    xColumnIndex = columnIndex;
+                    isCartCoords = true;
+                    break;
+                case "_atom_site_cartn_y":
+                    yColumnIndex = columnIndex;
+                    isCartCoords = true;
+                    break;
+                case "_atom_site_cartn_z":
+                    zColumnIndex = columnIndex;
+                    isCartCoords = true;
+                    break;
+                case "_atom_site_type_symbol":
+                    elementIndex = columnIndex;
+                    break;
+                default:
+                    Debug.Log($"Ignoring unknown column `{listDefinition[columnIndex]}`");
+                    break;
             }
-            else
-            {
-                break;
-            }
-
-            columnIndex++;
         }
 
         if (elementIndex < 0 && labelIndex >= 0)
@@ -157,8 +175,13 @@ public class CifFormat : IFormat
 
         do
         {
+            
             var columns = IFormat.SplitWhiteSpace(line);
-            Assert.AreEqual(columns.Length, columnIndex);
+            if(columns.Length != listDefinition.Count)
+            {
+                // Ignore any content after the table ends
+                break;
+            }
 
             var coords = new Vector3(float.Parse(columns[xColumnIndex]), float.Parse(columns[yColumnIndex]),
                 float.Parse(columns[zColumnIndex]));
