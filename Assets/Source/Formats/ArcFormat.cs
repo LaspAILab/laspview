@@ -66,7 +66,7 @@ public class ArcFormat : IFormat
                 {
                     Vector3 coords = new(float.Parse(match.Groups[2].Value), float.Parse(match.Groups[3].Value),
                         float.Parse(match.Groups[4].Value));
-                    string element = match.Groups[7].Value;
+                    string element = match.Groups[8].Value;
                     
                     if (!App.Elements.ContainsKey(element))
                     {
