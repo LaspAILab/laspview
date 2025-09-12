@@ -76,7 +76,6 @@
 }
 
 .icon-button:hover {
-    background-size: 75% 75%;
     border-top-width: 1px;
     border-right-width: 1px;
     border-bottom-width: 1px;
@@ -89,7 +88,6 @@
 }
 
 .icon-button:active {
-    background-size: 75% 75%;
     border-top-width: 1px;
     border-right-width: 1px;
     border-bottom-width: 1px;
