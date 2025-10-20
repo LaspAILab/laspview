@@ -41,7 +41,7 @@ public class OptionsPanelController : MonoBehaviour
         var showHighlightControl = optionsPanelRoot.Q<Toggle>("ShowHighlight");
         showHighlightControl.RegisterValueChangedCallback(OnShowHighlightChange);
         
-        var showHBondControl = optionsPanelRoot.Q<Toggle>("ShowHBond");
+        var showHBondControl = optionsPanelRoot.Q<Toggle>("ShowHBonds");
         showHBondControl.RegisterValueChangedCallback(OnShowHBondChange);
         
         var bondToleranceControl = optionsPanelRoot.Q<Slider>("BondTolerance");

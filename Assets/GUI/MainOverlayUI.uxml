@@ -5,6 +5,7 @@
     <ui:Template name="AboutPanel" src="project://database/Assets/GUI/AboutPanel.uxml?fileID=9197481963319205126&amp;guid=ccaab4f1a06a39646963ad35f6a1d4b7&amp;type=3#AboutPanel" />
     <ui:Template name="EditPanelUI" src="project://database/Assets/GUI/EditPanelUI.uxml?fileID=9197481963319205126&amp;guid=07866727b8be997458cf7c44dea24471&amp;type=3#EditPanelUI" />
     <ui:Template name="PeriodicTableControl" src="project://database/Assets/GUI/PeriodicTableControl/PeriodicTableControl.uxml?fileID=9197481963319205126&amp;guid=06bb632aa38eace4ea9f72de01e8d669&amp;type=3#PeriodicTableControl" />
+    <ui:Template name="LaspPanelUI" src="project://database/Assets/GUI/LaspPanelUI.uxml?fileID=9197481963319205126&amp;guid=75f6068d7f8058745aad17b92ed27c3c&amp;type=3#LaspPanelUI" />
     <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
     <ui:VisualElement name="TopBar" enabled="true" style="flex-grow: 1; height: 65px; background-color: rgb(255, 255, 255); position: absolute; top: 0; left: 0; right: 0; border-bottom-width: 2px; border-bottom-color: rgb(124, 124, 124); align-content: auto; flex-direction: row;">
         <ui:VisualElement enabled="true" name="Icon" focusable="false" style="flex-grow: 0; background-image: url(&quot;project://database/Assets/Icons/lasp.png?fileID=2800000&amp;guid=c5ae5a4f1fb24cf4795cdfb018ca702e&amp;type=3#lasp&quot;); height: 45px; width: 45px; align-content: auto; align-self: center; align-items: stretch; flex-direction: column; position: relative; margin-left: 20px;" />
@@ -13,6 +14,7 @@
         <ui:Button text="Project&#10;" enable-rich-text="false" name="ProjectButton" class="title-button" />
         <ui:Button text="Options" enable-rich-text="false" name="OptionsButton" class="title-button" />
         <ui:Button text="Edit" enable-rich-text="false" name="EditButton" class="title-button" />
+        <ui:Button text="Opt" enable-rich-text="false" name="LaspButton" class="title-button" />
         <ui:VisualElement style="flex-grow: 1;" />
         <ui:Label text="UI Scale" class="display-option-item" style="align-self: center; margin-right: 5px;" />
         <ui:Button text="-&#10;" name="UIScalePlus" style="background-color: rgb(255, 255, 255); border-right-width: 0; border-top-left-radius: 10px; border-bottom-left-radius: 10px; height: 75%; align-self: center; margin-right: 0; font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&amp;guid=cd56282d3b0ad7b4aba00251bfaf2e0a&amp;type=3#MonaspaceArgon-Regular&quot;); padding-left: 10px; padding-right: 5px;" />
@@ -40,7 +42,7 @@
             <ui:Button name="FocusSelectedButton" text="Sel" triple-click-selects-line="false" double-click-selects-word="false" class="icon-button" style="width: 75px; height: 45px; background-image: url(&quot;project://database/Assets/Icons/center.png?fileID=2800000&amp;guid=6123d8f7c6db02645a72ccdbdb39e5cd&amp;type=3#center&quot;); border-top-right-radius: 5px; border-bottom-right-radius: 5px; margin-left: 5px; margin-right: 0; border-top-left-radius: 5px; border-bottom-left-radius: 5px; background-size: 45% 75%; background-position-x: left 8px; -unity-font-style: italic; color: rgb(0, 0, 0); -unity-text-align: middle-right; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); padding-right: 8px;" />
         </ui:VisualElement>
         <ui:VisualElement name="LogDisplay" style="flex-grow: 0; align-self: center; flex-direction: row-reverse;">
-            <ui:Button text="Idle. " enable-rich-text="false" name="StatusLabel" class="transparent-button" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&amp;guid=cd56282d3b0ad7b4aba00251bfaf2e0a&amp;type=3#MonaspaceArgon-Regular&quot;); text-overflow: ellipsis; width: 640px; -unity-text-align: middle-right;" />
+            <ui:Button text="Idle. " enable-rich-text="false" name="StatusLabel" picking-mode="Ignore" class="transparent-button" style="font-size: 20px; -unity-font-definition: url(&quot;project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&amp;guid=cd56282d3b0ad7b4aba00251bfaf2e0a&amp;type=3#MonaspaceArgon-Regular&quot;); text-overflow: ellipsis; width: 640px; -unity-text-align: middle-right;" />
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="FilePanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: 0; width: 300px; display: flex;">
@@ -76,5 +78,8 @@
     <ui:VisualElement name="RightInfoPanel" picking-mode="Ignore" class="transparent-panel" style="flex-grow: 1; left: auto; margin-left: 0; max-width: 400px; right: 20px; bottom: 70px;">
         <ui:Label text="Energy: 0" name="EnergyLabel" picking-mode="Ignore" class="info-label" />
         <ui:Label text="Atom count: 0" name="AtomCountLabel" picking-mode="Ignore" class="info-label" style="white-space: normal;" />
+    </ui:VisualElement>
+    <ui:VisualElement name="LaspPanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: auto; width: 450px; display: none; right: 0;">
+        <ui:Instance template="LaspPanelUI" />
     </ui:VisualElement>
 </ui:UXML>
