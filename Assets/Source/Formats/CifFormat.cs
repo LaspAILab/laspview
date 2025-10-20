@@ -16,7 +16,13 @@ public class CifFormat : IFormat
         var linesEnumerator = lines.GetEnumerator();
         string line = IFormat.GetNextLine(linesEnumerator);
 
-        if (line != "data_image0")
+        // Skip comments
+        while (line.Trim().StartsWith("#"))
+        {
+            line = IFormat.GetNextLine(linesEnumerator);
+        }
+        
+        if (line.StartsWith("data_"))
         {
             Debug.LogWarning("Cif file should start with `data_image0`, but it doesn't. ");
         }
