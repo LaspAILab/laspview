@@ -49,8 +49,9 @@ public class AtomView : ITransform, IEquatable<AtomView>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CreateTransformCache(float radiusScale = 1f)
+    public void CreateTransformCache()
     {
+        var radiusScale = StructureRenderer.Instance.BallRadiusScale;
         transformCache = Matrix4x4.TRS(Position, Quaternion.identity, Radius * radiusScale * Vector3.one);
     }
 
@@ -141,8 +142,9 @@ public class BondView : ITransform
     public float Rate;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CreateTransformCache(float stickRadius = 0.35f)
+    public void CreateTransformCache()
     {
+        var stickRadius = StructureRenderer.Instance.StickRadius;
         Vector3 bondCenter = Origin + 0.5f * Rate * Theta;
         Quaternion rotation =
             Quaternion.AngleAxis(-Vector3.Angle(Vector3.up, Theta), new Vector3(-Theta.z, 0, Theta.x));

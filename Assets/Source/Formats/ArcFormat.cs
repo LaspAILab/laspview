@@ -182,8 +182,10 @@ public class ArcFormat : IFormat
                     AtomFlags.React => 0.1f,
                     _ => atom.Charge
                 };
-                lines.Append(string.Format("{0,-2}{1,15:f9}{2,15:f9}{3,15:f9}", atom.Symbol, atom.Coordinates[0],
-                    atom.Coordinates[1], atom.Coordinates[2]));
+                
+                var clippedCoordinates = crystalStructure.ClipAtomCoords(atom.Coordinates);
+                lines.Append(string.Format("{0,-2}{1,15:f9}{2,15:f9}{3,15:f9}", atom.Symbol, clippedCoordinates.x,
+                    clippedCoordinates.y, clippedCoordinates.z));
                 lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-4}{atom.Symbol,-4}{charge,8:f4}{h + 1,5:d}\n");
             }
 

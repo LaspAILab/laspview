@@ -45,24 +45,27 @@ public class StructureSequenceController : MonoBehaviour
         viewport.RefocusCamera();
     }
     
-    public bool SwitchStructure(int index)
+    public bool SwitchStructure(int index, bool forceReload = false)
     {
         var currentFile = App.Instance.CurrentFile;
         if (currentFile == null)
         {
             return false;
         }
-        
-#if !UNITY_WEBGL
-        currentFile.ListMutex.WaitOne();
-#endif
-        index = Mathf.Clamp(index, 0, currentFile.StructureCount - 1);
-        if (index == CurrentStructureIndex)
+
+        if (!forceReload)
         {
 #if !UNITY_WEBGL
-            currentFile.ListMutex.ReleaseMutex();
+            currentFile.ListMutex.WaitOne();
 #endif
-            return false;
+            index = Mathf.Clamp(index, 0, currentFile.StructureCount - 1);
+            if (index == CurrentStructureIndex)
+            {
+#if !UNITY_WEBGL
+                currentFile.ListMutex.ReleaseMutex();
+#endif
+                return false;
+            }
         }
 
         CurrentStructureIndex = index;

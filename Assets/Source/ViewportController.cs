@@ -204,6 +204,7 @@ public class ViewportController : MonoBehaviour
         CurrentStructureView.GenerateBonds();
 
         App.Instance.operationManager.OnOperationPerformed += OnOperationDone;
+        App.Instance.operationManager.OnOperationPerformed += LaspPanelController.Instance.OnOperationPerformed;
         selectionManager = new(OverlayUiController.Instance.UpdateSelectionInfo);
 
         latticeTransforms = null;

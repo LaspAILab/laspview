@@ -111,7 +111,7 @@ public class HBondRenderer : MonoBehaviour
         bondObjects.Add(dottedLineScript);
     }
 
-    void RemoveAddHBonds()
+    void RemoveAddedHBonds()
     {
         foreach (var hBond in bondObjects)
         {
@@ -123,7 +123,7 @@ public class HBondRenderer : MonoBehaviour
 
     private void CreateLines()
     {
-        RemoveAddHBonds();
+        RemoveAddedHBonds();
 
         if (latticeTransforms == null)
         {
@@ -241,7 +241,7 @@ public class HBondRenderer : MonoBehaviour
         }
         else
         {
-            RemoveAddHBonds();
+            RemoveAddedHBonds();
             hydrogenBonds.Clear();
         }
     }

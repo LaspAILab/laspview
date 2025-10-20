@@ -360,12 +360,13 @@ public class CrystalStructureView
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetAtomPosition(AtomView atomView, Vector3 posCartesian, bool viewOnly, bool repeat = true)
     {
+        var clippedPos = Structure.ClipAtomCoords(posCartesian, repeat);
         if (!viewOnly)
         {
-            atomView.SourceAtom.Coordinates = posCartesian;
+            atomView.SourceAtom.Coordinates = clippedPos;
         }
 
-        atomView.Position = Structure.ClipAtomCoords(posCartesian, repeat);
+        atomView.Position = clippedPos;
         atomView.InvalidateTransform();
         AccelerationOctree.Remove(atomView);
         AccelerationOctree.Add(atomView, atomView.Position);

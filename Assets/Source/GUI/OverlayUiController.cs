@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 public class OverlayUiController : MonoBehaviour
 {
-    const string VERSION_NUMBER = "2.0.4";
+    const string VERSION_NUMBER = "2.0.5";
     
     public static OverlayUiController Instance;
     private ViewportController viewport;
@@ -25,12 +25,14 @@ public class OverlayUiController : MonoBehaviour
     private VisualElement projectPanel;
     private VisualElement optionsPanel;
     private VisualElement editPanel;
+    private VisualElement laspPanel;
     
     // TOP BAR BEGINS
     private Button fileButton;
     private Button projectButton;
     private Button optionsButton;
     private Button editButton;
+    private Button laspButton;
 
     private Button aboutButton;
     // TOP BAR ENDS
@@ -94,6 +96,7 @@ public class OverlayUiController : MonoBehaviour
         projectPanel = root.Q<VisualElement>("ProjectPanel");
         optionsPanel = root.Q<VisualElement>("OptionsPanel");
         editPanel = root.Q<VisualElement>("EditPanel");
+        laspPanel = root.Q<VisualElement>("LaspPanel");
         
         fileButton = root.Q<Button>("FileButton");
         fileButton.RegisterCallback<ClickEvent>(ToggleFilePanel);
@@ -103,6 +106,8 @@ public class OverlayUiController : MonoBehaviour
         optionsButton.RegisterCallback<ClickEvent>(ToggleOptionsPanel);
         editButton = root.Q<Button>("EditButton");
         editButton.RegisterCallback<ClickEvent>(ToggleEditPanel);
+        laspButton = root.Q<Button>("LaspButton");
+        laspButton.RegisterCallback<ClickEvent>(ToggleLaspPanel);
 
         var uiScalePlusButton = root.Q<Button>("UIScalePlus");
         uiScalePlusButton.RegisterCallback<ClickEvent>(OnUIScaleAdjust);
@@ -180,9 +185,16 @@ public class OverlayUiController : MonoBehaviour
         }
     }
 
-    public void UpdateStructureInfo(CrystalStructure structure)
+    public void UpdateStructureInfo(CrystalStructure structure, bool energyInProgress = false)
     {
-        energyLabel.text = $"Energy: {structure.Energy} eV";
+        if (energyInProgress)
+        {
+            energyLabel.text = "Energy: Calculating...";
+        }
+        else
+        {
+            energyLabel.text = $"Energy: {structure.Energy} eV";
+        }
         
         string formula = ChemicalFormulaUtils.GetChemicalFormula(structure.Atoms, 50);
         
@@ -363,6 +375,15 @@ public class OverlayUiController : MonoBehaviour
         editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
     }
     
+    void CloseAllRightPanels()
+    {
+        editPanel.style.display = DisplayStyle.None;
+        laspPanel.style.display = DisplayStyle.None;
+        
+        editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        laspButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+    }
+    
     void ToggleFilePanel(ClickEvent _)
     {
         if (filePanel.resolvedStyle.display == DisplayStyle.None)
@@ -412,6 +433,7 @@ public class OverlayUiController : MonoBehaviour
     {
         if (editPanel.resolvedStyle.display == DisplayStyle.None)
         {
+            CloseAllRightPanels();
             editPanel.style.display = DisplayStyle.Flex;
             editButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
@@ -419,6 +441,21 @@ public class OverlayUiController : MonoBehaviour
         {
             editPanel.style.display = DisplayStyle.None;
             editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+    }
+    
+    void ToggleLaspPanel(ClickEvent _)
+    {
+        if (laspPanel.resolvedStyle.display == DisplayStyle.None)
+        {
+            CloseAllRightPanels();
+            laspPanel.style.display = DisplayStyle.Flex;
+            laspButton.AddToClassList(ACTIVE_BUTTON_CLASS_NAME);
+        }
+        else
+        {
+            laspPanel.style.display = DisplayStyle.None;
+            laspButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
     }
     

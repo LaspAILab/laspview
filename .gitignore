@@ -104,6 +104,7 @@ Thumbs.db
 # ============ #
 /.spyproject
 /template
+.venv
 
 #=============#
 #Test File#
