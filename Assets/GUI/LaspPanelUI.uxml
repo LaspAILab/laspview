@@ -1,0 +1,12 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
+    <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input" />
+    <ui:Label text="The LASP optimization server provides realtime energy update and one-click structure optimization by our neural network optimizer. " style="white-space: normal; margin-left: 15px; font-size: 20px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;);" />
+    <ui:Button text="Start server" name="StartServerButton" class="edit-panel-button edit-panel-item" />
+    <ui:Label text="Server status: &lt;b&gt;Offline&lt;/b&gt;" name="ServerStatusLabel" style="white-space: normal; font-size: 20px; margin-left: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); border-bottom-width: 2px; border-bottom-color: rgb(102, 102, 102); padding-bottom: 8px; margin-bottom: 0;" />
+    <ui:Toggle label="Realtime energy update" name="RealtimeEnergyToggle" value="true" class="edit-panel-item" />
+    <ui:Toggle label="Optimize lattice shape" name="OptimizeLatticeToggle" class="edit-panel-item" />
+    <ui:Toggle label="Override current structure" name="OverrideStructureToggle" class="edit-panel-item" />
+    <ui:Label text="If checked, the current structure will be overriden, otherwise the optimized structure will be appended to the tail of the structure list. " style="white-space: normal; margin-left: 15px; font-size: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0;" />
+    <ui:Button text="Run optimization" name="RunOptimizationButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 12px;" />
+</ui:UXML>

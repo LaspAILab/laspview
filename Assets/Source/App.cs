@@ -132,7 +132,12 @@ public class App : MonoBehaviour
         Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
     }
 
-#if !UNITY_WEBGL
+#if UNITY_WEBGL
+    public void ScheduleTask(Action action)
+    {
+        action();
+    }
+#else
     public void ScheduleTask(Action action)
     {
         callbackQueue.Enqueue(action);

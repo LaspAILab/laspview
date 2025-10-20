@@ -258,8 +258,9 @@ public class CifFormat : IFormat
 
             var atomName = $"{atom.Symbol}{indexOfElementType}";
 
-            lines.Append(string.Format("{0,6}{1,14:f6}{2,14:f6}{3,14:f6}{4,4}\n", atomName, atom.Coordinates.x,
-                atom.Coordinates.y, atom.Coordinates.z, atom.Symbol));
+            var clippedCoordinates = structure.ClipAtomCoords(atom.Coordinates);
+            lines.Append(string.Format("{0,6}{1,14:f6}{2,14:f6}{3,14:f6}{4,4}\n", atomName, clippedCoordinates.x,
+                clippedCoordinates.y, clippedCoordinates.z, atom.Symbol));
         }
         
         return lines.ToString();

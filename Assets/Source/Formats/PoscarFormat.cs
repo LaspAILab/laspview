@@ -199,16 +199,17 @@ public class PoscarFormat : IFormat
             {
                 foreach (var atom in elementType.Value)
                 {
+                    var clippedCoordinates = structure.ClipAtomCoords(atom.Coordinates);
                     if (useSelectiveDynamics)
                     {
                         char fixedFlags = atom.Flags == AtomFlags.Fixed ? 'F' : 'T';
                         lines.Append(
-                            $"{atom.Coordinates.x:f8} {atom.Coordinates.y:f8} {atom.Coordinates.z:f8} {fixedFlags} {fixedFlags} {fixedFlags}\n");
+                            $"{clippedCoordinates.x:f8} {clippedCoordinates.y:f8} {clippedCoordinates.z:f8} {fixedFlags} {fixedFlags} {fixedFlags}\n");
                     }
                     else
                     {
                         lines.Append(
-                            $"{atom.Coordinates.x:f8} {atom.Coordinates.y:f8} {atom.Coordinates.z:f8}\n");
+                            $"{clippedCoordinates.x:f8} {clippedCoordinates.y:f8} {clippedCoordinates.z:f8}\n");
                     }
                 }
             }
