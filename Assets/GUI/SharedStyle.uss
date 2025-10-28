@@ -18,12 +18,12 @@
     align-self: center;
     background-color: rgb(255, 255, 255);
     font-size: 22px;
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 20px;
+    padding-right: 20px;
     align-content: flex-start;
     margin-left: 10px;
     margin-right: 10px;
-    width: 150px;
+    width: 135px;
     align-items: stretch;
     justify-content: flex-start;
     -unity-text-align: middle-left;

@@ -204,7 +204,7 @@ public class ViewportController : MonoBehaviour
         CurrentStructureView.GenerateBonds();
 
         App.Instance.operationManager.OnOperationPerformed += OnOperationDone;
-        App.Instance.operationManager.OnOperationPerformed += LaspPanelController.Instance.OnOperationPerformed;
+        App.Instance.operationManager.OnOperationPerformed += UtilsPanelController.Instance.OnOperationPerformed;
         selectionManager = new(OverlayUiController.Instance.UpdateSelectionInfo);
 
         latticeTransforms = null;
@@ -675,6 +675,16 @@ public class ViewportController : MonoBehaviour
             IOperation op = new RemoveAtomsOperation(selectionManager.SelectedAtoms);
             selectionManager.ClearSelection();
             App.Instance.operationManager.SubmitOperation(op);
+        }
+
+        if (Input.GetKeyUp(KeyCode.C))
+        {
+            StructureSequenceController.Instance.SaveCurrentFrame("screenshots/screenshot.png");
+        }
+
+        if (Input.GetKeyUp(KeyCode.K))
+        {
+            StructureSequenceController.Instance.SaveFrameSequence("screenshots/sequence");
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
