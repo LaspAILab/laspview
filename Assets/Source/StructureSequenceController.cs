@@ -1,12 +1,18 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 
 public class StructureSequenceController : MonoBehaviour
 {
     public static StructureSequenceController Instance;
-    
-    private bool isPlaying = false;
+
+    private int reshowUiOnFrame = -1;
+    private bool isPlaying = false, isCapturingSequence = false;
+    private string captureSequenceBaseDir = "", captureSequencePrefix = "";
+    private Action captureSequenceCallback = null;
+    private int captureStartIndex = -1, captureEndIndex = -1;
     private float timer = 0;
     private Coroutine playCoroutine;
     private ViewportController viewport;
@@ -147,6 +153,79 @@ public class StructureSequenceController : MonoBehaviour
                 }
 
                 timer = 0;
+            }
+        }
+    }
+
+    public void SaveCurrentFrame(string filename)
+    {
+        string dir = Path.GetDirectoryName(filename);
+        if(!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        
+        OverlayUiController.Instance.SetUIDisplay(false);
+        ScreenCapture.CaptureScreenshot(filename);
+        OverlayUiController.Instance.PrintStatusLog($"Saved screenshot to {filename}");
+        // Reshow UI on next frame
+        reshowUiOnFrame = Time.frameCount + 1;
+    }
+    
+    // Capture screenshots of all structures in sequence
+    public void SaveFrameSequence(string baseDir, int startIndex = 0, int endIndex = int.MaxValue, string filenamePrefix = "", Action onComplete = null)
+    {
+        if(App.Instance.CurrentFile == null || CurrentStructure == null)
+        {
+            return;
+        }
+        
+        if(!Directory.Exists(baseDir))
+        {
+            Directory.CreateDirectory(baseDir);
+        }
+        
+        // Cancel if already capturing
+        if (isCapturingSequence)
+        {
+            return;
+        }
+
+        SwitchStructure(startIndex);
+        OverlayUiController.Instance.SetUIDisplay(false);
+        captureSequenceBaseDir = baseDir;
+        captureStartIndex = startIndex;
+        captureEndIndex = endIndex;
+        captureSequencePrefix = filenamePrefix;
+        captureSequenceCallback = onComplete;
+        isCapturingSequence = true;
+    }
+    
+    // Update is called once per frame
+    void Update()
+    {
+        if (Time.frameCount >= reshowUiOnFrame)
+        {
+            OverlayUiController.Instance.SetUIDisplay(true);
+            // Cancel reshow
+            reshowUiOnFrame = Int32.MaxValue;
+        }
+
+        if (isCapturingSequence)
+        {
+            ScreenCapture.CaptureScreenshot(Path.Join(captureSequenceBaseDir, $"{captureSequencePrefix}{CurrentStructureIndex - captureStartIndex + 1:00000}.png"));
+            
+            // Interrupt if finished or Esc pressed
+            if (CurrentStructureIndex >= Math.Min(StructureCount - 1, captureEndIndex) || Input.GetKeyDown(KeyCode.Escape))
+            {
+                isCapturingSequence = false;
+                OverlayUiController.Instance.PrintStatusLog($"Saved screenshot sequence to {captureSequenceBaseDir}");
+                reshowUiOnFrame = Time.frameCount + 1;
+                captureSequenceCallback?.Invoke();
+            }
+            else
+            {
+                Next();
             }
         }
     }

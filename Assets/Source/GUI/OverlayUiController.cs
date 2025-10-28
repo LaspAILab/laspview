@@ -162,6 +162,11 @@ public class OverlayUiController : MonoBehaviour
 #endif
     }
 
+    public void SetUIDisplay(bool show = true)
+    {
+        document.panelSettings.targetDisplay = show ? 0 : 2;
+    }
+
     public void PrintStatusLog(string str, bool addToUnityLog = true)
     {
         statusLabel.text = str;
@@ -182,6 +187,7 @@ public class OverlayUiController : MonoBehaviour
         if (total.HasValue)
         {
             totalStructuresLabel.text = $"of {total.Value}";
+            UtilsPanelController.Instance.UpdateFrameRange(total.Value);
         }
     }
 
