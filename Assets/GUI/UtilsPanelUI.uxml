@@ -1,0 +1,22 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
+    <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input" />
+    <ui:Label text="Lasp optimization server" class="display-option-subtitle" style="margin-top: 10px; margin-bottom: 5px;" />
+    <ui:Label text="Server status: &lt;b&gt;Offline&lt;/b&gt;" name="ServerStatusLabel" style="white-space: normal; font-size: 20px; margin-left: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); padding-bottom: 8px; margin-bottom: 0;" />
+    <ui:Button text="Start server" name="StartServerButton" class="edit-panel-button edit-panel-item" />
+    <ui:VisualElement style="flex-grow: 0; border-bottom-width: 4px; border-bottom-color: rgb(104, 104, 104); margin-left: 10px; margin-right: 10px; margin-top: 4px; margin-bottom: 2px;" />
+    <ui:Toggle label="Realtime energy update" name="RealtimeEnergyToggle" value="true" class="edit-panel-item" />
+    <ui:Toggle label="Optimize lattice shape" name="OptimizeLatticeToggle" class="edit-panel-item" />
+    <ui:Toggle label="Override current structure" name="OverrideStructureToggle" class="edit-panel-item" />
+    <ui:Label text="If checked, the current structure will be overriden, otherwise the optimized structure will be appended to the tail of the structure list. " style="white-space: normal; margin-left: 15px; font-size: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0;" />
+    <ui:Button text="Run optimization" name="RunOptimizationButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 5px;" />
+    <ui:Label text="Frame capture" class="display-option-subtitle" style="margin-bottom: 5px;" />
+    <ui:Button text="Capture screenshot" name="CaptureScreenshotButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 5px;" />
+    <ui:VisualElement style="flex-grow: 0; border-bottom-width: 4px; border-bottom-color: rgb(104, 104, 104); margin-left: 10px; margin-right: 10px; margin-top: 4px; margin-bottom: 2px;" />
+    <ui:MinMaxSlider label="Frame range" value="10,12" low-limit="-10" high-limit="40" name="FrameRangeSlider" class="edit-panel-item" />
+    <ui:Label text="Capturing frame 1 to 1" name="FrameRangeLabel" style="white-space: normal; margin-left: 15px; font-size: 16px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0; -unity-text-align: upper-right; margin-right: 12px;" />
+    <ui:Toggle label="Encode video" name="EncodeVideoToggle" value="true" class="edit-panel-item" />
+    <ui:Label text="Adjust play interval in display settings to change the time of each frame within the video. " style="white-space: normal; margin-left: 15px; font-size: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0;" />
+    <ui:Button text="Capture animation series" name="CaptureSeriesButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 5px;" />
+    <ui:Label text="Press Esc to interrupt capture. " style="white-space: normal; margin-left: 15px; font-size: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0; margin-bottom: 8px;" />
+</ui:UXML>
