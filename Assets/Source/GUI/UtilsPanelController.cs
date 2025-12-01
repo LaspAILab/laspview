@@ -31,8 +31,6 @@ public class UtilsPanelController : MonoBehaviour
     private Toggle encodeVideoToggle;
     private Button captureSeriesButton;
 
-    private bool updateEnergyRealtime = false;
-
     private Process ffmpegProcess;
 
     void Awake()
