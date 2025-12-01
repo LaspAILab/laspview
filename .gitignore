@@ -117,6 +117,7 @@ LASP4WIN*
 LaspRun/*
 lasp*.txt
 screenshots
+/Assets/Editor/FFmpeg
 
 #=============#
 #IDEA#

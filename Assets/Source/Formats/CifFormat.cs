@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class CifFormat : IFormat
+public class CifFormat : ICrystalFormat
 {
     private static readonly Regex DATA_REGEX = new(@"^(_\w+)\s+([a-zA-Z0-9_.]+)$", RegexOptions.Compiled);
     private static readonly Regex VARIABLE_REGEX = new(@"^(_\w+)$", RegexOptions.Compiled);
@@ -14,12 +14,12 @@ public class CifFormat : IFormat
     public void Read(StructureFile file, IEnumerable<string> lines, Action<int> progressCallback = null)
     {
         var linesEnumerator = lines.GetEnumerator();
-        string line = IFormat.GetNextLine(linesEnumerator);
+        string line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
         // Skip comments
         while (line.Trim().StartsWith("#"))
         {
-            line = IFormat.GetNextLine(linesEnumerator);
+            line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
         }
         
         if (line.StartsWith("data_"))
@@ -36,7 +36,7 @@ public class CifFormat : IFormat
         // Read lattice paramaters
         while (true)
         {
-            line = IFormat.GetNextLine(linesEnumerator);
+            line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
             if (line == null)
             {
@@ -100,7 +100,7 @@ public class CifFormat : IFormat
             }
             else
             {
-                if (listDefinition.Any(x => x.StartsWith("_atom")) && IFormat.SplitWhiteSpace(line).Length == listDefinition.Count)
+                if (listDefinition.Any(x => x.StartsWith("_atom")) && ICrystalFormat.SplitWhiteSpace(line).Length == listDefinition.Count)
                 {
                     // If the atom column definition is already present and the table begins
                     break;
@@ -181,8 +181,7 @@ public class CifFormat : IFormat
 
         do
         {
-            
-            var columns = IFormat.SplitWhiteSpace(line);
+            var columns = ICrystalFormat.SplitWhiteSpace(line);
             if(columns.Length != listDefinition.Count)
             {
                 // Ignore any content after the table ends
@@ -205,7 +204,7 @@ public class CifFormat : IFormat
             }
             crystalStructure.AddAtom(element, coords, 0);
             
-        } while ((line = IFormat.GetNextLine(linesEnumerator)) != null);
+        } while ((line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator)) != null);
 
 #if UNITY_WEBGL
         file.Structures.Add(crystalStructure);

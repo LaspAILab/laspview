@@ -5,16 +5,16 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class PoscarFormat : IFormat
+public class PoscarFormat : ICrystalFormat
 {
     public void Read(StructureFile file, IEnumerable<string> lines, Action<int> progressCallback = null)
     {
         var linesEnumerator = lines.GetEnumerator();
-        string line = IFormat.GetNextLine(linesEnumerator);
+        string line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
         Debug.Log($"Reading poscar with custom name `{line}`");
 
-        line = IFormat.GetNextLine(linesEnumerator);
+        line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
         if (!float.TryParse(line, out float scaleFactor))
         {
             throw new ArgumentException($"Expected a float for scale factor, got `{line}`");
@@ -23,30 +23,30 @@ public class PoscarFormat : IFormat
         Vector3[] baseVectors = new Vector3[3];
         for (int i = 0; i < 3; i++)
         {
-            line = IFormat.GetNextLine(linesEnumerator);
+            line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
-            var vectorStrings = IFormat.SplitWhiteSpace(line.Trim());
+            var vectorStrings = ICrystalFormat.SplitWhiteSpace(line.Trim());
             Assert.AreEqual(vectorStrings.Length, 3);
             baseVectors[i] = new(float.Parse(vectorStrings[0]), float.Parse(vectorStrings[1]),
                 float.Parse(vectorStrings[2]));
             baseVectors[i] *= scaleFactor;
         }
 
-        line = IFormat.GetNextLine(linesEnumerator);
+        line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
         string[] elementList, countList;
         if (line.Any(x => char.IsLetter(x)))
         {
             // Element list specified
-            elementList = IFormat.SplitWhiteSpace(line);
+            elementList = ICrystalFormat.SplitWhiteSpace(line);
             
-            line = IFormat.GetNextLine(linesEnumerator);
-            countList = IFormat.SplitWhiteSpace(line);
+            line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
+            countList = ICrystalFormat.SplitWhiteSpace(line);
         }
         else
         {
             // Element list omitted
-            countList = IFormat.SplitWhiteSpace(line);
+            countList = ICrystalFormat.SplitWhiteSpace(line);
             elementList = Enumerable.Repeat("C", countList.Length).ToArray();
         }
 
@@ -56,7 +56,7 @@ public class PoscarFormat : IFormat
             count = int.Parse(count)
         });
 
-        while ((line = IFormat.GetNextLine(linesEnumerator)) != null)
+        while ((line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator)) != null)
         {
             CrystalStructure crystalStructure = new();
             crystalStructure.SetLattice(baseVectors);
@@ -64,7 +64,7 @@ public class PoscarFormat : IFormat
             bool hasFixedFlags = false;
             if (line.ToLower() == "selective dynamics")
             {
-                line = IFormat.GetNextLine(linesEnumerator);
+                line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
                 hasFixedFlags = true;
             }
 
@@ -92,9 +92,9 @@ public class PoscarFormat : IFormat
                 
                 for (int i = 0; i < atomType.count; i++)
                 {
-                    line = IFormat.GetNextLine(linesEnumerator);
+                    line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
-                    var vectorStrings = IFormat.SplitWhiteSpace(line.Trim());
+                    var vectorStrings = ICrystalFormat.SplitWhiteSpace(line.Trim());
                     
                     AtomFlags flags = AtomFlags.None;
                     if (vectorStrings.Length == 6)

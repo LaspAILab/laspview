@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-public class ArcFormat : IFormat
+public class ArcFormat : ICrystalFormat
 {
     private static readonly Regex HEADER_REGEX = new(@"^!BIOSYM archive (2|3)$", RegexOptions.Compiled);
     private static readonly Regex DATE_REGEX = new(@"^!DATE\s+(.+)$", RegexOptions.Compiled);
