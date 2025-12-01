@@ -1,36 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
 
-public interface IFormat
+public interface ICrystalFormat : IFileFormat
 {
     public void Read(StructureFile file, IEnumerable<string> lines, Action<int> progressCallback = null);
 
     public string Write(StructureFile file);
 
-    public static string[] SplitWhiteSpace(string line)
-    {
-        return Regex.Split(line, "\\s+", RegexOptions.IgnoreCase);
-    }
-
-    public static string GetNextLine(IEnumerator<string> lineEnumerator, bool doTrim = true)
-    {
-        string line;
-        do
-        {
-            if (!lineEnumerator.MoveNext())
-            {
-                return null;
-            }
-
-            line = lineEnumerator.Current;
-        } while (string.IsNullOrWhiteSpace(line));
-        
-        return doTrim ? line.Trim() : line;
-    }
-
-    public static IFormat GetFormatIO(string filename)
+    public static ICrystalFormat GetFormatIO(string filename)
     {
         // Recognize any file with name `POSCAR` as a poscar file
         if (Path.GetFileNameWithoutExtension(filename).ToUpper() == "POSCAR")
@@ -43,6 +21,7 @@ public interface IFormat
             ".arc" or ".car" or ".txt" => new ArcFormat(),
             ".poscar" => new PoscarFormat(),
             ".cif" => new CifFormat(),
+            ".extxyz" => new ExtxyzFormat(),
             _ => null
         };
     }

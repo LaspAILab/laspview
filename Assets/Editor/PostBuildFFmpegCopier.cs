@@ -10,7 +10,15 @@ public class PostBuildFFmpegCopier : IPostprocessBuildWithReport
 
     public void OnPostprocessBuild(BuildReport report)
     {
-        string buildPath = Path.GetDirectoryName(report.summary.outputPath);
+
+        string buildPath = report.summary.outputPath;
+        
+        // If build path is a file
+        if (!Directory.Exists(buildPath))
+        {
+            buildPath = Path.GetDirectoryName(report.summary.outputPath);
+        }
+        
         string platform = report.summary.platform.ToString();
 
         Debug.Log($"[PostBuild] Platform: {platform}, Output: {buildPath}");

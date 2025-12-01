@@ -150,7 +150,14 @@ public class ViewportController : MonoBehaviour
         // do something with the dropped file names. aPos will contain the 
         // mouse position within the window where the files has been dropped.
         OverlayUiController.Instance.PrintStatusLog("Dropped files: " + string.Join(" ", aFiles));
-        FilePanelController.FilesRead(aFiles.ToArray());
+        if (FilePanelController.IsMoleculeFile(aFiles.FirstOrDefault()))
+        {
+            // Molecule import
+            FilePanelController.MoleculeImport(aFiles.ToArray());
+            return;
+        } else {
+            FilePanelController.FilesRead(aFiles.ToArray());
+        }
     }
 #endif
 

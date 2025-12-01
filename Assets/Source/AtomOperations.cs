@@ -316,10 +316,12 @@ public class AddAtomsOperation : IOperation
     private Vector3 position;
     private string symbol;
     private float charge;
+    private bool selectAfterAdd;
 
-    public AddAtomsOperation(List<Atom> atomsToAdd)
+    public AddAtomsOperation(List<Atom> atomsToAdd, bool selectAfterAdd = true)
     {
         this.atomsToAdd = atomsToAdd;
+        this.selectAfterAdd = selectAfterAdd;
     }
 
     protected override bool DoImpl(CrystalStructureView structureView)
@@ -345,12 +347,15 @@ public class AddAtomsOperation : IOperation
             }
         }
 
-        App.Instance.viewport.selectionManager.ReplaceSelection(addedAtoms.Select(x => new SelectionItem
+        if (selectAfterAdd)
         {
-            Atom = x,
-            LatticeOffset = Vector3.zero,
-            CellIndex = (0, 0, 0)
-        }));
+            App.Instance.viewport.selectionManager.ReplaceSelection(addedAtoms.Select(x => new SelectionItem
+            {
+                Atom = x,
+                LatticeOffset = Vector3.zero,
+                CellIndex = (0, 0, 0)
+            }));
+        }
 
         return true;
     }

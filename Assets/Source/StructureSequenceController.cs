@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -155,6 +156,23 @@ public class StructureSequenceController : MonoBehaviour
                 timer = 0;
             }
         }
+    }
+    
+    public bool ImportMolecule(IEnumerable<string> content, string filename)
+    {
+        if (App.Instance.CurrentFile == null || CurrentStructure == null)
+        {
+            return false;
+        }
+        
+        // Put molecule at lattice center
+        Vector3 latticeCenter = CurrentStructure.FractionalToCartesian(new(0.5f, 0.5f, 0.5f));
+        
+        IMoleculeFormat format = IMoleculeFormat.GetFormatIO(filename);
+        var atoms = format.ReadAtoms(content, latticeCenter);
+        
+        App.Instance.operationManager.SubmitOperation(new AddAtomsOperation(atoms.ToList()));
+        return true;
     }
 
     public void SaveCurrentFrame(string filename)

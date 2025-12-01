@@ -75,6 +75,14 @@ public class CrystalStructure
         Atoms.Add(atom);
         return atom;
     }
+    
+    public void AppendAtoms(IEnumerable<Atom> atoms)
+    {
+        foreach (var atom in atoms)
+        {
+            AddAtom(atom);
+        }
+    }
 
     public bool RemoveAtom(Atom atom)
     {

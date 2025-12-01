@@ -12,13 +12,21 @@ public class FilePanelController : MonoBehaviour
 {
     private VisualElement filePanelRoot;
 
-    public static ExtensionFilter[] Extensions =
+    static ExtensionFilter[] CrystalExtensions =
     {
-        new ExtensionFilter("Structure Files", "txt", "arc", "car", "poscar", "cif"),
-        new ExtensionFilter("Arc Files", "txt", "arc", "car"),
-        new ExtensionFilter("Poscar Files", "poscar"),
-        new ExtensionFilter("Cif Files", "cif"),
-        new ExtensionFilter("All Files", "*"),
+        new ("Structure Files", "txt", "arc", "car", "poscar", "cif"),
+        new ("Arc Files", "txt", "arc", "car"),
+        new ("Poscar Files", "poscar"),
+        new ("Cif Files", "cif"),
+        new ("All Files", "*"),
+    };
+    
+    static ExtensionFilter[] MoleculeExtensions =
+    {
+        new ("Molecule Files", "mol", "xyz"),
+        new ("Mol Files", "mol"),
+        new ("Xyz Files", "xyz"),
+        new ("All Files", "*"),
     };
 
 #if UNITY_WEBGL
@@ -56,7 +64,16 @@ public class FilePanelController : MonoBehaviour
             }
             else
             {
-                App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]));
+                if (IsMoleculeFile(parts[1]))
+                {
+                    // Import molecule
+                    StructureSequenceController.Instance.ImportMolecule(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]));
+                }
+                else
+                {
+                    // Open structure file
+                    App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]));
+                }
             }
         }
     }
@@ -69,11 +86,17 @@ public class FilePanelController : MonoBehaviour
 
     public void DownloadStructureFile(StructureFile structure, string filename)
     {
-        string str = IFormat.GetFormatIO(filename).Write(structure);
+        string str = ICrystalFormat.GetFormatIO(filename).Write(structure);
         var bytes = Encoding.UTF8.GetBytes(str);
         DownloadFile(gameObject.name, "OnFileDownload", filename, bytes, bytes.Length);
     }
 #endif
+    
+    public static bool IsMoleculeFile(string filename)
+    {
+        string ext = Path.GetExtension(filename).ToLower();
+        return ext == ".mol" || ext == ".xyz";
+    }
 
     void Start()
     {
@@ -84,6 +107,9 @@ public class FilePanelController : MonoBehaviour
 
         var openFileButton = filePanelRoot.Q<Button>("OpenFileButton");
         openFileButton.RegisterCallback<ClickEvent>(OnOpenFileButtonClick);
+        
+        var importMoleculeButton = filePanelRoot.Q<Button>("ImportMoleculeButton");
+        importMoleculeButton.RegisterCallback<ClickEvent>(OnImportMoleculeButtonClick);
 
         var saveCurrentButton = filePanelRoot.Q<Button>("SaveCurrentButton");
         saveCurrentButton.RegisterCallback<ClickEvent>(OnSaveCurrentButtonClick);
@@ -95,7 +121,7 @@ public class FilePanelController : MonoBehaviour
         // Enable the format selector in that WebGL doesn't have a save file dialog
         formatSelector = filePanelRoot.Q<DropdownField>("WebFormatSelector");
         formatSelector.style.display = DisplayStyle.Flex;
-        formatSelector.choices = Extensions[0].Extensions.ToList();
+        formatSelector.choices = CrystalExtensions[0].Extensions.ToList();
         formatSelector.value = "txt";
 #endif
     }
@@ -111,6 +137,17 @@ public class FilePanelController : MonoBehaviour
         }
     }
 
+    public static void MoleculeImport(string[] paths)
+    {
+        if (paths.Length == 0)
+        {
+            return;
+        }
+        
+        var moleculeFile = paths.First();
+        StructureSequenceController.Instance.ImportMolecule(File.ReadLines(moleculeFile), Path.GetFileName(moleculeFile));
+    }
+
     void OnNewEmptyButtonClick(ClickEvent _)
     {
         App.Instance.NewEmpty();
@@ -121,12 +158,26 @@ public class FilePanelController : MonoBehaviour
         // Open file with filter
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
         // Multiselect is ignored in editor, this is not a bug
-        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", Extensions, true, FilesRead);
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", CrystalExtensions, true, FilesRead);
 #elif UNITY_WEBGL && !UNITY_EDITOR
         UploadFile(gameObject.name, "OnFileUpload", ".txt,.arc,.car,.poscar,.cif", true);
 #elif UNITY_STANDALONE_OSX
-        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", Extensions, true);
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", CrystalExtensions, true);
         FilesRead(paths);
+#endif
+    }
+    
+    void OnImportMoleculeButtonClick(ClickEvent _)
+    {
+        // Open file with filter
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+        // Multiselect is ignored in editor, this is not a bug
+        StandaloneFileBrowser.OpenFilePanelAsync("Open File", "", MoleculeExtensions, false, MoleculeImport);
+#elif UNITY_WEBGL && !UNITY_EDITOR
+        UploadFile(gameObject.name, "OnFileUpload", ".mol,.xyz", false);
+#elif UNITY_STANDALONE_OSX
+        string[] paths = StandaloneFileBrowser.OpenFilePanel("Open File", "", MoleculeExtensions, false);
+        MoleculeImport(paths);
 #endif
     }
 
@@ -142,14 +193,14 @@ public class FilePanelController : MonoBehaviour
         newFile.Structures.Add(App.Instance.viewport.CurrentStructureView.Structure);
         DownloadStructureFile(newFile, "result." + formatSelector.value);
 #else
-        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", CrystalExtensions, (path) =>
         {
             if (string.IsNullOrEmpty(path))
             {
                 return;
             }
 
-            IFormat formatSaver = IFormat.GetFormatIO(path);
+            ICrystalFormat formatSaver = ICrystalFormat.GetFormatIO(path);
             if (formatSaver == null)
             {
                 Debug.LogError($"Invalid format for file `{Path.GetFileName(path)}`, cannot save");
@@ -175,14 +226,14 @@ public class FilePanelController : MonoBehaviour
 #if UNITY_WEBGL
         DownloadStructureFile(App.Instance.CurrentFile, "result." + formatSelector.value);
 #else
-        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", Extensions, (path) =>
+        StandaloneFileBrowser.SaveFilePanelAsync("Save File", "", "", CrystalExtensions, (path) =>
         {
             if (string.IsNullOrEmpty(path))
             {
                 return;
             }
 
-            IFormat formatSaver = IFormat.GetFormatIO(path);
+            ICrystalFormat formatSaver = ICrystalFormat.GetFormatIO(path);
             if (formatSaver == null)
             {
                 Debug.LogError($"Invalid format for file `{Path.GetFileName(path)}`, cannot save");
