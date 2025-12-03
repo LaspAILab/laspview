@@ -30,7 +30,6 @@ public class EditPanelController : MonoBehaviour
     // Atom section
     private Label multiselectLabel;
 
-    private VisualElement elementRow;
     private TextField elementInput;
     private Button replaceElementButton;
     private Toggle fractionalToggle;
@@ -79,7 +78,7 @@ public class EditPanelController : MonoBehaviour
         supercellButton.RegisterCallback<ClickEvent>(OnSupercellClicked);
         
         multiselectLabel = editPanelRoot.Q<Label>("MultiselectLabel");
-        elementRow = editPanelRoot.Q<VisualElement>("ElementRow");
+        var elementRow = editPanelRoot.Q<VisualElement>("ElementRow");
         elementInput = editPanelRoot.Q<TextField>("ElementInput");
         elementInput.RegisterCallback<ClickEvent>(OverlayUiController.Instance.ShowPeriodicTable);
         replaceElementButton = editPanelRoot.Q<Button>("ReplaceElementButton");

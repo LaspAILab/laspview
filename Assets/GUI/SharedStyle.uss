@@ -152,7 +152,7 @@
     background-position-x: left 30px;
     -unity-background-scale-mode: scale-to-fit;
     padding-left: 60px;
-    background-image: url("project://database/Assets/Icons/crystal-meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal-meth");
+    background-image: url("project://database/Assets/Icons/crystal_meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal_meth");
     -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&guid=cd56282d3b0ad7b4aba00251bfaf2e0a&type=3#MonaspaceArgon-Regular");
     border-top-width: 1px;
     border-bottom-width: 0;
@@ -327,4 +327,10 @@ SliderInt Label {
 Slider Label {
     font-size: 20px;
     min-width: 120px;
+}
+
+EnumField .unity-enum-field__input {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 18px;
 }

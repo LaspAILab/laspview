@@ -5,7 +5,7 @@
     <ui:Template name="AboutPanel" src="project://database/Assets/GUI/AboutPanel.uxml?fileID=9197481963319205126&amp;guid=ccaab4f1a06a39646963ad35f6a1d4b7&amp;type=3#AboutPanel" />
     <ui:Template name="EditPanelUI" src="project://database/Assets/GUI/EditPanelUI.uxml?fileID=9197481963319205126&amp;guid=07866727b8be997458cf7c44dea24471&amp;type=3#EditPanelUI" />
     <ui:Template name="PeriodicTableControl" src="project://database/Assets/GUI/PeriodicTableControl/PeriodicTableControl.uxml?fileID=9197481963319205126&amp;guid=06bb632aa38eace4ea9f72de01e8d669&amp;type=3#PeriodicTableControl" />
-    <ui:Template name="LaspPanelUI" src="project://database/Assets/GUI/LaspPanelUI.uxml?fileID=9197481963319205126&amp;guid=75f6068d7f8058745aad17b92ed27c3c&amp;type=3#LaspPanelUI" />
+    <ui:Template name="LaspPanelUI" src="project://database/Assets/GUI/UtilsPanelUI.uxml?fileID=9197481963319205126&amp;guid=75f6068d7f8058745aad17b92ed27c3c&amp;type=3#UtilsPanelUI" />
     <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
     <ui:VisualElement name="TopBar" enabled="true" style="flex-grow: 1; height: 65px; background-color: rgb(255, 255, 255); position: absolute; top: 0; left: 0; right: 0; border-bottom-width: 2px; border-bottom-color: rgb(124, 124, 124); align-content: auto; flex-direction: row;">
         <ui:VisualElement enabled="true" name="Icon" focusable="false" style="flex-grow: 0; background-image: url(&quot;project://database/Assets/Icons/lasp.png?fileID=2800000&amp;guid=c5ae5a4f1fb24cf4795cdfb018ca702e&amp;type=3#lasp&quot;); height: 45px; width: 45px; align-content: auto; align-self: center; align-items: stretch; flex-direction: column; position: relative; margin-left: 20px;" />
@@ -59,7 +59,7 @@
         <ui:Instance template="AboutPanel" style="width: 40%; align-self: center; height: auto; max-height: 80%;" />
     </ui:VisualElement>
     <ui:VisualElement name="EditPanel" class="round-panel" style="flex-grow: 1; position: absolute; top: 65px; left: auto; width: 450px; display: none; right: 0;">
-        <ui:Instance template="EditPanelUI" />
+        <ui:Instance template="EditPanelUI" style="display: flex;" />
     </ui:VisualElement>
     <ui:VisualElement enabled="true" name="PeriodicTablePanel" style="position: absolute; flex-grow: 1; justify-content: center; width: auto; height: auto; top: 0; bottom: 0; left: 0; right: 0; align-items: center; display: none;">
         <ui:VisualElement class="window-frame" style="flex-grow: 0; padding-left: 10px; padding-top: 10px; padding-right: 10px; padding-bottom: 10px;">
