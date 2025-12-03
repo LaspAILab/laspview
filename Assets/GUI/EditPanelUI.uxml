@@ -16,7 +16,7 @@
             <ui:Button text="Replace" name="ReplaceElementButton" enable-rich-text="false" class="edit-panel-button" style="height: auto; flex-grow: 0;" />
         </ui:VisualElement>
         <ui:Toggle label="Fractional coords" name="FractionalToggle" class="edit-panel-item" />
-        <Vec3InputControl text="Coordinates" value="0,0,0" name="CoordsInput" class="edit-panel-item" />
+        <Vec3InputControl text="Coordinates" value="0,0,0" name="CoordsInput" max-digits="8" class="edit-panel-item" />
         <ui:VisualElement name="MoveTools" style="flex-grow: 0; flex-direction: row; margin-left: 15px; margin-right: 15px; margin-top: 2px; margin-bottom: 2px;">
             <ui:Label text="Move tools" style="font-size: 20px;" />
             <ui:VisualElement style="flex-grow: 1; margin-left: 12px; min-height: 80px; margin-bottom: 4px;">

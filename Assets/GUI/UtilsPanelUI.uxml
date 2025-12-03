@@ -8,10 +8,16 @@
     <ui:Toggle label="Realtime energy update" name="RealtimeEnergyToggle" value="true" class="edit-panel-item" />
     <ui:Toggle label="Optimize lattice shape" name="OptimizeLatticeToggle" class="edit-panel-item" />
     <ui:Toggle label="Override current structure" name="OverrideStructureToggle" class="edit-panel-item" />
-    <ui:Label text="If checked, the current structure will be overriden, otherwise the optimized structure will be appended to the tail of the structure list. " style="white-space: normal; margin-left: 15px; font-size: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0;" />
+    <ui:Label text="If not checked, the optimized structure will be appended to the tail of the structure list. " style="white-space: normal; margin-left: 15px; font-size: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0;" />
     <ui:Button text="Run optimization" name="RunOptimizationButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 5px;" />
-    <ui:Label text="Frame capture" class="display-option-subtitle" style="margin-bottom: 5px;" />
-    <ui:Button text="Capture screenshot" name="CaptureScreenshotButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 5px;" />
+    <ui:Label text="Frame capture" class="display-option-subtitle" style="margin-bottom: 0;" />
+    <ui:Toggle label="Transparent background" name="TransparentBackgroundToggle" value="true" class="edit-panel-item" />
+    <ui:EnumField label="Resolution" type="FrameCaptureResolutionType, Assembly-CSharp" name="ResolutionField" class="display-option-item">
+        <Bindings>
+            <ui:DataBinding property="value" data-source-path="DisplayStyle" binding-mode="ToSource" />
+        </Bindings>
+    </ui:EnumField>
+    <ui:Button text="Capture screenshot" name="CaptureScreenshotButton" class="edit-panel-button edit-panel-item" style="margin-bottom: 5px; margin-top: 4px;" />
     <ui:VisualElement style="flex-grow: 0; border-bottom-width: 4px; border-bottom-color: rgb(104, 104, 104); margin-left: 10px; margin-right: 10px; margin-top: 4px; margin-bottom: 2px;" />
     <ui:MinMaxSlider label="Frame range" value="10,12" low-limit="-10" high-limit="40" name="FrameRangeSlider" class="edit-panel-item" />
     <ui:Label text="Capturing frame 1 to 1" name="FrameRangeLabel" style="white-space: normal; margin-left: 15px; font-size: 16px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); margin-top: 0; padding-top: 0; -unity-text-align: upper-right; margin-right: 12px;" />

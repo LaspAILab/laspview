@@ -6,7 +6,7 @@ VisualElement {
 }
 
 .-vec3-input-float-field {
-    width: 65px;
+    width: 20%;
     margin-right: 0;
     margin-left: 5px;
     white-space: normal;

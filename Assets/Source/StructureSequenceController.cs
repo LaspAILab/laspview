@@ -9,35 +9,33 @@ public class StructureSequenceController : MonoBehaviour
 {
     public static StructureSequenceController Instance;
 
-    private int reshowUiOnFrame = -1;
     private bool isPlaying = false, isCapturingSequence = false;
-    private string captureSequenceBaseDir = "", captureSequencePrefix = "";
+    private string captureSequenceBaseDir = "", captureFilename = "";
     private Action captureSequenceCallback = null;
     private int captureStartIndex = -1, captureEndIndex = -1;
+    private int captureFinishesAtFrame = int.MaxValue, saveImageAtFrame = int.MaxValue;
+    private Color? backgroundColor = null;
     private float timer = 0;
     private Coroutine playCoroutine;
     private ViewportController viewport;
 
-    public float PlayInterval
-    {
-        get;
-        set;
-    } = 0.1f;
+    private Camera mainCamera;
 
-    public int CurrentStructureIndex
-    {
-        get;
-        private set;
-    }
-    
+    private Texture2D tempTexture;
+
+    public float PlayInterval { get; set; } = 0.1f;
+
+    public int CurrentStructureIndex { get; private set; }
+
     public CrystalStructure CurrentStructure => App.Instance.CurrentFile.Structures[CurrentStructureIndex];
-    
+
     public int StructureCount => App.Instance.CurrentFile.StructureCount;
-    
+
     void Awake()
     {
         Instance = this;
         viewport = GetComponent<ViewportController>();
+        mainCamera = Camera.main;
     }
 
     // Reset active structure to the first and refocus the camera, call this when file changes
@@ -51,7 +49,7 @@ public class StructureSequenceController : MonoBehaviour
         viewport.OpenStructureView(structureView);
         viewport.RefocusCamera();
     }
-    
+
     public bool SwitchStructure(int index, bool forceReload = false)
     {
         var currentFile = App.Instance.CurrentFile;
@@ -106,7 +104,7 @@ public class StructureSequenceController : MonoBehaviour
     {
         return SwitchStructure(CurrentStructureIndex + 1);
     }
-    
+
     public bool Previous()
     {
         return SwitchStructure(CurrentStructureIndex - 1);
@@ -118,7 +116,7 @@ public class StructureSequenceController : MonoBehaviour
         {
             return false;
         }
-        
+
         playCoroutine = StartCoroutine(PlayStructure());
         isPlaying = true;
         return true;
@@ -130,12 +128,12 @@ public class StructureSequenceController : MonoBehaviour
         {
             return false;
         }
-        
+
         StopCoroutine(playCoroutine);
         isPlaying = false;
         return true;
     }
-    
+
     IEnumerator<object> PlayStructure()
     {
         while (true)
@@ -157,52 +155,65 @@ public class StructureSequenceController : MonoBehaviour
             }
         }
     }
-    
+
     public bool ImportMolecule(IEnumerable<string> content, string filename)
     {
         if (App.Instance.CurrentFile == null || CurrentStructure == null)
         {
             return false;
         }
-        
+
         // Put molecule at lattice center
         Vector3 latticeCenter = CurrentStructure.FractionalToCartesian(new(0.5f, 0.5f, 0.5f));
-        
+
         IMoleculeFormat format = IMoleculeFormat.GetFormatIO(filename);
         var atoms = format.ReadAtoms(content, latticeCenter);
-        
+
         App.Instance.operationManager.SubmitOperation(new AddAtomsOperation(atoms.ToList()));
         return true;
     }
 
-    public void SaveCurrentFrame(string filename)
+    public void SaveCurrentFrame(string filename, int width, int height, bool transparentBackground = false)
     {
         string dir = Path.GetDirectoryName(filename);
-        if(!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
         {
             Directory.CreateDirectory(dir);
         }
-        
+
+        if (transparentBackground)
+        {
+            backgroundColor = mainCamera.backgroundColor;
+            mainCamera.backgroundColor = Color.clear;
+        }
+
         OverlayUiController.Instance.SetUIDisplay(false);
-        ScreenCapture.CaptureScreenshot(filename);
-        OverlayUiController.Instance.PrintStatusLog($"Saved screenshot to {filename}");
+
         // Reshow UI on next frame
-        reshowUiOnFrame = Time.frameCount + 1;
+        captureFinishesAtFrame = Time.frameCount + 1;
+        captureSequenceBaseDir = Path.GetDirectoryName(filename);
+        captureFilename = Path.GetFileNameWithoutExtension(filename);
+        saveImageAtFrame = Time.frameCount + 1;
+
+        OverlayUiController.Instance.PrintStatusLog(
+            $"Saved screenshot to {captureSequenceBaseDir}\\{captureFilename}.png");
+        RedirectCameraToRenderTexture(width, height);
     }
-    
+
     // Capture screenshots of all structures in sequence
-    public void SaveFrameSequence(string baseDir, int startIndex = 0, int endIndex = int.MaxValue, string filenamePrefix = "", Action onComplete = null)
+    public void SaveFrameSequence(string baseDir, int width, int height, bool transparentBackground = false,
+        int startIndex = 0, int endIndex = int.MaxValue, string filenamePrefix = "", Action onComplete = null)
     {
-        if(App.Instance.CurrentFile == null || CurrentStructure == null)
+        if (App.Instance.CurrentFile == null || CurrentStructure == null)
         {
             return;
         }
-        
-        if(!Directory.Exists(baseDir))
+
+        if (!Directory.Exists(baseDir))
         {
             Directory.CreateDirectory(baseDir);
         }
-        
+
         // Cancel if already capturing
         if (isCapturingSequence)
         {
@@ -210,41 +221,123 @@ public class StructureSequenceController : MonoBehaviour
         }
 
         SwitchStructure(startIndex);
+
+        if (transparentBackground)
+        {
+            backgroundColor = mainCamera.backgroundColor;
+            mainCamera.backgroundColor = Color.clear;
+        }
+
         OverlayUiController.Instance.SetUIDisplay(false);
+
         captureSequenceBaseDir = baseDir;
         captureStartIndex = startIndex;
         captureEndIndex = endIndex;
-        captureSequencePrefix = filenamePrefix;
+        captureFilename = filenamePrefix;
         captureSequenceCallback = onComplete;
+        saveImageAtFrame = Time.frameCount + 1;
         isCapturingSequence = true;
+        RedirectCameraToRenderTexture(width, height);
     }
-    
+
+    void RedirectCameraToRenderTexture(int width, int height)
+    {
+        RenderTexture newRT = new RenderTexture(width, height, 24);
+        mainCamera.targetTexture = newRT;
+    }
+
+    void SaveCameraRenderTargetToFile(string filename)
+    {
+        if (mainCamera.targetTexture == null)
+        {
+            throw new InvalidOperationException("Camera should have a non-screen render texture");
+        }
+
+        RenderTexture currentRT = RenderTexture.active;
+        RenderTexture.active = mainCamera.targetTexture;
+
+        if (tempTexture is null || tempTexture.width != mainCamera.targetTexture.width ||
+            tempTexture.height != mainCamera.targetTexture.height)
+        {
+            if (tempTexture is not null)
+            {
+                Destroy(tempTexture);
+            }
+
+            tempTexture = new Texture2D(mainCamera.targetTexture.width, mainCamera.targetTexture.height);
+        }
+
+        tempTexture.ReadPixels(new Rect(0, 0, mainCamera.targetTexture.width, mainCamera.targetTexture.height), 0, 0);
+        tempTexture.Apply();
+        RenderTexture.active = currentRT;
+
+        var bytes = tempTexture.EncodeToPNG();
+
+        File.WriteAllBytes(filename, bytes);
+    }
+
     // Update is called once per frame
     void Update()
     {
-        if (Time.frameCount >= reshowUiOnFrame)
+        if (Time.frameCount >= saveImageAtFrame)
         {
-            OverlayUiController.Instance.SetUIDisplay(true);
-            // Cancel reshow
-            reshowUiOnFrame = Int32.MaxValue;
-        }
+            string filename = isCapturingSequence
+                ? $"{captureFilename}{CurrentStructureIndex - captureStartIndex + 1:00000}.png"
+                : $"{captureFilename}.png";
+            SaveCameraRenderTargetToFile(Path.Join(captureSequenceBaseDir, filename));
 
-        if (isCapturingSequence)
-        {
-            ScreenCapture.CaptureScreenshot(Path.Join(captureSequenceBaseDir, $"{captureSequencePrefix}{CurrentStructureIndex - captureStartIndex + 1:00000}.png"));
-            
-            // Interrupt if finished or Esc pressed
-            if (CurrentStructureIndex >= Math.Min(StructureCount - 1, captureEndIndex) || Input.GetKeyDown(KeyCode.Escape))
+            if (Time.frameCount < captureFinishesAtFrame && isCapturingSequence)
             {
-                isCapturingSequence = false;
-                OverlayUiController.Instance.PrintStatusLog($"Saved screenshot sequence to {captureSequenceBaseDir}");
-                reshowUiOnFrame = Time.frameCount + 1;
-                captureSequenceCallback?.Invoke();
+                // Interrupt if finished or Esc pressed
+                if (CurrentStructureIndex >= Math.Min(StructureCount - 1, captureEndIndex) ||
+                    Input.GetKeyDown(KeyCode.Escape))
+                {
+                    OverlayUiController.Instance.PrintStatusLog(
+                        $"Saved screenshot sequence to {captureSequenceBaseDir}");
+                    captureFinishesAtFrame = Time.frameCount + 1;
+                }
+                else
+                {
+                    Next();
+                    captureFinishesAtFrame = int.MaxValue;
+                }
+
+                saveImageAtFrame = Time.frameCount + 1;
             }
             else
             {
-                Next();
+                saveImageAtFrame = int.MaxValue;
             }
+        }
+
+        if (Time.frameCount >= captureFinishesAtFrame)
+        {
+            if (mainCamera.targetTexture != null)
+            {
+                mainCamera.targetTexture = null;
+            }
+
+            if (tempTexture is not null)
+            {
+                Destroy(tempTexture);
+                tempTexture = null;
+            }
+
+            if (backgroundColor != null)
+            {
+                mainCamera.backgroundColor = backgroundColor.Value;
+                backgroundColor = null;
+            }
+
+            if (isCapturingSequence)
+            {
+                isCapturingSequence = false;
+                captureSequenceCallback?.Invoke();
+            }
+
+            OverlayUiController.Instance.SetUIDisplay(true);
+            // Cancel reshow
+            captureFinishesAtFrame = int.MaxValue;
         }
     }
 }

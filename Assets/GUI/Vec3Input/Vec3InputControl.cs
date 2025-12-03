@@ -17,6 +17,18 @@ public partial class Vec3InputControl : VisualElement, INotifyValueChanged<Vecto
         get => textLabel.text;
         set => textLabel.text = value;
     }
+    
+    [UxmlAttribute]
+    public int maxDigits
+    {
+        get => xInput.maxLength;
+        set
+        {
+            xInput.maxLength = value;
+            yInput.maxLength = value;
+            zInput.maxLength = value;
+        }
+    }
 
     public void SetValueWithoutNotify(Vector3 newValue)
     {

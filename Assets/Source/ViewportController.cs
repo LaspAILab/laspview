@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -445,7 +446,10 @@ public class ViewportController : MonoBehaviour
         List<SelectionItem> raycastResult = new();
         bool raycastOnUI = EventSystem.current.IsPointerOverGameObject();
 
-        if (raycastOnUI)
+        Vector2 view = activeCamera.ScreenToViewportPoint(Input.mousePosition);
+        bool isOutsideWindow = view.x < 0 || view.x > 1 || view.y < 0 || view.y > 1;
+
+        if (raycastOnUI || isOutsideWindow)
         {
             if (currentTool != ToolType.ReplaceAtom)
             {
@@ -488,7 +492,7 @@ public class ViewportController : MonoBehaviour
                                       currentSelectedElement.name == "OverlayPanelSettings";
         
         // Ignore keyboard events if a UI element is focused
-        if (!isKeyboardCapturedByUI)
+        if (!isKeyboardCapturedByUI && !isOutsideWindow)
         {
             HandleKeyboardEvents();
         }
@@ -686,12 +690,12 @@ public class ViewportController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.C))
         {
-            StructureSequenceController.Instance.SaveCurrentFrame("screenshots/screenshot.png");
+            StructureSequenceController.Instance.SaveCurrentFrame($"screenshots/{Path.GetFileNameWithoutExtension(App.Instance.CurrentFile.Filename)}", Display.main.renderingWidth, Display.main.renderingHeight);
         }
 
         if (Input.GetKeyUp(KeyCode.K))
         {
-            StructureSequenceController.Instance.SaveFrameSequence("screenshots/sequence");
+            StructureSequenceController.Instance.SaveFrameSequence("screenshots/sequence", Display.main.renderingWidth, Display.main.renderingHeight);
         }
 
         bool ctrlDown = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);

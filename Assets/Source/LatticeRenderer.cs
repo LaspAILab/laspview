@@ -5,8 +5,38 @@ public class LatticeRenderer : MonoBehaviour
     public GameObject LatticeLinePrefab;
     public GameObject LatticeLineParent;
 
-    public float LineWidth;
+    public float LineWidth
+    {
+        get => lineWidth;
+        set
+        {
+            if (Mathf.Approximately(value, lineWidth))
+            {
+                return;
+            }
+            
+            lineWidth = value;
+            UpdateLineProperties();
+        }
+    }
+
+    public Color LineColor
+    {
+        get => lineColor;
+        set
+        {
+            if (lineColor == value)
+            {
+                return;
+            }
+            
+            lineColor = value;
+            UpdateLineProperties();
+        }
+    }
     
+    private float lineWidth = 0.05f;
+    private Color lineColor = Color.white;
     private BoxCollider boxCollider;
     private bool isEnabled;
 
@@ -15,11 +45,12 @@ public class LatticeRenderer : MonoBehaviour
         isEnabled = true;
     }
 
-    private void AddLine(Vector3 from, Vector3 to, float thickness)
+    private void AddLine(Vector3 from, Vector3 to)
     {
         LineRenderer line = Instantiate(LatticeLinePrefab, LatticeLineParent.transform).GetComponent<LineRenderer>();
-        line.startWidth = thickness;
-        line.endWidth = thickness;
+        line.startWidth = LineWidth;
+        line.endWidth = LineWidth;
+        line.material.color = LineColor;
         line.positionCount = 2;
         line.SetPosition(0, from);
         line.SetPosition(1, to);
@@ -51,21 +82,21 @@ public class LatticeRenderer : MonoBehaviour
                     {
                         Vector3 to = structure.FractionalToCartesian(new Vector3(repeatA, j, k));
                         furthestPoint = Vector3.Max(furthestPoint, to);
-                        AddLine(from, to, LineWidth);
+                        AddLine(from, to);
                     }
 
                     if (j == 0)
                     {
                         Vector3 to = structure.FractionalToCartesian(new Vector3(i, repeatB, k));
                         furthestPoint = Vector3.Max(furthestPoint, to);
-                        AddLine(from, to, LineWidth);
+                        AddLine(from, to);
                     }
 
                     if (k == 0)
                     {
                         Vector3 to = structure.FractionalToCartesian(new Vector3(i, j, repeatC));
                         furthestPoint = Vector3.Max(furthestPoint, to);
-                        AddLine(from, to, LineWidth);
+                        AddLine(from, to);
                     }
                 }
             }
@@ -89,5 +120,15 @@ public class LatticeRenderer : MonoBehaviour
         }
         
         isEnabled = show;
+    }
+
+    private void UpdateLineProperties()
+    {
+        foreach (var line in LatticeLineParent.GetComponentsInChildren<LineRenderer>())
+        {
+            line.startWidth = LineWidth;
+            line.endWidth = LineWidth;
+            line.material.color = LineColor;
+        }
     }
 }

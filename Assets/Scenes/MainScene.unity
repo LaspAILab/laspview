@@ -475,7 +475,6 @@ MonoBehaviour:
   LatticeLinePrefab: {fileID: 8116349078610132731, guid: 8681358b040432943a66e4a219a0479f,
     type: 3}
   LatticeLineParent: {fileID: 859746865}
-  LineWidth: 0.05
 --- !u!114 &637342122
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1181,7 +1180,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
