@@ -11,6 +11,13 @@ using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
+enum FrameCaptureResolutionType
+{
+    _1X,
+    _2X,
+    _4X
+}
+
 public class UtilsPanelController : MonoBehaviour
 {
     public static UtilsPanelController Instance;
@@ -25,6 +32,8 @@ public class UtilsPanelController : MonoBehaviour
     private Toggle optimizeLatticeToggle;
     private Toggle overrideStructureToggle;
 
+    private Toggle transparentBackgroundToggle;
+    private EnumField resolutionField;
     private Button captureScreenshotButton;
     private MinMaxSlider frameRangeSlider;
     private Label frameRangeLabel;
@@ -53,6 +62,8 @@ public class UtilsPanelController : MonoBehaviour
         optimizeLatticeToggle = utilsPanelRoot.Q<Toggle>("OptimizeLatticeToggle");
         overrideStructureToggle = utilsPanelRoot.Q<Toggle>("OverrideStructureToggle");
 
+        transparentBackgroundToggle = utilsPanelRoot.Q<Toggle>("TransparentBackgroundToggle");
+        resolutionField = utilsPanelRoot.Q<EnumField>("ResolutionField");
         captureScreenshotButton = utilsPanelRoot.Q<Button>("CaptureScreenshotButton");
         captureScreenshotButton.RegisterCallback<ClickEvent>(OnCaptureScreenshotClicked);
         frameRangeSlider = utilsPanelRoot.Q<MinMaxSlider>("FrameRangeSlider");
@@ -201,9 +212,31 @@ public class UtilsPanelController : MonoBehaviour
         frameRangeLabel.text = $"Frame range: {minFrame} - {maxFrame}";
     }
 
+    (int, int) GetFrameCaptureResolution()
+    {
+        int width = Display.main.renderingWidth;
+        int height = Display.main.renderingHeight;
+
+        switch (resolutionField.value)
+        {
+            case FrameCaptureResolutionType._1X:
+                break;
+            case FrameCaptureResolutionType._2X:
+                width *= 2;
+                height *= 2;
+                break;
+            case FrameCaptureResolutionType._4X:
+                width *= 4;
+                height *= 4;
+                break;
+        }
+        
+        return (width, height);
+    }
+
     void OnCaptureScreenshotClicked(ClickEvent evt)
     {
-        string path = StandaloneFileBrowser.SaveFilePanel("Save File", "", "screenshot.png",
+        string path = StandaloneFileBrowser.SaveFilePanel("Save File", "", $"{Path.GetFileNameWithoutExtension(App.Instance.CurrentFile.Filename)}.png",
             new[] { new ExtensionFilter("PNG Files", "png") });
 
         if (string.IsNullOrEmpty(path))
@@ -211,7 +244,8 @@ public class UtilsPanelController : MonoBehaviour
             return;
         }
 
-        StructureSequenceController.Instance.SaveCurrentFrame(path);
+        var (width, height) = GetFrameCaptureResolution();
+        StructureSequenceController.Instance.SaveCurrentFrame(path, width, height, transparentBackgroundToggle.value);
     }
 
     static string GetFFmpegExecutivePath()
@@ -233,21 +267,6 @@ public class UtilsPanelController : MonoBehaviour
             default:
                 return null;
         }
-    }
-    
-    private static string RandomString(int length)
-    {
-        var random = new System.Random();
-        const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
-        var builder = new StringBuilder();
-
-        for (var i = 0; i < length; i++)
-        {
-            var c = pool[random.Next(0, pool.Length)];
-            builder.Append(c);
-        }
-
-        return builder.ToString();
     }
 
     void OnCaptureSeriesClicked(ClickEvent evt)
@@ -316,7 +335,8 @@ public class UtilsPanelController : MonoBehaviour
             }
             : null;
 
-        StructureSequenceController.Instance.SaveFrameSequence(path, minFrame, maxFrame, prefix, callback);
+        var (width, height) = GetFrameCaptureResolution();
+        StructureSequenceController.Instance.SaveFrameSequence(path, width, height, transparentBackgroundToggle.value, minFrame, maxFrame, prefix, callback);
     }
 
     void Update()

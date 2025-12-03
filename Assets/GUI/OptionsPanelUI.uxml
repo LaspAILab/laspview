@@ -2,13 +2,19 @@
     <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
     <ui:Label text="Display Options" enable-rich-text="false" style="font-size: 22px; margin-left: 12px; padding-top: 8px; padding-bottom: 8px; -unity-font-style: bold; padding-left: 4px; border-bottom-width: 1px; border-bottom-color: rgb(122, 122, 122);" />
     <ui:ScrollView horizontal-scroller-visibility="Hidden" style="max-height: 500px;">
-        <ui:Label text="Play and animation" enable-rich-text="false" class="display-option-subtitle" />
+        <ui:Label text="Misc" enable-rich-text="false" class="display-option-subtitle" />
+        <ui:EnumField label="Background" type="BackgroundColorType, Assembly-CSharp" name="BackgroundColor" class="display-option-item">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="DisplayStyle" binding-mode="ToSource" />
+            </Bindings>
+        </ui:EnumField>
         <ui:Slider label="Play interval" value="0.1" high-value="1" show-input-field="true" name="PlayInterval" class="display-option-item" />
         <ui:Label text="Lattice" enable-rich-text="false" enabled="true" class="display-option-subtitle" />
         <ui:Toggle label="Show lattice" name="ShowLattice" value="true" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
         <ui:SliderInt label="Lat range a" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeA" class="display-option-item" />
         <ui:SliderInt label="Lat range b" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeB" class="display-option-item" />
         <ui:SliderInt label="Lat range c" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeC" class="display-option-item" />
+        <ui:Slider label="Line width" value="0.05" high-value="0.2" show-input-field="true" name="LineWidth" low-value="0.01" class="display-option-item" />
         <ui:Label text="Atoms and bonds display" enable-rich-text="false" class="display-option-subtitle" />
         <ui:EnumField label="Display style" type="DisplayStyleType, Assembly-CSharp" name="DisplayStyle" class="display-option-item">
             <Bindings>

@@ -3,6 +3,14 @@ using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+public enum BackgroundColorType
+{
+    Black,
+    White,
+    Grey,
+    Blue,
+}
+
 public class OptionsPanelController : MonoBehaviour
 {
     private VisualElement optionsPanelRoot;
@@ -14,6 +22,9 @@ public class OptionsPanelController : MonoBehaviour
         viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         optionsPanelRoot = GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("OptionsPanel");
 
+        var backgroundColorControl = optionsPanelRoot.Q<EnumField>("BackgroundColor");
+        backgroundColorControl.RegisterValueChangedCallback(OnBackgroundColorChange);
+        
         var playIntervalControl = optionsPanelRoot.Q<Slider>("PlayInterval");
         playIntervalControl.RegisterValueChangedCallback(OnPlayIntervalChange);
         
@@ -28,6 +39,9 @@ public class OptionsPanelController : MonoBehaviour
         
         var latRangeCControl = optionsPanelRoot.Q<SliderInt>("LatRangeC");
         latRangeCControl.RegisterValueChangedCallback(OnLatRangeCChange);
+        
+        var lineWidthControl = optionsPanelRoot.Q<Slider>("LineWidth");
+        lineWidthControl.RegisterValueChangedCallback(OnLineWidthChange);
         
         var displayStyleControl = optionsPanelRoot.Q<EnumField>("DisplayStyle");
         displayStyleControl.RegisterValueChangedCallback(OnDisplayStyleChange);
@@ -49,6 +63,30 @@ public class OptionsPanelController : MonoBehaviour
         
         var bondPolicyControl = optionsPanelRoot.Q<EnumField>("BondPolicy");
         bondPolicyControl.RegisterValueChangedCallback(OnBondPolicyChange);
+    }
+    
+    void OnBackgroundColorChange(ChangeEvent<Enum> e)
+    {
+        Camera mainCamera = Camera.main;
+        switch (e.newValue)
+        {
+            case BackgroundColorType.Black:
+                mainCamera.backgroundColor = Color.black;
+                viewport.latticeRenderer.LineColor = Color.white;
+                break;
+            case BackgroundColorType.White:
+                mainCamera.backgroundColor = Color.white;
+                viewport.latticeRenderer.LineColor = Color.black;
+                break;
+            case BackgroundColorType.Grey:
+                mainCamera.backgroundColor = Color.grey;
+                viewport.latticeRenderer.LineColor = Color.white;
+                break;
+            case BackgroundColorType.Blue:
+                mainCamera.backgroundColor = Color.darkBlue;
+                viewport.latticeRenderer.LineColor = Color.white;
+                break;
+        }
     }
 
     void OnPlayIntervalChange(ChangeEvent<float> e)
@@ -74,6 +112,11 @@ public class OptionsPanelController : MonoBehaviour
     void OnLatRangeCChange(ChangeEvent<int> e)
     {
         viewport.SetLatticeRepeat(repeatC: e.newValue);
+    }
+    
+    void OnLineWidthChange(ChangeEvent<float> e)
+    {
+        viewport.latticeRenderer.LineWidth = e.newValue;
     }
 
     void OnDisplayStyleChange(ChangeEvent<Enum> e)
