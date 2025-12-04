@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 
 public class StructureSequenceController : MonoBehaviour
 {
@@ -242,7 +243,7 @@ public class StructureSequenceController : MonoBehaviour
 
     void RedirectCameraToRenderTexture(int width, int height)
     {
-        RenderTexture newRT = new RenderTexture(width, height, 24);
+        RenderTexture newRT = new RenderTexture(width, height, 24, RenderTextureFormat.ARGB64);
         mainCamera.targetTexture = newRT;
     }
 
@@ -273,7 +274,11 @@ public class StructureSequenceController : MonoBehaviour
 
         var bytes = tempTexture.EncodeToPNG();
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+        FilePanelController.Instance.RequestDownloadFile(bytes, Path.GetFileName(filename));
+#else
         File.WriteAllBytes(filename, bytes);
+#endif
     }
 
     // Update is called once per frame

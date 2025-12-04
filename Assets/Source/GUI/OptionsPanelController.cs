@@ -15,6 +15,11 @@ public class OptionsPanelController : MonoBehaviour
 {
     private VisualElement optionsPanelRoot;
     private ViewportController viewport;
+
+    private EnumField lineColorControl;
+    private Slider dashDensityControl;
+    private SliderInt cameraAzimuthControl;
+    private SliderInt cameraAltitudeControl;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -43,6 +48,15 @@ public class OptionsPanelController : MonoBehaviour
         var lineWidthControl = optionsPanelRoot.Q<Slider>("LineWidth");
         lineWidthControl.RegisterValueChangedCallback(OnLineWidthChange);
         
+        lineColorControl = optionsPanelRoot.Q<EnumField>("LineColor");
+        lineColorControl.RegisterValueChangedCallback(OnLineColorChange);
+        
+        var useDottedLinesControl = optionsPanelRoot.Q<Toggle>("DottedLines");
+        useDottedLinesControl.RegisterValueChangedCallback(OnUseDottedLinesChange);
+        
+        dashDensityControl = optionsPanelRoot.Q<Slider>("DashDensity");
+        dashDensityControl.RegisterValueChangedCallback(OnDashDensityChange);
+        
         var displayStyleControl = optionsPanelRoot.Q<EnumField>("DisplayStyle");
         displayStyleControl.RegisterValueChangedCallback(OnDisplayStyleChange);
         
@@ -63,6 +77,12 @@ public class OptionsPanelController : MonoBehaviour
         
         var bondPolicyControl = optionsPanelRoot.Q<EnumField>("BondPolicy");
         bondPolicyControl.RegisterValueChangedCallback(OnBondPolicyChange);
+        
+        cameraAzimuthControl = optionsPanelRoot.Q<SliderInt>("CameraAzimuth");
+        cameraAzimuthControl.RegisterValueChangedCallback(OnCameraParametersChange);
+        
+        cameraAltitudeControl = optionsPanelRoot.Q<SliderInt>("CameraAltitude");
+        cameraAltitudeControl.RegisterValueChangedCallback(OnCameraParametersChange);
     }
     
     void OnBackgroundColorChange(ChangeEvent<Enum> e)
@@ -72,19 +92,19 @@ public class OptionsPanelController : MonoBehaviour
         {
             case BackgroundColorType.Black:
                 mainCamera.backgroundColor = Color.black;
-                viewport.latticeRenderer.LineColor = Color.white;
+                lineColorControl.value = BackgroundColorType.White;
                 break;
             case BackgroundColorType.White:
                 mainCamera.backgroundColor = Color.white;
-                viewport.latticeRenderer.LineColor = Color.black;
+                lineColorControl.value = BackgroundColorType.Black;
                 break;
             case BackgroundColorType.Grey:
                 mainCamera.backgroundColor = Color.grey;
-                viewport.latticeRenderer.LineColor = Color.white;
+                lineColorControl.value = BackgroundColorType.White;
                 break;
             case BackgroundColorType.Blue:
                 mainCamera.backgroundColor = Color.darkBlue;
-                viewport.latticeRenderer.LineColor = Color.white;
+                lineColorControl.value = BackgroundColorType.White;
                 break;
         }
     }
@@ -117,6 +137,44 @@ public class OptionsPanelController : MonoBehaviour
     void OnLineWidthChange(ChangeEvent<float> e)
     {
         viewport.latticeRenderer.LineWidth = e.newValue;
+    }
+    
+    void OnLineColorChange(ChangeEvent<Enum> e)
+    {
+        switch (e.newValue)
+        {
+            case BackgroundColorType.Black:
+                viewport.latticeRenderer.LineColor = Color.black;
+                break;
+            case BackgroundColorType.White:
+                viewport.latticeRenderer.LineColor = Color.white;
+                break;
+            case BackgroundColorType.Grey:
+                viewport.latticeRenderer.LineColor = Color.grey;
+                break;
+            case BackgroundColorType.Blue:
+                viewport.latticeRenderer.LineColor = Color.darkBlue;
+                break;
+        }
+    }
+    
+    void OnUseDottedLinesChange(ChangeEvent<bool> e)
+    {
+        viewport.latticeRenderer.UseDottedLines = e.newValue;
+
+        if (e.newValue)
+        {
+            dashDensityControl.style.display = DisplayStyle.Flex;
+        }
+        else
+        {
+            dashDensityControl.style.display = DisplayStyle.None;
+        }
+    }
+    
+    void OnDashDensityChange(ChangeEvent<float> e)
+    {
+        viewport.latticeRenderer.DashScale = 1f / e.newValue;
     }
 
     void OnDisplayStyleChange(ChangeEvent<Enum> e)
@@ -163,5 +221,10 @@ public class OptionsPanelController : MonoBehaviour
     void OnBondPolicyChange(ChangeEvent<Enum> e)
     {
         App.Instance.BondCalculationPolicy = (CrossCellBondPolicy)e.newValue;
+    }
+    
+    void OnCameraParametersChange(ChangeEvent<int> e)
+    {
+        viewport.SetCameraAngles(cameraAzimuthControl.value, cameraAltitudeControl.value);
     }
 }
