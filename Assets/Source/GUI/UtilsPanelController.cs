@@ -236,8 +236,13 @@ public class UtilsPanelController : MonoBehaviour
 
     void OnCaptureScreenshotClicked(ClickEvent evt)
     {
-        string path = StandaloneFileBrowser.SaveFilePanel("Save File", "", $"{Path.GetFileNameWithoutExtension(App.Instance.CurrentFile.Filename)}.png",
+        string defaultName = Path.GetFileNameWithoutExtension(App.Instance.CurrentFile.Filename);
+#if UNITY_WEBGL && !UNITY_EDITOR
+        string path = defaultName + ".png";
+#else
+        string path = StandaloneFileBrowser.SaveFilePanel("Save File", "", $"{defaultName}.png",
             new[] { new ExtensionFilter("PNG Files", "png") });
+#endif
 
         if (string.IsNullOrEmpty(path))
         {
@@ -274,6 +279,14 @@ public class UtilsPanelController : MonoBehaviour
         int minFrame = Mathf.RoundToInt(frameRangeSlider.value.x) - 1;
         int maxFrame = Mathf.RoundToInt(frameRangeSlider.value.y) - 1;
         bool encodeVideo = encodeVideoToggle.value;
+        
+#if UNITY_WEBGL
+        if (encodeVideo)
+        {
+            OverlayUiController.Instance.PrintStatusLog("Encoding video is not supported in WebGL.");
+            return;
+        }
+#endif
 
         string path = StandaloneFileBrowser.OpenFolderPanel("Pick folder to save frame sequence", "", false)
             .FirstOrDefault();

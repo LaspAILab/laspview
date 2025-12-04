@@ -2,8 +2,8 @@ Shader "Unlit/DashedLineShader"
 {
     Properties
     {
-        _BaseColor ("Color", Color) = (1,1,1,1)
-        _MainTex ("Texture", 2D) = "white" {}
+        _BaseColor ("Base Color", Color) = (1,1,1,1)
+        _MainTex ("Particle Texture", 2D) = "white" { }
         _Spacing ("Spacing", float) = 0.5
     }
     SubShader
@@ -25,12 +25,14 @@ Shader "Unlit/DashedLineShader"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+                float4 color : COLOR;
             };
 
             struct Varyings
             {
                 float2 uv : TEXCOORD0;
                 float4 vertex : SV_POSITION;
+                float4 color : COLOR;
             };
 
             half4 _BaseColor;
@@ -44,6 +46,7 @@ Shader "Unlit/DashedLineShader"
                 Varyings o;
                 o.vertex = TransformObjectToHClip(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+                o.color = v.color;
                 return o;
             }
 
@@ -57,6 +60,7 @@ Shader "Unlit/DashedLineShader"
                 } else {
                     col = _MainTex.Sample(sampler_linear_repeat, i.uv);
                 }
+                col *= i.color;
                 col *= _BaseColor;
                 return col;
             }

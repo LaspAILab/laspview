@@ -347,6 +347,37 @@ public class ViewportController : MonoBehaviour
         UpdateCameraPos();
     }
 
+    public void SetCameraAngles(float azimuth, float altitude)
+    {
+        float altitudeRad = Mathf.Deg2Rad * altitude;
+        float azimuthRad = Mathf.Deg2Rad * azimuth;
+        float cosAltitude = Mathf.Cos(altitudeRad);
+        float sinAltitude = Mathf.Sin(altitudeRad);
+        
+        Vector3 lookDirection = -new Vector3(Mathf.Cos(azimuthRad) * cosAltitude,
+            Mathf.Sin(azimuthRad) * cosAltitude, sinAltitude);
+
+        if (Mathf.Approximately(Mathf.Abs(altitude), 90f))
+        {
+            // Construct a rotation that:
+            // 1. Points camera toward center (along -poleUp)
+            // 2. Applies azimuth as a twist around the view axis
+            Quaternion twist = Quaternion.AngleAxis(azimuth, Vector3.back);
+            Vector3 twistedUp = twist * (altitude > 0 ? Vector3.left : Vector3.right);
+
+            activeCamera.transform.position = cameraCenter - lookDirection * cameraDistance;
+            activeCamera.transform.rotation = Quaternion.LookRotation(lookDirection, twistedUp);
+        }
+        else
+        {
+            Vector3 bitangent = Vector3.Cross(lookDirection, Vector3.forward);
+            Vector3 up = Vector3.Cross(bitangent, lookDirection);
+
+            activeCamera.transform.position = cameraCenter - lookDirection * cameraDistance;
+            activeCamera.transform.LookAt(cameraCenter, up);
+        }
+    }
+
     public void BeginReplaceAtom()
     {
         ReplaceCurrentTool(ToolType.ReplaceAtom);

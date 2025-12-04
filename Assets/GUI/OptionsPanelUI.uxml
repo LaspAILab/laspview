@@ -15,6 +15,13 @@
         <ui:SliderInt label="Lat range b" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeB" class="display-option-item" />
         <ui:SliderInt label="Lat range c" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeC" class="display-option-item" />
         <ui:Slider label="Line width" value="0.05" high-value="0.2" show-input-field="true" name="LineWidth" low-value="0.01" class="display-option-item" />
+        <ui:EnumField label="Line color" type="BackgroundColorType, Assembly-CSharp" name="LineColor" value="White" class="display-option-item">
+            <Bindings>
+                <ui:DataBinding property="value" data-source-path="DisplayStyle" binding-mode="ToSource" />
+            </Bindings>
+        </ui:EnumField>
+        <ui:Toggle label="Dotted lines" name="DottedLines" value="false" class="display-option-item" style="justify-content: flex-start; align-content: auto; align-items: stretch;" />
+        <ui:Slider label="Dash density" value="0.05" high-value="0.2" show-input-field="true" name="DashDensity" low-value="0.01" class="display-option-item" style="display: none;" />
         <ui:Label text="Atoms and bonds display" enable-rich-text="false" class="display-option-subtitle" />
         <ui:EnumField label="Display style" type="DisplayStyleType, Assembly-CSharp" name="DisplayStyle" class="display-option-item">
             <Bindings>
@@ -32,5 +39,8 @@
                 <ui:DataBinding property="value" data-source-path="BondPolicy" binding-mode="ToSource" />
             </Bindings>
         </ui:EnumField>
+        <ui:Label text="Manual camera control" enable-rich-text="false" class="display-option-subtitle" />
+        <ui:SliderInt label="Azimuth" value="0" high-value="360" show-input-field="true" low-value="0" name="CameraAzimuth" class="display-option-item" />
+        <ui:SliderInt label="Altitude" value="0" high-value="90" show-input-field="true" low-value="-90" name="CameraAltitude" class="display-option-item" />
     </ui:ScrollView>
 </ui:UXML>

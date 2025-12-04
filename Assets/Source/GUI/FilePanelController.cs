@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using SFB;
@@ -10,6 +12,8 @@ using UnityEngine.UIElements;
 
 public class FilePanelController : MonoBehaviour
 {
+    public static FilePanelController Instance;
+    
     private VisualElement filePanelRoot;
 
     static ExtensionFilter[] CrystalExtensions =
@@ -84,10 +88,15 @@ public class FilePanelController : MonoBehaviour
         OverlayUiController.Instance.PrintStatusLog("File successfully downloaded");
     }
 
-    public void DownloadStructureFile(StructureFile structure, string filename)
+    void DownloadStructureFile(StructureFile structure, string filename)
     {
         string str = ICrystalFormat.GetFormatIO(filename).Write(structure);
-        var bytes = Encoding.UTF8.GetBytes(str);
+        RequestDownloadFile(Encoding.UTF8.GetBytes(str), filename);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void RequestDownloadFile(byte[] bytes, string filename)
+    {
         DownloadFile(gameObject.name, "OnFileDownload", filename, bytes, bytes.Length);
     }
 #endif
@@ -96,6 +105,11 @@ public class FilePanelController : MonoBehaviour
     {
         string ext = Path.GetExtension(filename).ToLower();
         return ext == ".mol" || ext == ".xyz";
+    }
+
+    void Awake()
+    {
+        Instance = this;
     }
 
     void Start()

@@ -472,9 +472,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65e4e14653ba7d14dbec2a85e2b3e051, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LatticeLinePrefab: {fileID: 8116349078610132731, guid: 8681358b040432943a66e4a219a0479f,
+  latticeLinePrefab: {fileID: 8116349078610132731, guid: 8681358b040432943a66e4a219a0479f,
     type: 3}
-  LatticeLineParent: {fileID: 859746865}
+  dottedLatticeLinePrefab: {fileID: 1557633542005051401, guid: 654e35de32327494e889958459527085,
+    type: 3}
+  latticeLineParent: {fileID: 859746865}
 --- !u!114 &637342122
 MonoBehaviour:
   m_ObjectHideFlags: 0
