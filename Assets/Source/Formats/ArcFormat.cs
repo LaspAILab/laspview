@@ -13,7 +13,7 @@ public class ArcFormat : ICrystalFormat
     private static readonly Regex DATE_REGEX = new(@"^!DATE\s+(.+)$", RegexOptions.Compiled);
 
     private static readonly Regex LATTICE_PARAMS_REGEX =
-        new(@"^PBC\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s+\((\w+)\))?$",
+        new(@"^PBC\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s+\(?(\w+)\)?)?\s*$",
             RegexOptions.Compiled);
 
     private static readonly Regex ATOM_REGEX =
@@ -130,7 +130,7 @@ public class ArcFormat : ICrystalFormat
             {
                 if (currentStructure.LatticeParams == null)
                 {
-                    Debug.LogWarning($"Structure doesn't have lattice parameter definition. ");
+                    throw new Exception($"Structure doesn't have lattice parameter definition. ");
                 }
                 
 #if UNITY_WEBGL

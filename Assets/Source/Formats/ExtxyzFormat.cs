@@ -41,8 +41,7 @@ public class ExtxyzFormat : ICrystalFormat
         
         if (lattice == "" || properties == "")
         {
-            Debug.LogError("Lattice or properties definition missing in EXTXYZ file. ");
-            return;
+            throw new Exception("Lattice or properties definition missing in EXTXYZ file. ");
         }
         
         // Parse lattice vectors

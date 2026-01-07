@@ -79,8 +79,7 @@ public class PoscarFormat : ICrystalFormat
             }
             else
             {
-                Debug.Log($"Unknown expression `{line}`, aborting read");
-                break;
+                throw new Exception($"Unknown expression `{line}`, aborting read");
             }
 
             foreach (var atomType in atomTypes)

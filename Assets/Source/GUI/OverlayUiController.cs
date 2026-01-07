@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 public class OverlayUiController : MonoBehaviour
 {
-    const string VERSION_NUMBER = "2.0.9";
+    const string VERSION_NUMBER = "2.1.0";
     
     public static OverlayUiController Instance;
     private ViewportController viewport;
