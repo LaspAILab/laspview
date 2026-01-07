@@ -40,8 +40,7 @@ public class CifFormat : ICrystalFormat
 
             if (line == null)
             {
-                Debug.LogError("End of file reached but atom column definition is still not found. ");
-                return;
+                throw new Exception("End of file reached but atom column definition is still not found. ");
             }
 
             string trimmedLine = line.Trim();
@@ -112,7 +111,7 @@ public class CifFormat : ICrystalFormat
 
         if (latticeParams.Any(x => x < 0))
         {
-            Debug.LogWarning("One or more required lattice parameters not specified. ");
+            throw new Exception("One or more required lattice parameters not specified. ");
         }
 
         // Read atom list column format specification
@@ -166,14 +165,12 @@ public class CifFormat : ICrystalFormat
 
         if (elementIndex < 0 || xColumnIndex < 0 || yColumnIndex < 0 || zColumnIndex < 0)
         {
-            Debug.LogError("Atom column specification missing key fields. ");
-            return;
+            throw new Exception("Atom column specification missing key fields. ");
         }
         
         if (isFractCoords && isCartCoords)
         {
-            Debug.LogError("Coordinates must be in either cartesian or fractional format, but these two cannot be mixed. ");
-            return;
+            throw new Exception("Coordinates must be in either cartesian or fractional format, but these two cannot be mixed. ");
         }
 
         CrystalStructure crystalStructure = new();
