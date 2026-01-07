@@ -93,6 +93,12 @@ public class App : MonoBehaviour
 
     void Awake()
     {
+        UnityEngine.Analytics.Analytics.enabled = false;
+        UnityEngine.Analytics.Analytics.deviceStatsEnabled = false;
+        UnityEngine.Analytics.Analytics.initializeOnStartup = false;
+        UnityEngine.Analytics.Analytics.limitUserTracking = false;
+        UnityEngine.Analytics.PerformanceReporting.enabled = false;
+        
         ReadPeriodicTable();
         Instance = this;
         viewport = GetComponent<ViewportController>();
@@ -220,15 +226,11 @@ public class App : MonoBehaviour
         }
         catch (Exception e)
         {
-            OverlayUiController.Instance.PrintStatusLog($"Failed to read structure file: {filename}");
+            OverlayUiController.Instance.PrintStatusLog($"Read failed: {e.Message}");
             Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
         }
 
-        if (CurrentFile.StructureCount == 0)
-        {
-            OverlayUiController.Instance.PrintStatusLog("Cannot open empty file");
-        }
-        else
+        if (CurrentFile.StructureCount > 0)
         {
             OverlayUiController.Instance.PrintStatusLog(
                 $"Displaying file `{CurrentFile.Filename}` ({CurrentFile.StructureCount} items)");
@@ -260,7 +262,7 @@ public class App : MonoBehaviour
             }
             catch (Exception e)
             {
-                OverlayUiController.Instance.PrintStatusLog($"Failed to read structure file: {filename}");
+                OverlayUiController.Instance.PrintStatusLog($"Read failed: {e.Message}");
                 Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
             }
             
