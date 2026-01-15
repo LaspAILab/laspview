@@ -127,24 +127,28 @@ public class LatticeRenderer : MonoBehaviour
             {
                 for (int k = 0; k <= repeatC; k++)
                 {
-                    Vector3 from = structure.FractionalToCartesian(new Vector3(i, j, k));
+                    Vector3 from = CrystalStructureView.SwapYZ(
+                        structure.FractionalToCartesian(new Vector3(i, j, k)));
                     if (i == 0)
                     {
-                        Vector3 to = structure.FractionalToCartesian(new Vector3(repeatA, j, k));
+                        Vector3 to = CrystalStructureView.SwapYZ(
+                            structure.FractionalToCartesian(new Vector3(repeatA, j, k)));
                         furthestPoint = Vector3.Max(furthestPoint, to);
                         AddLine(from, to, useDottedLines);
                     }
 
                     if (j == 0)
                     {
-                        Vector3 to = structure.FractionalToCartesian(new Vector3(i, repeatB, k));
+                        Vector3 to = CrystalStructureView.SwapYZ(
+                            structure.FractionalToCartesian(new Vector3(i, repeatB, k)));
                         furthestPoint = Vector3.Max(furthestPoint, to);
                         AddLine(from, to, useDottedLines);
                     }
 
                     if (k == 0)
                     {
-                        Vector3 to = structure.FractionalToCartesian(new Vector3(i, j, repeatC));
+                        Vector3 to = CrystalStructureView.SwapYZ(
+                            structure.FractionalToCartesian(new Vector3(i, j, repeatC)));
                         furthestPoint = Vector3.Max(furthestPoint, to);
                         AddLine(from, to, useDottedLines);
                     }

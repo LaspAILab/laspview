@@ -36,7 +36,9 @@ public class AtomView : ITransform, IEquatable<AtomView>
         SourceAtom = atom;
         Symbol = atom.Symbol;
         SelectedCellIndex = null;
-        Position = structure.ClipAtomCoords(atom.Coordinates, true);
+        // Swap Y and Z to match Unity's left-handed coordinate system
+        Position = CrystalStructureView.SwapYZ(structure.ClipAtomCoords(atom.Coordinates, true));
+        
         radius = App.Elements[atom.Symbol].Radius;
         DisplayColor = App.Elements[atom.Symbol].Color;
         transformCache = null;

@@ -335,9 +335,10 @@ public class CrystalStructureView
         BondMutex = new();
 #endif
 
-        var latticeCenter = structure.FractionalToCartesian(new Vector3(0.5f, 0.5f, 0.5f));
+        var latticeCenter = SwapYZ(structure.FractionalToCartesian(new Vector3(0.5f, 0.5f, 0.5f)));
         var maxSide = Mathf.Max(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
         AccelerationOctree = new PointOctree<AtomView>(maxSide, latticeCenter, 10f);
+        
         Atoms.Capacity = structure.Atoms.Count;
         foreach (var item in structure.Atoms)
         {
@@ -345,7 +346,7 @@ public class CrystalStructureView
         }
 
         TranslationVectorsCartesian =
-            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
+            TranslationVectorsFractional.Select(v => SwapYZ(Structure.FractionalToCartesian(v))).ToArray();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -366,15 +367,16 @@ public class CrystalStructureView
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void SetAtomPosition(AtomView atomView, Vector3 posCartesian, bool viewOnly, bool repeat = true)
+    public void SetAtomPosition(AtomView atomView, Vector3 posCartesianLH, bool viewOnly, bool repeat = true)
     {
-        var clippedPos = Structure.ClipAtomCoords(posCartesian, repeat);
+        var clippedPosRH = Structure.ClipAtomCoords(SwapYZ(posCartesianLH), repeat);
         if (!viewOnly)
         {
-            atomView.SourceAtom.Coordinates = clippedPos;
+            atomView.SourceAtom.Coordinates = clippedPosRH;
         }
 
-        atomView.Position = clippedPos;
+        // For view model, use Unity coordinates
+        atomView.Position = SwapYZ(clippedPosRH);
         atomView.InvalidateTransform();
         AccelerationOctree.Remove(atomView);
         AccelerationOctree.Add(atomView, atomView.Position);
@@ -503,11 +505,12 @@ public class CrystalStructureView
         }
     }
 
+    // Caution: returns left-handed translation
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Matrix4x4 GetLatticeTransform(int aIndex, int bIndex, int cIndex)
     {
         Vector3 translateCart = Structure.FractionalToCartesian(new Vector3(aIndex, bIndex, cIndex));
-        return Matrix4x4.Translate(translateCart);
+        return Matrix4x4.Translate(SwapYZ(translateCart));
     }
 
     public void ChangeLattice(float[] latticeParams, bool keepCartesian = true)
@@ -518,7 +521,7 @@ public class CrystalStructureView
             // Just re-clip the atoms to lattice
             foreach (var item in Atoms)
             {
-                SetAtomPosition(item, item.SourceAtom.Coordinates, false, true);
+                SetAtomPosition(item, item.Position, false, true);
             }
         }
         else
@@ -528,95 +531,14 @@ public class CrystalStructureView
 
             foreach (var item in Atoms)
             {
-                Vector3 prevPos = item.SourceAtom.Coordinates;
-                Vector3 fractional = prevCartToFract * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1);
-                SetAtomPosition(item, Structure.FractionalToCartesian(fractional), false, true);
+                Vector3 prevPosRH = SwapYZ(item.Position);
+                Vector3 fractional = prevCartToFract * new Vector4(prevPosRH.x, prevPosRH.y, prevPosRH.z, 1);
+                SetAtomPosition(item, SwapYZ(Structure.FractionalToCartesian(fractional)), false, true);
             }
         }
 
         TranslationVectorsCartesian =
-            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
-    }
-
-    // Alternative implementation
-    private void __ToSuperCell(int repeatA, int repeatB, int repeatC)
-    {
-        int originalAtomCount = Atoms.Count, originalBondCount = Bonds.Count;
-        var mats = new Matrix4x4[repeatA, repeatB, repeatC];
-
-        Dictionary<AtomView, int> reverseTable = new();
-        for (int i = 0; i < Atoms.Count; i++)
-        {
-            reverseTable[Atoms[i]] = i;
-        }
-
-        for (int i = 0; i < repeatA; i++)
-        {
-            for (int j = 0; j < repeatB; j++)
-            {
-                for (int k = 0; k < repeatC; k++)
-                {
-                    if (i == 0 && j == 0 && k == 0)
-                    {
-                        continue;
-                    }
-
-                    mats[i, j, k] = GetLatticeTransform(i, j, k);
-                }
-            }
-        }
-
-        Structure.SetLattice(new[]
-        {
-            Structure.LatticeParams[0] * repeatA, Structure.LatticeParams[1] * repeatB,
-            Structure.LatticeParams[2] * repeatC,
-            Structure.LatticeParams[3], Structure.LatticeParams[4], Structure.LatticeParams[5]
-        });
-
-        TranslationVectorsCartesian =
-            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
-
-        Atoms.Capacity = Atoms.Count * (repeatA + repeatB + repeatC);
-        Bonds.Capacity = Bonds.Count * (repeatA + repeatB + repeatC);
-
-        var copyIndex = 1;
-        for (int i = 0; i < repeatA; i++)
-        {
-            for (int j = 0; j < repeatB; j++)
-            {
-                for (int k = 0; k < repeatC; k++)
-                {
-                    if (i == 0 && j == 0 && k == 0)
-                    {
-                        continue;
-                    }
-
-                    var latticeTransform = mats[i, j, k];
-                    for (int index = 0; index < originalAtomCount; index++)
-                    {
-                        var item = Atoms[index];
-                        Vector3 prevPos = item.SourceAtom.Coordinates;
-                        AddAtom(
-                            new Atom
-                            {
-                                Symbol = item.SourceAtom.Symbol,
-                                Coordinates = latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1)
-                            }, false);
-                    }
-
-                    int offset = originalAtomCount * copyIndex;
-                    for (var index = 0; index < originalBondCount; index++)
-                    {
-                        var item = Bonds[index];
-                        var fromAtomIndex = reverseTable[item.FromAtom];
-                        var toAtomIndex = reverseTable[item.ToAtom];
-                        AddBond(Atoms[fromAtomIndex + offset], Atoms[toAtomIndex + offset], item.Theta, item.Rate);
-                    }
-
-                    copyIndex++;
-                }
-            }
-        }
+            TranslationVectorsFractional.Select(v => SwapYZ(Structure.FractionalToCartesian(v))).ToArray();
     }
 
     public void ToSuperCell(int repeatA, int repeatB, int repeatC)
@@ -638,11 +560,11 @@ public class CrystalStructureView
                     var latticeTransform = GetLatticeTransform(i, j, k);
                     foreach (var item in Atoms)
                     {
-                        item.SourceAtom.Coordinates = item.Position;
-                        Vector3 prevPos = item.Position;
+                        item.SourceAtom.Coordinates = SwapYZ(item.Position);
+                        
                         newAtoms.Add(new Atom
                         {
-                            Coordinates = latticeTransform * new Vector4(prevPos.x, prevPos.y, prevPos.z, 1),
+                            Coordinates = SwapYZ(latticeTransform * new Vector4(item.Position.x, item.Position.y, item.Position.z, 1)),
                             Symbol = item.SourceAtom.Symbol,
                         });
                     }
@@ -658,7 +580,7 @@ public class CrystalStructureView
         });
 
         TranslationVectorsCartesian =
-            TranslationVectorsFractional.Select(v => Structure.FractionalToCartesian(v)).ToArray();
+            TranslationVectorsFractional.Select(v => SwapYZ(Structure.FractionalToCartesian(v))).ToArray();
 
         foreach (var item in newAtoms)
         {
@@ -699,18 +621,18 @@ public class CrystalStructureView
         RemoveAtomView(atomView);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsPositionInLattice(Vector3 positionCartesian)
-    {
-        Vector3 fractional = Structure.CartesianToFractional(positionCartesian);
-        return fractional is { x: >= 0 and <= 1, y: >= 0 and <= 1, z: >= 0 and <= 1 };
-    }
-
     ~CrystalStructureView()
     {
 #if !UNITY_WEBGL
         BondMutex.Dispose();
 #endif
         Debug.Log("Disposing arc structure view");
+    }
+    
+    // Convert from right-handed to left-handed coordinate system and backwards
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector3 SwapYZ(Vector3 vec)
+    {
+        return new Vector3(vec.x, vec.z, vec.y);
     }
 }
