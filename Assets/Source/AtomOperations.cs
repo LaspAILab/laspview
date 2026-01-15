@@ -20,7 +20,7 @@ public class TranslateAtomsOperation : IOperation
     {
         foreach (var item in targetAtoms)
         {
-            structureView.SetAtomPosition(item, item.SourceAtom.Coordinates + translation, false);
+            structureView.SetAtomPosition(item, CrystalStructureView.SwapYZ(item.SourceAtom.Coordinates) + translation, false);
             ColliderManager.Instance.UpdateColliderForAtom(item);
             HBondRenderer.Instance.OnAtomUpdate(structureView, item);
         }
@@ -82,7 +82,7 @@ public class RepositionAtomsOperation : IOperation
         oldPositions = new List<Vector3>(targetAtoms.Count);
         for (int i = 0; i < targetAtoms.Count; i++)
         {
-            oldPositions.Add(targetAtoms[i].SourceAtom.Coordinates);
+            oldPositions.Add(targetAtoms[i].Position);
             structureView.SetAtomPosition(targetAtoms[i], newPositions[i], false);
             ColliderManager.Instance.UpdateColliderForAtom(targetAtoms[i]);
             HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtoms[i]);

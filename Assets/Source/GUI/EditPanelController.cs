@@ -197,10 +197,11 @@ public class EditPanelController : MonoBehaviour
         }
         
         elementInput.SetValueWithoutNotify(activeAtom.Symbol);
-        
+
+        Vector3 coordsRH = CrystalStructureView.SwapYZ(activeAtom.Position);
         coordsInput.SetValueWithoutNotify(fractionalToggle.value
-            ? currentStructure.CartesianToFractional(activeAtom.SourceAtom.Coordinates)
-            : activeAtom.SourceAtom.Coordinates);
+            ? currentStructure.CartesianToFractional(coordsRH)
+            : coordsRH);
         
         displayRadiusInput.SetValueWithoutNotify(activeAtom.Radius);
         displayColorInput.SetValueWithoutNotify(activeAtom.DisplayColor.ToString());
@@ -272,11 +273,11 @@ public class EditPanelController : MonoBehaviour
             return;
         }
         
-        Vector3 coords = coordsInput.value;
-
-        App.Instance.operationManager.SubmitOperation(new SetPositionOperation(activeAtom, fractionalToggle.value
-            ? currentStructure.FractionalToCartesian(coords)
-            : coords));
+        Vector3 coordsRH = fractionalToggle.value ? currentStructure.FractionalToCartesian(coordsInput.value) : coordsInput.value;
+        
+        // Swap y and z to convert from right-handed to left-handed coordinate system
+        App.Instance.operationManager.SubmitOperation(new SetPositionOperation(activeAtom, 
+            CrystalStructureView.SwapYZ(coordsRH)));
     }
     
     void OnRadiusSubmit(ChangeEvent<float> evt)

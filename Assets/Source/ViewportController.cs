@@ -221,7 +221,8 @@ public class ViewportController : MonoBehaviour
 
         structureRenderer.SetStructureView(structureView, LatticeTransforms);
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
-        latticeCorner = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
+        latticeCorner = CrystalStructureView.SwapYZ(
+            CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)));
         hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
     }
 
@@ -277,8 +278,8 @@ public class ViewportController : MonoBehaviour
         colliderManager.SetLatticeTransforms(LatticeTransforms);
         hBondRenderer.OnLatticeRepeatChange(LatticeTransforms);
         latticeRenderer.SetLattice(CurrentStructureView.Structure, this.repeatA, this.repeatB, this.repeatC);
-        latticeCorner =
-            CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC));
+        latticeCorner = CrystalStructureView.SwapYZ(
+                CurrentStructureView.Structure.FractionalToCartesian(new Vector3(this.repeatA, this.repeatB, this.repeatC)));
 
         // Check if selected atoms are still visible, if not, change the selection to the original atom
         var currentSelection = selectionManager.Selection.ToList();
@@ -299,7 +300,8 @@ public class ViewportController : MonoBehaviour
 
     public void RefocusCamera()
     {
-        cameraCenter = CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)) / 2;
+        cameraCenter = CrystalStructureView.SwapYZ(
+            CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC))) / 2;
         cameraViewportSize = cameraCenter.magnitude + 3.5f;
         activeCamera.orthographicSize = cameraViewportSize;
         cameraDistance = 4 * cameraCenter.magnitude;
@@ -535,8 +537,8 @@ public class ViewportController : MonoBehaviour
             hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
             colliderManager.SetLatticeTransforms(LatticeTransforms);
             latticeRenderer.SetLattice(CurrentStructureView.Structure, repeatA, repeatB, repeatC);
-            latticeCorner =
-                CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC));
+            latticeCorner = CrystalStructureView.SwapYZ(
+                    CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)));
             RefocusCamera();
             shallUpdateLattice = false;
         }
@@ -590,7 +592,7 @@ public class ViewportController : MonoBehaviour
             // Preview, move AtomView only
             foreach (var item in selectionManager.SelectedAtoms)
             {
-                CurrentStructureView.SetAtomPosition(item, item.SourceAtom.Coordinates + dragTotalTranslation,
+                CurrentStructureView.SetAtomPosition(item, CrystalStructureView.SwapYZ(item.SourceAtom.Coordinates) + dragTotalTranslation,
                     true);
             }
         }
