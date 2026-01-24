@@ -51,8 +51,8 @@ public class StructureRenderer : MonoBehaviour
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     private static readonly int RimColor = Shader.PropertyToID("_RimColor");
 
-    public Color FixedRimColor = new Vector4(0.247f, 0.816f, 0.831f, 2);
-    public Color ReactRimColor = new Vector4(0.990f, 0.680f, 0.233f, 2);
+    public static Color FixedRimColor = new Vector4(0.247f, 0.816f, 0.831f, 2);
+    public static Color ReactRimColor = new Vector4(0.990f, 0.680f, 0.233f, 2);
 
     public Material RenderMaterial;
     public Mesh AtomMesh;

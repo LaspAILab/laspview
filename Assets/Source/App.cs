@@ -25,6 +25,13 @@ public struct SerializedElementContainer
     }
 }
 
+[Serializable]
+public struct SerializedColorData
+{
+    public string FixedColor;
+    public string ReactColor;
+}
+
 public struct ElementData
 {
     public int Number;
@@ -99,7 +106,7 @@ public class App : MonoBehaviour
         UnityEngine.Analytics.Analytics.limitUserTracking = false;
         UnityEngine.Analytics.PerformanceReporting.enabled = false;
         
-        ReadPeriodicTable();
+        ReadJsonConfig();
         Instance = this;
         viewport = GetComponent<ViewportController>();
 
@@ -127,15 +134,21 @@ public class App : MonoBehaviour
         2, 8, 8, 18, 18, 32, 32
     };
 
-    private void ReadPeriodicTable()
+    private void ReadJsonConfig()
     {
 #if UNITY_WEBGL
         var periodicTableJson = Resources.Load<TextAsset>("Elements").text;
+        var colorConfigJson = Resources.Load<TextAsset>("Colors").text;
 #else
         var periodicTableJson = File.ReadAllText(Path.Join(Application.dataPath, "Elements.json"));
+        var colorConfigJson = File.ReadAllText(Path.Join(Application.dataPath, "Colors.json"));
 #endif
         var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson).Elements;
         Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
+        
+        var colorConfig = JsonUtility.FromJson<SerializedColorData>(colorConfigJson);
+        ColorUtility.TryParseHtmlString(colorConfig.FixedColor, out StructureRenderer.FixedRimColor);
+        ColorUtility.TryParseHtmlString(colorConfig.ReactColor, out StructureRenderer.ReactRimColor);
     }
 
 #if UNITY_WEBGL
