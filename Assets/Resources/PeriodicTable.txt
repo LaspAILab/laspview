@@ -1,3 +1,4 @@
+!BIOSYM archive 2
 PBC=ON
                       Energy         0          0.0000          0.000000
 !DATE
