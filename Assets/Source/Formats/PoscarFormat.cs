@@ -193,12 +193,12 @@ public class PoscarFormat : ICrystalFormat
                 useSelectiveDynamics = true;
             }
 
-            lines.Append("Cartesian\n");
+            lines.Append("Direct\n");
             foreach (var elementType in elementCounts)
             {
                 foreach (var atom in elementType.Value)
                 {
-                    var clippedCoordinates = structure.ClipAtomCoords(atom.Coordinates);
+                    var clippedCoordinates = structure.ClipFractionalCoords(structure.CartesianToFractional(atom.Coordinates));
                     if (useSelectiveDynamics)
                     {
                         char fixedFlags = atom.Flags == AtomFlags.Fixed ? 'F' : 'T';

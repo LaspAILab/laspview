@@ -22,6 +22,7 @@ public interface ICrystalFormat : IFileFormat
             ".poscar" => new PoscarFormat(),
             ".cif" => new CifFormat(),
             ".extxyz" => new ExtxyzFormat(),
+            ".cub" => new CubeFormat(),
             _ => null
         };
     }

@@ -62,11 +62,10 @@ public class ViewportController : MonoBehaviour
 
     private int atomsLayer, latticeLayer;
 
+    private StatefulTask bondRecalculationTask;
+
     // Whether to update bonds in realtime when moving atoms
     private bool updateBondsRealtime = true;
-#if !UNITY_WEBGL
-    private bool bondRecalculationRunning = false, bondDirtyFlag = false;
-#endif
 
     private int repeatA = 1, repeatB = 1, repeatC = 1;
     private Vector3 latticeCorner;
@@ -129,6 +128,9 @@ public class ViewportController : MonoBehaviour
 
         atomsLayer = LayerMask.NameToLayer("Default");
         latticeLayer = LayerMask.NameToLayer("TransparentFX");
+
+        bondRecalculationTask = new StatefulTask(()=>CurrentStructureView.GenerateBonds(),
+            ()=>shallUpdateRenderer = true);
     }
 
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR_WIN
@@ -168,39 +170,8 @@ public class ViewportController : MonoBehaviour
         {
             return;
         }
-
-#if UNITY_WEBGL
-        CurrentStructureView.GenerateBonds();
-        shallUpdateRenderer = true;
-#else
-        if (bondRecalculationRunning)
-        {
-            // Hint background task to rerun
-            bondDirtyFlag = true;
-        }
-        else
-        {
-            bondRecalculationRunning = true;
-            bondDirtyFlag = false;
-            Task.Run(() =>
-            {
-                CurrentStructureView.GenerateBonds();
-
-                App.Instance.ScheduleTask(() =>
-                {
-                    bondRecalculationRunning = false;
-                    if (bondDirtyFlag)
-                    {
-                        RecalculateBonds();
-                    }
-                    else
-                    {
-                        shallUpdateRenderer = true;
-                    }
-                });
-            });
-        }
-#endif
+        
+        bondRecalculationTask.RequestRecompute();
     }
 
     public void OpenStructureView(CrystalStructureView structureView)
@@ -224,6 +195,8 @@ public class ViewportController : MonoBehaviour
         latticeCorner = CrystalStructureView.SwapYZ(
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)));
         hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
+
+        SurfaceRenderer.Instance.SetStructure(CurrentStructureView.Structure);
     }
 
     public void UpdateLatticeTransformMatrix()

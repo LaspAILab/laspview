@@ -32,6 +32,8 @@ public class CrystalStructure
 
     public int AtomIndex { get; set; } = 0;
 
+    public float[,,] VoxelData { get; set; } = null;
+
     public CrystalStructure()
     {
         Energy = 0;
@@ -56,7 +58,7 @@ public class CrystalStructure
         {
             Index = AtomIndex++,
             Symbol = elemSymbol,
-            Coordinates = ClipAtomCoords(coords, true),
+            Coordinates = ClipCartesianCoords(coords, true),
             Charge = charge,
             Flags = flags
         };
@@ -130,11 +132,7 @@ public class CrystalStructure
         LatticeParams[4] = Vector3.Angle(baseVectors[0], baseVectors[2]);
         LatticeParams[5] = Vector3.Angle(baseVectors[0], baseVectors[1]);
 
-        LatticeMatrix = new Matrix4x4(new Vector4(baseVectors[0].x, baseVectors[1].x, baseVectors[2].x, 0),
-            new Vector4(baseVectors[0].y, baseVectors[1].y, baseVectors[2].y, 0),
-            new Vector4(baseVectors[0].z, baseVectors[1].z, baseVectors[2].z, 0),
-            new Vector4(0, 0, 0, 1));
-        InvLatticeMatrix = LatticeMatrix.inverse;
+        SetLattice(LatticeParams);
     }
 
     public Vector3[] GetBaseVectors()
@@ -170,10 +168,16 @@ public class CrystalStructure
     /// <param name="structure">The parent structure of the atom</param>
     /// <param name="repeat">If true, then use repeat, else use clamp</param>
     /// <returns></returns>
-    public Vector3 ClipAtomCoords(Vector3 posCartesian, bool repeat = true)
+    public Vector3 ClipCartesianCoords(Vector3 posCartesian, bool repeat = true)
+    {
+        
+        Vector3 fract = CartesianToFractional(posCartesian);
+        return FractionalToCartesian(ClipFractionalCoords(fract, repeat));
+    }
+    
+    public Vector3 ClipFractionalCoords(Vector3 fract, bool repeat = true)
     {
         // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
-        Vector3 fract = CartesianToFractional(posCartesian);
         if (repeat)
         {
             fract = new Vector3(
@@ -191,7 +195,7 @@ public class CrystalStructure
             );
         }
 
-        return FractionalToCartesian(fract);
+        return fract;
     }
 
     public CrystalStructure DeepClone()
@@ -369,7 +373,7 @@ public class CrystalStructureView
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void SetAtomPosition(AtomView atomView, Vector3 posCartesianLH, bool viewOnly, bool repeat = true)
     {
-        var clippedPosRH = Structure.ClipAtomCoords(SwapYZ(posCartesianLH), repeat);
+        var clippedPosRH = Structure.ClipCartesianCoords(SwapYZ(posCartesianLH), repeat);
         if (!viewOnly)
         {
             atomView.SourceAtom.Coordinates = clippedPosRH;
