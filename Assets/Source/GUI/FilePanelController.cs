@@ -18,10 +18,11 @@ public class FilePanelController : MonoBehaviour
 
     static ExtensionFilter[] CrystalExtensions =
     {
-        new ("Structure Files", "txt", "arc", "car", "poscar", "cif"),
+        new ("Structure Files", "txt", "arc", "car", "poscar", "cif", "cub"),
         new ("Arc Files", "txt", "arc", "car"),
         new ("Poscar Files", "poscar"),
         new ("Cif Files", "cif"),
+        new ("Cube Files", "cub"),
         new ("All Files", "*"),
     };
     
@@ -104,7 +105,7 @@ public class FilePanelController : MonoBehaviour
     public static bool IsMoleculeFile(string filename)
     {
         string ext = Path.GetExtension(filename).ToLower();
-        return ext == ".mol" || ext == ".xyz";
+        return MoleculeExtensions[0].Extensions.Contains(ext.TrimStart('.'));
     }
 
     void Awake()
