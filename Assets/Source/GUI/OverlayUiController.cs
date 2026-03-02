@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
+using Button = UnityEngine.UIElements.Button;
 
 public class OverlayUiController : MonoBehaviour
 {
@@ -18,8 +21,10 @@ public class OverlayUiController : MonoBehaviour
     private VisualElement root;
     private VisualElement aboutPanel;
     private VisualElement leftInfoPanel;
-    private VisualElement periodicTablePanel;
-    private PeriodicTableControl periodicTableControl;
+    private VisualElement popupWindowPanel;
+    private VisualElement popupWindowContainer;
+    private Button closePopupWindowButton;
+    private Label popupWindowTitleLabel;
     
     private VisualElement filePanel;
     private VisualElement projectPanel;
@@ -63,6 +68,10 @@ public class OverlayUiController : MonoBehaviour
     private Label additionalInfoLabel;
     // INFO PANEL ENDS
 
+    public VisualTreeAsset PeriodicTableTemplate;
+    public VisualTreeAsset ChangeLatticeWindowTemplate;
+    public VisualTreeAsset TransformLatticeWindowTemplate;
+
     void Awake()
     {
         Instance = this;
@@ -79,18 +88,17 @@ public class OverlayUiController : MonoBehaviour
         leftInfoPanel = root.Q<VisualElement>("LeftInfoPanel");
         
         // Same as above
-        periodicTablePanel = root.Q<VisualElement>("PeriodicTablePanel");
-        periodicTablePanel.RegisterCallback<ClickEvent>(ClosePeriodicTable);
-        periodicTablePanel.Children().First().RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
-        periodicTableControl = periodicTablePanel.Q<PeriodicTableControl>();
-        // Use `GetComponent` over `EditPanelController.Instance` in case the latter hasn't been inited yet
-        periodicTableControl.ElementClickedEvent += GetComponent<EditPanelController>().OnElementSubmit;
+        popupWindowPanel = root.Q<VisualElement>("PopupWindowPanel");
+        popupWindowPanel.RegisterCallback<ClickEvent>(ClosePopupWindow);
+        closePopupWindowButton = root.Q<Button>("ClosePopupButton");
+        closePopupWindowButton.RegisterCallback<ClickEvent>(ClosePopupWindow);
+        popupWindowTitleLabel = root.Q<Label>("PopupWindowTitle");
+        popupWindowContainer = root.Q<VisualElement>("PopupWindowContainer");
+        // Do not close the popup window if the title bar is clicked
+        popupWindowContainer.RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
         
         var exitAboutButton = aboutPanel.Q<Button>("ExitAboutButton");
         exitAboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
-        
-        var exitPeriodicButton = root.Q<Button>("ExitPeriodicButton");
-        exitPeriodicButton.RegisterCallback<ClickEvent>(ClosePeriodicTable);
         
         filePanel = root.Q<VisualElement>("FilePanel");
         projectPanel = root.Q<VisualElement>("ProjectPanel");
@@ -479,13 +487,31 @@ public class OverlayUiController : MonoBehaviour
         }
     }
     
-    public void ShowPeriodicTable(ClickEvent _)
+    public VisualElement ShowPopupWindow(string title, VisualTreeAsset template)
     {
-        periodicTablePanel.style.display = DisplayStyle.Flex;
+        var templateContainer = template.Instantiate();
+        if (popupWindowContainer.childCount > 1)
+        {
+            popupWindowContainer.RemoveAt(popupWindowContainer.childCount - 1);
+        }
+
+        if (title != null)
+        {
+            popupWindowTitleLabel.text = title;
+        }
+        
+        popupWindowContainer.Add(templateContainer);
+        popupWindowPanel.style.display = DisplayStyle.Flex;
+        return templateContainer;
     }
     
-    public void ClosePeriodicTable(ClickEvent _)
+    public void ClosePopupWindow(ClickEvent _)
     {
-        periodicTablePanel.style.display = DisplayStyle.None;
+        if (popupWindowContainer.childCount > 1)
+        {
+            popupWindowContainer.RemoveAt(popupWindowContainer.childCount - 1);
+        }
+        
+        popupWindowPanel.style.display = DisplayStyle.None;
     }
 }

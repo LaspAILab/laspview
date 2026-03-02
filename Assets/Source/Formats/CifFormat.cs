@@ -244,9 +244,9 @@ public class CifFormat : ICrystalFormat
 
         lines.Append("loop_\n");
         lines.Append("  _atom_site_label\n");
-        lines.Append("  _atom_site_Cartn_x\n");
-        lines.Append("  _atom_site_Cartn_y\n");
-        lines.Append("  _atom_site_Cartn_z\n");
+        lines.Append("  _atom_site_fract_x\n");
+        lines.Append("  _atom_site_fract_y\n");
+        lines.Append("  _atom_site_fract_z\n");
         lines.Append("  _atom_site_type_symbol\n");
 
         Dictionary<string, int> elementCount = new();
@@ -260,7 +260,7 @@ public class CifFormat : ICrystalFormat
 
             var atomName = $"{atom.Symbol}{indexOfElementType}";
 
-            var clippedCoordinates = structure.ClipAtomCoords(atom.Coordinates);
+            var clippedCoordinates = structure.ClipFractionalCoords(structure.CartesianToFractional(atom.Coordinates));
             lines.Append(string.Format("{0,6}{1,14:f6}{2,14:f6}{3,14:f6}{4,4}\n", atomName, clippedCoordinates.x,
                 clippedCoordinates.y, clippedCoordinates.z, atom.Symbol));
         }

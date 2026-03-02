@@ -19,13 +19,9 @@ public class EditPanelController : MonoBehaviour
     private AtomView activeAtom;
 
     // Lattice section
-    private Vec3InputControl latticeLengthsInput;
-    private Vec3InputControl latticeAnglesInput;
-    private Toggle keepFractionalToggle;
+    private Label latticeInfoLabel;
     private Button changeLatticeButton;
-    
-    private Vec3InputControl repeatsInput;
-    private Button supercellButton;
+    private Button transformLatticeButton;
 
     // Atom section
     private Label multiselectLabel;
@@ -68,19 +64,16 @@ public class EditPanelController : MonoBehaviour
         viewport = GameObject.Find("App Container").GetComponent<ViewportController>();
         editPanelRoot = GetComponent<UIDocument>().rootVisualElement.Q<VisualElement>("EditPanel");
 
-        latticeLengthsInput = editPanelRoot.Q<Vec3InputControl>("LatticeLengthsInput");
-        latticeAnglesInput = editPanelRoot.Q<Vec3InputControl>("LatticeAnglesInput");
-        keepFractionalToggle = editPanelRoot.Q<Toggle>("KeepFractionalToggle");
+        latticeInfoLabel = editPanelRoot.Q<Label>("LatticeInfoLabel");
         changeLatticeButton = editPanelRoot.Q<Button>("ChangeLatticeButton");
-        changeLatticeButton.RegisterCallback<ClickEvent>(OnChangeLatticeClicked);
-        repeatsInput = editPanelRoot.Q<Vec3InputControl>("RepeatsInput");
-        supercellButton = editPanelRoot.Q<Button>("SupercellButton");
-        supercellButton.RegisterCallback<ClickEvent>(OnSupercellClicked);
+        changeLatticeButton.RegisterCallback<ClickEvent>(InvokeChangeLatticeWindow);
+        transformLatticeButton = editPanelRoot.Q<Button>("TransformLatticeButton");
+        transformLatticeButton.RegisterCallback<ClickEvent>(InvokeTransformLatticeWindow);
         
         multiselectLabel = editPanelRoot.Q<Label>("MultiselectLabel");
         var elementRow = editPanelRoot.Q<VisualElement>("ElementRow");
         elementInput = editPanelRoot.Q<TextField>("ElementInput");
-        elementInput.RegisterCallback<ClickEvent>(OverlayUiController.Instance.ShowPeriodicTable);
+        elementInput.RegisterCallback<ClickEvent>(InvokePeriodicTable);
         replaceElementButton = editPanelRoot.Q<Button>("ReplaceElementButton");
         replaceElementButton.RegisterCallback<ClickEvent>(OnReplaceElementClicked);
         fractionalToggle = editPanelRoot.Q<Toggle>("FractionalToggle");
@@ -170,8 +163,38 @@ public class EditPanelController : MonoBehaviour
         multiselectLabel.style.display = DisplayStyle.Flex;
         flagsRow.style.display = DisplayStyle.Flex;
     }
+    
+    void InvokePeriodicTable(ClickEvent evt)
+    {
+        var element = OverlayUiController.Instance.ShowPopupWindow("Periodic Table", OverlayUiController.Instance.PeriodicTableTemplate);
+        var periodicTableControl = element.Q<PeriodicTableControl>();
+        periodicTableControl.ElementClickedEvent += OnElementSubmit;
+    }
 
-    public void OnElementSubmit(string element)
+    void InvokeChangeLatticeWindow(ClickEvent evt)
+    {
+        var element = OverlayUiController.Instance.ShowPopupWindow("Change Lattice", OverlayUiController.Instance.ChangeLatticeWindowTemplate);
+        var latticeLengthsInput = element.Q<Vec3InputControl>("LatticeLengthsInput");
+        var latticeAnglesInput = element.Q<Vec3InputControl>("LatticeAnglesInput");
+        var keepFractionalToggle = element.Q<Toggle>("KeepFractionalToggle");
+
+        latticeLengthsInput.value = new Vector3(currentStructure.LatticeParams[0], currentStructure.LatticeParams[1], currentStructure.LatticeParams[2]);
+        latticeAnglesInput.value = new Vector3(currentStructure.LatticeParams[3], currentStructure.LatticeParams[4], currentStructure.LatticeParams[5]);
+        
+        element.Q<Button>("ChangeLatticeButton").RegisterCallback<ClickEvent>(_ => OnChangeLatticeClicked(latticeLengthsInput, latticeAnglesInput, keepFractionalToggle));
+    }
+    
+    void InvokeTransformLatticeWindow(ClickEvent evt)
+    {
+        var element = OverlayUiController.Instance.ShowPopupWindow("Transform Lattice", OverlayUiController.Instance.TransformLatticeWindowTemplate);
+        var matrixInputLine1 = element.Q<Vec3InputControl>("MatrixLine1");
+        var matrixInputLine2 = element.Q<Vec3InputControl>("MatrixLine2");
+        var matrixInputLine3 = element.Q<Vec3InputControl>("MatrixLine3");
+        
+        element.Q<Button>("TransformLatticeButton").RegisterCallback<ClickEvent>(_ => OnTransformLatticeClicked(new[] {matrixInputLine1, matrixInputLine2, matrixInputLine3}));
+    }
+
+    void OnElementSubmit(string element)
     {
         elementInput.SetValueWithoutNotify(element);
         if (activeAtom != null)
@@ -179,14 +202,49 @@ public class EditPanelController : MonoBehaviour
             App.Instance.operationManager.SubmitOperation(new SetElementOperation(activeAtom, element));
         }
         
-        OverlayUiController.Instance.ClosePeriodicTable(null);
+        OverlayUiController.Instance.ClosePopupWindow(null);
     }
+    
+    void OnChangeLatticeClicked(Vec3InputControl latticeLengthsInput, Vec3InputControl latticeAnglesInput, Toggle keepFractionalToggle)
+    {
+        Vector3 lengths = latticeLengthsInput.value;
+        Vector3 angles = latticeAnglesInput.value;
 
+        if (lengths.x <= 0 || lengths.y <= 0 || lengths.z <= 0)
+        {
+            OverlayUiController.Instance.PrintStatusLog("Invalid lattice length");
+            return;
+        }
+        
+        if (angles.x <= 0 || angles.y <= 0 || angles.z <= 0 || angles.x >= 180 || angles.y >= 180 || angles.z >= 180)
+        {
+            OverlayUiController.Instance.PrintStatusLog("Invalid lattice angle");
+            return;
+        }
+
+        float[] latticeParams = { lengths.x, lengths.y, lengths.z, angles.x, angles.y, angles.z };
+        App.Instance.operationManager.SubmitOperation(new ChangeLatticeOperation(latticeParams, !keepFractionalToggle.value));
+        OverlayUiController.Instance.ClosePopupWindow(null);
+    }
+    
+    void OnTransformLatticeClicked(Vec3InputControl[] matrixInput)
+    {
+        Matrix4x4 matrix = new(new Vector4(matrixInput[0].value.x, matrixInput[0].value.y, matrixInput[0].value.z, 0),
+            new Vector4(matrixInput[1].value.x, matrixInput[1].value.y, matrixInput[1].value.z, 0),
+            new Vector4(matrixInput[2].value.x, matrixInput[2].value.y, matrixInput[2].value.z, 0),
+            new Vector4(0, 0, 0, 1));
+        
+        App.Instance.CurrentFile.Structures.Add(currentStructure.TransformLattice(matrix));
+        OverlayUiController.Instance.UpdateStructureIndex(null, App.Instance.CurrentFile.StructureCount);
+        StructureSequenceController.Instance.SwitchStructure(StructureSequenceController.Instance.StructureCount - 1);
+        OverlayUiController.Instance.ClosePopupWindow(null);
+    }
+    
+    
     public void UpdateLattice(CrystalStructure structure)
     {
         currentStructure = structure;
-        latticeLengthsInput.SetValueWithoutNotify(new Vector3(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]));
-        latticeAnglesInput.SetValueWithoutNotify(new Vector3(structure.LatticeParams[3], structure.LatticeParams[4], structure.LatticeParams[5]));
+        latticeInfoLabel.text = $"a={structure.LatticeParams[0]:F2}Å   b={structure.LatticeParams[1]:F2}Å   c={structure.LatticeParams[2]:F2}Å\nα={structure.LatticeParams[3]:F2}°   β={structure.LatticeParams[4]:F2}°   γ={structure.LatticeParams[5]:F2}°";
     }
 
     public void UpdateActiveAtom()
@@ -211,40 +269,6 @@ public class EditPanelController : MonoBehaviour
     {
         replaceElementButton.RemoveFromClassList("active-edit-panel-button");
         ReplacedElement = null;
-    }
-    
-    void OnSupercellClicked(ClickEvent evt)
-    {
-        Vector3 repeats = repeatsInput.value;
-
-        if (repeats.x <= 0 || repeats.y <= 0 || repeats.z <= 0)
-        {
-            OverlayUiController.Instance.PrintStatusLog("Repeat count must be greater than zero");
-            return;
-        }
-        
-        App.Instance.operationManager.SubmitOperation(new SuperCellOperation((int)repeats.x, (int)repeats.y, (int)repeats.z));
-    }
-    
-    void OnChangeLatticeClicked(ClickEvent evt)
-    {
-        Vector3 lengths = latticeLengthsInput.value;
-        Vector3 angles = latticeAnglesInput.value;
-
-        if (lengths.x <= 0 || lengths.y <= 0 || lengths.z <= 0)
-        {
-            OverlayUiController.Instance.PrintStatusLog("Invalid lattice length");
-            return;
-        }
-        
-        if (angles.x <= 0 || angles.y <= 0 || angles.z <= 0 || angles.x >= 180 || angles.y >= 180 || angles.z >= 180)
-        {
-            OverlayUiController.Instance.PrintStatusLog("Invalid lattice angle");
-            return;
-        }
-
-        float[] latticeParams = { lengths.x, lengths.y, lengths.z, angles.x, angles.y, angles.z };
-        App.Instance.operationManager.SubmitOperation(new ChangeLatticeOperation(latticeParams, !keepFractionalToggle.value));
     }
     
     void OnFractionalToggleChanged(ChangeEvent<bool> evt)

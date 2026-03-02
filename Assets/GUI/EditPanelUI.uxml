@@ -1,45 +1,42 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle" />
-    <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input" />
+    <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle"/>
+    <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input"/>
     <ui:ScrollView horizontal-scroller-visibility="Hidden" style="margin-top: 5px; margin-bottom: 10px; flex-grow: 1;">
-        <ui:Label text="Lattice" class="display-option-subtitle" />
-        <Vec3InputControl text="Lengths" name="LatticeLengthsInput" class="edit-panel-item" />
-        <Vec3InputControl text="Angles" name="LatticeAnglesInput" class="edit-panel-item" />
-        <ui:Toggle label="Keep fractional coords" name="KeepFractionalToggle" class="edit-panel-item" />
-        <ui:Button text="Change lattice" name="ChangeLatticeButton" class="edit-panel-button edit-panel-item" />
-        <Vec3InputControl text="Repeats" value="1,1,1" name="RepeatsInput" class="edit-panel-item" />
-        <ui:Button text="Generate supercell" name="SupercellButton" class="edit-panel-button edit-panel-item" />
-        <ui:Label text="Atom" class="display-option-subtitle" />
-        <ui:Label text="Multiple atoms selected, atom property editor disabled." enable-rich-text="false" name="MultiselectLabel" class="edit-panel-item" style="white-space: normal; visibility: visible; display: none;" />
+        <ui:Label text="Lattice" class="display-option-subtitle"/>
+        <ui:Label text="Lattice info placeholder" name="LatticeInfoLabel" style="margin-left: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); font-size: 18px; -unity-font-style: bold;"/>
+        <ui:Button text="Change lattice" name="ChangeLatticeButton" class="edit-panel-button edit-panel-item"/>
+        <ui:Button text="Transform lattice" name="TransformLatticeButton" class="edit-panel-button edit-panel-item"/>
+        <ui:Label text="Atom" class="display-option-subtitle"/>
+        <ui:Label text="Multiple atoms selected, atom property editor disabled." enable-rich-text="false" name="MultiselectLabel" class="edit-panel-item" style="white-space: normal; visibility: visible; display: none;"/>
         <ui:VisualElement name="ElementRow" class="edit-panel-item" style="flex-grow: 0; flex-direction: row;">
-            <ui:TextField label="Element" name="ElementInput" value="H" readonly="true" style="flex-grow: 1;" />
-            <ui:Button text="Replace" name="ReplaceElementButton" enable-rich-text="false" class="edit-panel-button" style="height: auto; flex-grow: 0;" />
+            <ui:TextField label="Element" name="ElementInput" value="H" readonly="true" style="flex-grow: 1;"/>
+            <ui:Button text="Replace" name="ReplaceElementButton" enable-rich-text="false" class="edit-panel-button" style="height: auto; flex-grow: 0;"/>
         </ui:VisualElement>
-        <ui:Toggle label="Fractional coords" name="FractionalToggle" class="edit-panel-item" />
-        <Vec3InputControl text="Coordinates" value="0,0,0" name="CoordsInput" max-digits="8" class="edit-panel-item" />
+        <ui:Toggle label="Fractional coords" name="FractionalToggle" class="edit-panel-item"/>
+        <Vec3InputControl text="Coordinates" value="0,0,0" name="CoordsInput" max-digits="8" class="edit-panel-item"/>
         <ui:VisualElement name="MoveTools" style="flex-grow: 0; flex-direction: row; margin-left: 15px; margin-right: 15px; margin-top: 2px; margin-bottom: 2px;">
-            <ui:Label text="Move tools" style="font-size: 20px;" />
+            <ui:Label text="Move tools" style="font-size: 20px;"/>
             <ui:VisualElement style="flex-grow: 1; margin-left: 12px; min-height: 80px; margin-bottom: 4px;">
-                <ui:Label text="Step size" style="font-size: 16px; -unity-text-align: lower-right; flex-grow: 1; align-self: flex-end;" />
-                <ui:FloatField value="0.1" name="MoveStepSizeInput" style="font-size: 14px; margin-top: 0; margin-bottom: 0; align-self: flex-end;" />
-                <ui:Button text="←" name="MoveLeftButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="top: 22px; position: absolute; -unity-text-align: lower-center;" />
-                <ui:Button text="↑" name="MoveUpButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 44px; position: absolute;" />
-                <ui:Button text="→" name="MoveRightButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 88px; top: 22px; position: absolute; bottom: auto;" />
-                <ui:Button text="↓" name="MoveDownButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 44px; position: absolute; top: 40px;" />
+                <ui:Label text="Step size" style="font-size: 16px; -unity-text-align: lower-right; flex-grow: 1; align-self: flex-end;"/>
+                <ui:FloatField value="0.1" name="MoveStepSizeInput" style="font-size: 14px; margin-top: 0; margin-bottom: 0; align-self: flex-end;"/>
+                <ui:Button text="←" name="MoveLeftButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="top: 22px; position: absolute; -unity-text-align: lower-center;"/>
+                <ui:Button text="↑" name="MoveUpButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 44px; position: absolute;"/>
+                <ui:Button text="→" name="MoveRightButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 88px; top: 22px; position: absolute; bottom: auto;"/>
+                <ui:Button text="↓" name="MoveDownButton" enable-rich-text="false" emoji-fallback-support="false" class="edit-panel-button edit-direction-button" style="left: 44px; position: absolute; top: 40px;"/>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:Button text="Add atom" name="AddAtomButton" class="edit-panel-button edit-panel-item" />
+        <ui:Button text="Add atom" name="AddAtomButton" class="edit-panel-button edit-panel-item"/>
         <ui:VisualElement name="FlagsRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: none;">
-            <ui:Button text="Clear" name="ClearFlagsButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;" />
-            <ui:Button text="Fixed" name="FixedFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;" />
-            <ui:Button text="React" name="ReactFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;" />
+            <ui:Button text="Clear" name="ClearFlagsButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;"/>
+            <ui:Button text="Fixed" name="FixedFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;"/>
+            <ui:Button text="React" name="ReactFlagButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; flex-grow: 1;"/>
         </ui:VisualElement>
-        <ui:Label text="Display" class="display-option-subtitle" />
-        <ui:FloatField label="Display Radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="justify-content: space-between;" />
-        <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none; justify-content: space-between;" />
+        <ui:Label text="Display" class="display-option-subtitle"/>
+        <ui:FloatField label="Display Radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="justify-content: space-between;"/>
+        <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none; justify-content: space-between;"/>
         <ui:VisualElement name="HideRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: flex;">
-            <ui:Button text="Hide selected&#10;" name="HideSelectedButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;" />
-            <ui:Button text="Restore all hidden" name="RestoreAllButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 0; flex-grow: 2;" />
+            <ui:Button text="Hide selected&#10;" name="HideSelectedButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;"/>
+            <ui:Button text="Restore all hidden" name="RestoreAllButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 0; flex-grow: 2;"/>
         </ui:VisualElement>
     </ui:ScrollView>
 </ui:UXML>

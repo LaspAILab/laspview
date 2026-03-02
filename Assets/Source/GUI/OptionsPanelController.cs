@@ -78,6 +78,12 @@ public class OptionsPanelController : MonoBehaviour
         var bondPolicyControl = optionsPanelRoot.Q<EnumField>("BondPolicy");
         bondPolicyControl.RegisterValueChangedCallback(OnBondPolicyChange);
         
+        var showSurfaceControl = optionsPanelRoot.Q<Toggle>("ShowSurface");
+        showSurfaceControl.RegisterValueChangedCallback(OnShowSurfaceChange);
+        
+        var surfaceThresholdControl = optionsPanelRoot.Q<Slider>("SurfaceThreshold");
+        surfaceThresholdControl.RegisterValueChangedCallback(OnSurfaceThresholdChange);
+        
         cameraAzimuthControl = optionsPanelRoot.Q<SliderInt>("CameraAzimuth");
         cameraAzimuthControl.RegisterValueChangedCallback(OnCameraParametersChange);
         
@@ -221,6 +227,16 @@ public class OptionsPanelController : MonoBehaviour
     void OnBondPolicyChange(ChangeEvent<Enum> e)
     {
         App.Instance.BondCalculationPolicy = (CrossCellBondPolicy)e.newValue;
+    }
+    
+    void OnShowSurfaceChange(ChangeEvent<bool> e)
+    {
+        SurfaceRenderer.Instance.SetDisplay(e.newValue);
+    }
+    
+    void OnSurfaceThresholdChange(ChangeEvent<float> e)
+    {
+        SurfaceRenderer.Instance.SurfaceValue = Mathf.Pow(10f, e.newValue);
     }
     
     void OnCameraParametersChange(ChangeEvent<int> e)
