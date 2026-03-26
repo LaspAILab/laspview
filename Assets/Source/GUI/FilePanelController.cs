@@ -204,7 +204,7 @@ public class FilePanelController : MonoBehaviour
         }
 
 #if UNITY_WEBGL
-        StructureFile newFile = new("");
+        StructureFile newFile = new();
         newFile.Structures.Add(App.Instance.viewport.CurrentStructureView.Structure);
         DownloadStructureFile(newFile, "result." + formatSelector.value);
 #else

@@ -78,11 +78,14 @@ public class OptionsPanelController : MonoBehaviour
         var bondPolicyControl = optionsPanelRoot.Q<EnumField>("BondPolicy");
         bondPolicyControl.RegisterValueChangedCallback(OnBondPolicyChange);
         
+        // Disable surface rendering feature on Web
+#if !UNITY_WEBGL
         var showSurfaceControl = optionsPanelRoot.Q<Toggle>("ShowSurface");
         showSurfaceControl.RegisterValueChangedCallback(OnShowSurfaceChange);
-        
+
         var surfaceThresholdControl = optionsPanelRoot.Q<Slider>("SurfaceThreshold");
         surfaceThresholdControl.RegisterValueChangedCallback(OnSurfaceThresholdChange);
+#endif
         
         cameraAzimuthControl = optionsPanelRoot.Q<SliderInt>("CameraAzimuth");
         cameraAzimuthControl.RegisterValueChangedCallback(OnCameraParametersChange);

@@ -145,25 +145,6 @@
     padding-left: 75px;
 }
 
-.project-item-button {
-    font-size: 20px;
-    -unity-text-align: middle-left;
-    background-size: 30px 30px;
-    background-position-x: left 30px;
-    -unity-background-scale-mode: scale-to-fit;
-    padding-left: 60px;
-    background-image: url("project://database/Assets/Icons/crystal_meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal_meth");
-    -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&guid=cd56282d3b0ad7b4aba00251bfaf2e0a&type=3#MonaspaceArgon-Regular");
-    border-top-width: 1px;
-    border-bottom-width: 0;
-    border-left-color: rgb(175, 175, 175);
-    border-right-color: rgb(175, 175, 175);
-    border-top-color: rgb(175, 175, 175);
-    border-bottom-color: rgb(175, 175, 175);
-    height: 35px;
-    white-space: nowrap;
-}
-
 .round-panel {
     background-color: rgb(255, 255, 255);
     border-top-width: 0;

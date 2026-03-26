@@ -1,0 +1,51 @@
+ProjectItemControl {
+    flex-direction: row;
+}
+
+.-project-transparent-button 
+{
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    border-top-width: 1px;
+    margin-left: 0;
+    margin-right: 0;
+    border-color: rgb(175, 175, 175);
+    background-color: rgba(0, 0, 0, 0);
+    white-space: normal;
+    text-overflow: clip;
+    align-self: auto;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.-project-transparent-button:hover {
+    background-color: rgba(146, 146, 146, 0.33);
+}
+
+.-project-item-button {
+    font-size: 20px;
+    -unity-text-align: middle-left;
+    padding-left: 60px;
+    -unity-font-definition: url("project://database/Assets/GUI/Fonts/MonaspaceArgon-Regular.otf?fileID=12800000&guid=cd56282d3b0ad7b4aba00251bfaf2e0a&type=3#MonaspaceArgon-Regular");
+    height: 35px;
+    white-space: nowrap;
+    padding-top: 0;
+    padding-bottom: 0;
+    justify-content: center;
+}
+
+.-project-item-remove-button {
+    height: 35px;
+    width: 35px;
+    max-width: 35px;
+    background-image: url("project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=5866165431930342980&guid=fd204d62cf028114093c24862190e314&type=3#Remove@2x");
+    background-size: 50% 50%;
+}
+
+.-project-item-icon {
+    width: 20px;
+    height: 20px;
+    margin-left: -40px;
+    background-image: url("project://database/Assets/Icons/crystal_meth.png?fileID=2800000&guid=64de2a303f7858046a31ce68904507c5&type=3#crystal_meth");
+}
