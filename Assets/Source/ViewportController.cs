@@ -196,7 +196,9 @@ public class ViewportController : MonoBehaviour
             CurrentStructureView.Structure.FractionalToCartesian(new Vector3(repeatA, repeatB, repeatC)));
         hBondRenderer.SetStructure(CurrentStructureView, LatticeTransforms);
 
+#if !UNITY_WEBGL
         SurfaceRenderer.Instance.SetStructure(CurrentStructureView.Structure);
+#endif
     }
 
     public void UpdateLatticeTransformMatrix()
