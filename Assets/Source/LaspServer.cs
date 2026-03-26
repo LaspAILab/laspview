@@ -222,7 +222,7 @@ public class LaspServer : MonoBehaviour
             return;
         }
 
-        StructureFile newStructureFile = new("");
+        StructureFile newStructureFile = new();
         newStructureFile.Structures.Add(structureFile.Structures[request.structureIndex]);
         var cifFormat = new CifFormat();
         var cif = cifFormat.Write(newStructureFile);
@@ -247,7 +247,7 @@ public class LaspServer : MonoBehaviour
                 else
                 {
                     string cifResponse = response;
-                    StructureFile optimizedStructure = new("");
+                    StructureFile optimizedStructure = new();
                     cifFormat.Read(optimizedStructure, cifResponse.Split('\n'));
                     OnOptimizeReceivedEvent?.Invoke(request, optimizedStructure.Structures[0]);
                 }

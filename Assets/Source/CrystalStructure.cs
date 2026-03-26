@@ -239,24 +239,27 @@ public class StructureFile
 {
 #if !UNITY_WEBGL
     public Mutex ListMutex;
-#endif
 
     // Notifier for when a new structure is appended to this file
     public bool NewStructureLoadedNotifier { get; set; } = false;
 
     // Whether it is queued to open the first structure after loaded
     public bool IsOpenStructureQueued { get; set; } = false;
+#endif
 
     public List<CrystalStructure> Structures { get; private set; }
 
     public int StructureCount => Structures.Count;
 
     public string Filename { get; private set; }
+    
+    public int LruTimestamp { get; set; }
 
-    public StructureFile(string filename)
+    public StructureFile(string filename = "", int initialTimestamp = -1)
     {
         Filename = filename;
         Structures = new();
+        LruTimestamp = initialTimestamp;
 #if !UNITY_WEBGL
         ListMutex = new();
 #endif
@@ -267,7 +270,7 @@ public class StructureFile
 #if !UNITY_WEBGL
         ListMutex.Dispose();
 #endif
-        Debug.Log($"Disposing structure file {Filename}");
+        Debug.Log($"Disposing structure file `{Filename}`");
     }
 }
 

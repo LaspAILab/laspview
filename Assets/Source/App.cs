@@ -98,6 +98,9 @@ public class App : MonoBehaviour
 
     public StructureFile CurrentFile { get; private set; }
 
+    // LRU timestamp for files
+    private int fileLruTimestamp = 0;
+
     void Awake()
     {
         UnityEngine.Analytics.Analytics.enabled = false;
@@ -127,12 +130,6 @@ public class App : MonoBehaviour
         OpenArc(lines.Split('\n'), "PeriodicTable.arc", true);
 #endif
     }
-
-    // Elements per row in the periodic table
-    public static readonly int[] ElementsPerRow =
-    {
-        2, 8, 8, 18, 18, 32, 32
-    };
 
     private void ReadJsonConfig()
     {
@@ -180,7 +177,7 @@ public class App : MonoBehaviour
         try
         {
             // File name not relevant here
-            StructureFile newFile = new("");
+            StructureFile newFile = new();
             newFile.Structures.Add(viewport.CurrentStructureView.Structure);
             string str = ICrystalFormat.GetFormatIO(".arc").Write(newFile);
             SendJSEvent("ArcFileRecv", str);
@@ -203,20 +200,24 @@ public class App : MonoBehaviour
             SendJSEvent("ArcFileFail", e.Message);
         }
     }
+
+    // Limit the open file count on WebGL
+    private const int MAX_OPEN_FILE_COUNT = 3;
 #endif
 
     void AddFile(StructureFile structureFile)
     {
         if (OpenFileList.ContainsValue(structureFile) || OpenFileList.ContainsKey(structureFile.Filename))
         {
+            OpenFileList[structureFile.Filename].LruTimestamp = fileLruTimestamp++;
             return;
         }
 
         OpenFileList.Add(structureFile.Filename, structureFile);
 #if UNITY_WEBGL
-        ProjectPanelController.Instance.AddProjectFile(structureFile.Filename);
+        ProjectPanelController.Instance.RegenerateProjectList();
 #else
-        ScheduleTask(() => ProjectPanelController.Instance.AddProjectFile(structureFile.Filename));
+        ScheduleTask(() => ProjectPanelController.Instance.RegenerateProjectList());
 #endif
     }
 
@@ -230,7 +231,7 @@ public class App : MonoBehaviour
         }
 
 #if UNITY_WEBGL
-        CurrentFile = new(filename);
+        CurrentFile = new(filename, fileLruTimestamp++);
         AddFile(CurrentFile);
 
         try
@@ -243,18 +244,29 @@ public class App : MonoBehaviour
             Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
         }
 
-        if (CurrentFile.StructureCount > 0)
+        if (openAfterLoad && CurrentFile.StructureCount > 0)
         {
             OverlayUiController.Instance.PrintStatusLog(
                 $"Displaying file `{CurrentFile.Filename}` ({CurrentFile.StructureCount} items)");
             StructureSequenceController.Instance.ResetStructure();
         }
 
+        if (OpenFileList.Count > MAX_OPEN_FILE_COUNT)
+        {
+            // Remove the least recently used file
+            var minTimestamp = OpenFileList.Values.Min(f => f.LruTimestamp);
+            var leastUsedFileKey = OpenFileList
+                .FirstOrDefault(e => e.Value.LruTimestamp == minTimestamp).Key;
+            OpenFileList.Remove(leastUsedFileKey);
+            ProjectPanelController.Instance.RegenerateProjectList();
+            OverlayUiController.Instance.PrintStatusLog($"Closed file `{leastUsedFileKey}`");
+        }
+
 #else
         OverlayUiController.Instance.PrintStatusLog($"Loading `{filename}` in background");
         Task.Run(() =>
         {
-            StructureFile currentFile = new(filename);
+            StructureFile currentFile = new(filename, fileLruTimestamp++);
             if (openAfterLoad)
             {
                 CurrentFile = currentFile;
@@ -288,22 +300,48 @@ public class App : MonoBehaviour
     }
 
     // Switches to an already opened (present in project list) structure file
-    public void SwitchArcFile(string filename)
+    public void SwitchArcFile(string fileKey)
     {
-        if (!OpenFileList.ContainsKey(filename))
+        if (!OpenFileList.ContainsKey(fileKey))
         {
-            OverlayUiController.Instance.PrintStatusLog($"Requested file `{filename}` not found");
+            OverlayUiController.Instance.PrintStatusLog($"Requested file `{fileKey}` not found");
             return;
         }
 
-        CurrentFile = OpenFileList[filename];
+        CurrentFile = OpenFileList[fileKey];
+        CurrentFile.LruTimestamp = fileLruTimestamp++;
         StructureSequenceController.Instance.ResetStructure();
-        OverlayUiController.Instance.PrintStatusLog($"Displaying file `{filename}`");
+        OverlayUiController.Instance.PrintStatusLog($"Displaying file `{fileKey}`");
+    }
+
+    public void CloseOpenFile(string fileKey)
+    {
+        if (!OpenFileList.ContainsKey(fileKey))
+        {
+            OverlayUiController.Instance.PrintStatusLog($"Requested file `{fileKey}` not found");
+            return;
+        }
+
+        if (OpenFileList.Count == 1)
+        {
+            OverlayUiController.Instance.PrintStatusLog($"Cannot close last file");
+            return;
+        }
+
+        if (OpenFileList[fileKey] == CurrentFile)
+        {
+            // Find first file other than the current one
+            var newFile = OpenFileList.First(x => x.Key != fileKey);
+            SwitchArcFile(newFile.Key);
+        }
+
+        OpenFileList.Remove(fileKey);
+        ProjectPanelController.Instance.RegenerateProjectList();
     }
 
     public void NewEmpty()
     {
-        CurrentFile = new("Empty");
+        CurrentFile = new("Empty", fileLruTimestamp++);
         CrystalStructure crystalStructure = new();
         crystalStructure.Energy = 0;
         crystalStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });

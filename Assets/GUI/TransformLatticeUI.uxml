@@ -2,7 +2,7 @@
     <Style src="project://database/Assets/GUI/SharedStyle.uss?fileID=7433441132597879392&amp;guid=7ed00aed86adc9048905bdad1619bf4c&amp;type=3#SharedStyle"/>
     <Style src="project://database/Assets/GUI/Vec3Input/Vec3Input.uss?fileID=7433441132597879392&amp;guid=bad3aff1201eb954091907dee4fa65ca&amp;type=3#Vec3Input"/>
     <ui:Label text="Apply a linear transformation to the lattice by defining a transform matrix. For creating simple super cells, just change the values at row 1 column 1, row 2 column 2 and row 3 column 3 to the repeat numbers of axis a, b and c. " style="-unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); font-size: 16px; margin-left: 15px; white-space: normal;"/>
-    <Vec3InputControl text="Transform" value="1,0,0" name="MatrixLine1" class="edit-panel-item"/>
+    <Vec3InputControl text="Matrix" value="1,0,0" name="MatrixLine1" class="edit-panel-item"/>
     <Vec3InputControl text="" value="0,1,0" name="MatrixLine2" class="edit-panel-item"/>
     <Vec3InputControl text="" value="0,0,1" name="MatrixLine3" class="edit-panel-item"/>
     <ui:Button text="Transform lattice" name="TransformLatticeButton" class="edit-panel-button edit-panel-item"/>

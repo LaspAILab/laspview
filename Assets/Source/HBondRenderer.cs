@@ -4,7 +4,6 @@ using UnityEngine;
 public struct HBond
 {
     public AtomView HAtom;
-
     public AtomView AcceptorAtom;
 
     // If the bond is across the lattice, this is the translation of the H atom

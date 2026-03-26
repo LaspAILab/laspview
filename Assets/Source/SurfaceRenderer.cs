@@ -36,6 +36,9 @@ public class SurfaceRenderer : MonoBehaviour
     
     void Awake()
     {
+#if UNITY_WEBGL
+        gameObject.SetActive(false);
+#else
         Instance = this;
         var meshFilters = GetComponentsInChildren<MeshFilter>();
         meshFilterPositive = meshFilters[0];
@@ -50,6 +53,7 @@ public class SurfaceRenderer : MonoBehaviour
         };;
         marchingCubes = new MarchingCubes();
         recalculationTask = new StatefulTask(Regenerate, ReplaceMeshes);
+#endif
     }
 
     private void GenerateSurfaceMesh(CrystalStructure structure, float surface, ref List<Vector3> vertices, ref List<int> indices)

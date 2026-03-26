@@ -6,19 +6,25 @@ using UnityEngine;
 
 public static class ChemicalFormulaUtils
 {
+    // Elements per row in the periodic table
+    public static readonly int[] ElementsPerRow =
+    {
+        2, 8, 8, 18, 18, 32, 32
+    };
+    
     // Sort elements by common valance, used for printing chemical formula
     public static (int, int) GetElementPeriodAndValance(string elem)
     {
         int elementNumber = App.Elements[elem].Number;
 
         int index = 0, period = 1;
-        while (elementNumber > App.ElementsPerRow[index])
+        while (elementNumber > ElementsPerRow[index])
         {
-            elementNumber -= App.ElementsPerRow[index++];
+            elementNumber -= ElementsPerRow[index++];
             period++;
         }
 
-        int valance = elementNumber <= App.ElementsPerRow[period - 1] - 4 ? elementNumber : (elementNumber - 8);
+        int valance = elementNumber <= ElementsPerRow[period - 1] - 4 ? elementNumber : (elementNumber - 8);
         return (period, valance);
     }
     

@@ -18,3 +18,7 @@ Tutorial:
 2. Ctrl + V to paste copied atoms
 3. Ctrl + Z to undo last operation
 4. Ctrl + Y to redo undone operation
+
+-- Lattice transform
+In "Edit" panel, you can transform the lattice with a 3x3 matrix. The matrix is applied to the lattice vectors and if the lattice becomes larger than before, atoms in lattice will automatically repeat. 
+If you just want to create a super cell, just modify the diagonal elements of the matrix. For example, if you want to create a 2x2x2 super cell, set all the diagonal elements to 2 and keep the off-diagonal elements as 0.
