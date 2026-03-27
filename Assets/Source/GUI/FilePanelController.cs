@@ -55,6 +55,7 @@ public class FilePanelController : MonoBehaviour
 
     private IEnumerator OutputRoutine(string[] files)
     {
+        bool isFirst = true;
         foreach (var file in files)
         {
             // Url, filename
@@ -77,7 +78,8 @@ public class FilePanelController : MonoBehaviour
                 else
                 {
                     // Open structure file
-                    App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]));
+                    App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]), isFirst);
+                    isFirst = false;
                 }
             }
         }

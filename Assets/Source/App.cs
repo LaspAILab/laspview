@@ -165,10 +165,12 @@ public class App : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void SendJSEvent(string eventName, string result);
 
-    // For javascript invocation
+    // For JavaScript invocation
     public void OpenArcString(string content)
     {
+#if DEBUG
         Debug.Log("OpenArcString: " + content);
+#endif
         OpenArc(content.Split('\n'), $"{OpenFileList.Count}.arc");
     }
 
@@ -221,7 +223,7 @@ public class App : MonoBehaviour
 #endif
     }
 
-    public void OpenArc(IEnumerable<string> content, string filename, bool openAfterLoad = false)
+    public void OpenArc(IEnumerable<string> content, string filename, bool openAfterLoad = true)
     {
         ICrystalFormat formatReader = ICrystalFormat.GetFormatIO(filename);
         if (formatReader == null)
