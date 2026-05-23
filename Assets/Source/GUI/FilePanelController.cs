@@ -13,19 +13,20 @@ using UnityEngine.UIElements;
 public class FilePanelController : MonoBehaviour
 {
     public static FilePanelController Instance;
-    
+
     private VisualElement filePanelRoot;
 
     static ExtensionFilter[] CrystalExtensions =
     {
-        new ("Structure Files", "txt", "arc", "car", "poscar", "cif", "cub"),
+        new ("Structure Files", "txt", "arc", "car", "poscar", "cif", "cub", "extxyz"),
         new ("Arc Files", "txt", "arc", "car"),
         new ("Poscar Files", "poscar"),
         new ("Cif Files", "cif"),
         new ("Cube Files", "cub"),
+        new ("Extxyz Files", "extxyz"),
         new ("All Files", "*"),
     };
-    
+
     static ExtensionFilter[] MoleculeExtensions =
     {
         new ("Molecule Files", "mol", "xyz"),
@@ -103,7 +104,7 @@ public class FilePanelController : MonoBehaviour
         DownloadFile(gameObject.name, "OnFileDownload", filename, bytes, bytes.Length);
     }
 #endif
-    
+
     public static bool IsMoleculeFile(string filename)
     {
         string ext = Path.GetExtension(filename).ToLower();
@@ -124,7 +125,7 @@ public class FilePanelController : MonoBehaviour
 
         var openFileButton = filePanelRoot.Q<Button>("OpenFileButton");
         openFileButton.RegisterCallback<ClickEvent>(OnOpenFileButtonClick);
-        
+
         var importMoleculeButton = filePanelRoot.Q<Button>("ImportMoleculeButton");
         importMoleculeButton.RegisterCallback<ClickEvent>(OnImportMoleculeButtonClick);
 
@@ -160,7 +161,7 @@ public class FilePanelController : MonoBehaviour
         {
             return;
         }
-        
+
         var moleculeFile = paths.First();
         StructureSequenceController.Instance.ImportMolecule(File.ReadLines(moleculeFile), Path.GetFileName(moleculeFile));
     }
@@ -183,7 +184,7 @@ public class FilePanelController : MonoBehaviour
         FilesRead(paths);
 #endif
     }
-    
+
     void OnImportMoleculeButtonClick(ClickEvent _)
     {
         // Open file with filter

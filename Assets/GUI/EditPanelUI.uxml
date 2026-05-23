@@ -4,10 +4,16 @@
     <ui:ScrollView horizontal-scroller-visibility="Hidden" style="margin-top: 5px; margin-bottom: 10px; flex-grow: 1;">
         <ui:Label text="Lattice" class="display-option-subtitle"/>
         <ui:Label text="Lattice info placeholder" name="LatticeInfoLabel" style="margin-left: 15px; -unity-font-definition: url(&quot;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#LegacyRuntime&quot;); font-size: 18px; -unity-font-style: bold;"/>
-        <ui:Button text="Change lattice" name="ChangeLatticeButton" class="edit-panel-button edit-panel-item"/>
-        <ui:Button text="Transform lattice" name="TransformLatticeButton" class="edit-panel-button edit-panel-item"/>
+        <ui:VisualElement name="LatticeModifyRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: flex;">
+            <ui:Button text="Change lattice" name="ChangeLatticeButton" class="edit-panel-button edit-panel-item" style="margin-right: 0; margin-left: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;"/>
+            <ui:Button text="Transform lattice" name="TransformLatticeButton" class="edit-panel-button edit-panel-item" style="flex-grow: 1; margin-right: 0; margin-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;"/>
+        </ui:VisualElement>
         <ui:Label text="Atom" class="display-option-subtitle"/>
         <ui:Label text="Multiple atoms selected, atom property editor disabled." enable-rich-text="false" name="MultiselectLabel" class="edit-panel-item" style="white-space: normal; visibility: visible; display: none;"/>
+        <ui:Slider label="Bond angle" value="42" high-value="4" show-input-field="true" fill="false" name="BondLengthSlider" class="display-option-item" style="display: none;"/>
+        <ui:Slider label="Bond angle" value="42" high-value="360" show-input-field="true" fill="false" name="BondAngleSlider" class="display-option-item" style="display: none;"/>
+        <ui:Slider label="Dihedral" value="42" high-value="360" show-input-field="true" fill="false" name="DihedralSlider" class="display-option-item" style="display: none;"/>
+        <ui:Button text="Confirm" name="ConfirmAngleButton" class="edit-panel-button edit-panel-item" style="display: none;"/>
         <ui:VisualElement name="ElementRow" class="edit-panel-item" style="flex-grow: 0; flex-direction: row;">
             <ui:TextField label="Element" name="ElementInput" value="H" readonly="true" style="flex-grow: 1;"/>
             <ui:Button text="Replace" name="ReplaceElementButton" enable-rich-text="false" class="edit-panel-button" style="height: auto; flex-grow: 0;"/>

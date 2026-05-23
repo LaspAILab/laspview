@@ -165,13 +165,15 @@ public class App : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void SendJSEvent(string eventName, string result);
 
+    private int arcStringInputIndex = 0;
+
     // For JavaScript invocation
     public void OpenArcString(string content)
     {
 #if DEBUG
         Debug.Log("OpenArcString: " + content);
 #endif
-        OpenArc(content.Split('\n'), $"{OpenFileList.Count}.arc");
+        OpenArc(content.Split('\n'), $"webin-{++arcStringInputIndex}.arc");
     }
 
     public void SaveCurrentStructure()
@@ -211,6 +213,7 @@ public class App : MonoBehaviour
     {
         if (OpenFileList.ContainsValue(structureFile) || OpenFileList.ContainsKey(structureFile.Filename))
         {
+            OpenFileList[structureFile.Filename] = structureFile;
             OpenFileList[structureFile.Filename].LruTimestamp = fileLruTimestamp++;
             return;
         }

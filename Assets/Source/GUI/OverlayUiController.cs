@@ -10,14 +10,14 @@ using Button = UnityEngine.UIElements.Button;
 
 public class OverlayUiController : MonoBehaviour
 {
-    const string VERSION_NUMBER = "2.2.1";
-    
+    const string VERSION_NUMBER = "2.2.3";
+
     public static OverlayUiController Instance;
     private ViewportController viewport;
     private UIDocument document;
-    
+
     const string ACTIVE_BUTTON_CLASS_NAME = "active-title-button";
-    
+
     private VisualElement root;
     private VisualElement aboutPanel;
     private VisualElement leftInfoPanel;
@@ -25,13 +25,13 @@ public class OverlayUiController : MonoBehaviour
     private VisualElement popupWindowContainer;
     private Button closePopupWindowButton;
     private Label popupWindowTitleLabel;
-    
+
     private VisualElement filePanel;
     private VisualElement projectPanel;
     private VisualElement optionsPanel;
     private VisualElement editPanel;
     private VisualElement laspPanel;
-    
+
     // TOP BAR BEGINS
     private Button fileButton;
     private Button projectButton;
@@ -41,14 +41,14 @@ public class OverlayUiController : MonoBehaviour
 
     private Button aboutButton;
     // TOP BAR ENDS
-    
+
     // BOTTOM BAR BEGINS
     private Button structureMinusButton;
     private Button structurePlusButton;
     private IntegerField currentStructureInput;
     private Label totalStructuresLabel;
     private Button copyAppendButton;
-    
+
     private Button focusButton;
     private Button focusSelectedButton;
     private Button playButton;
@@ -57,10 +57,10 @@ public class OverlayUiController : MonoBehaviour
     private Button previousButton;
     private Button firstButton;
     private Button lastButton;
-    
+
     private Button statusLabel;
     // BOTTOM BAR ENDS
-    
+
     // INFO PANEL BEGINS
     private Label energyLabel;
     private Label atomCountLabel;
@@ -79,14 +79,14 @@ public class OverlayUiController : MonoBehaviour
 
         document = GetComponent<UIDocument>();
         root = document.rootVisualElement;
-        
+
         aboutPanel = root.Q<VisualElement>("AboutPanel");
         // Close the about panel if empty parts are clicked
         aboutPanel.RegisterCallback<ClickEvent>(ToggleAboutPanel);
         // Avoid duplicate handling of the same click event
         aboutPanel.Children().First().RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
         leftInfoPanel = root.Q<VisualElement>("LeftInfoPanel");
-        
+
         // Same as above
         popupWindowPanel = root.Q<VisualElement>("PopupWindowPanel");
         popupWindowPanel.RegisterCallback<ClickEvent>(ClosePopupWindow);
@@ -96,16 +96,16 @@ public class OverlayUiController : MonoBehaviour
         popupWindowContainer = root.Q<VisualElement>("PopupWindowContainer");
         // Do not close the popup window if the title bar is clicked
         popupWindowContainer.RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
-        
+
         var exitAboutButton = aboutPanel.Q<Button>("ExitAboutButton");
         exitAboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
-        
+
         filePanel = root.Q<VisualElement>("FilePanel");
         projectPanel = root.Q<VisualElement>("ProjectPanel");
         optionsPanel = root.Q<VisualElement>("OptionsPanel");
         editPanel = root.Q<VisualElement>("EditPanel");
         laspPanel = root.Q<VisualElement>("LaspPanel");
-        
+
         fileButton = root.Q<Button>("FileButton");
         fileButton.RegisterCallback<ClickEvent>(ToggleFilePanel);
         projectButton = root.Q<Button>("ProjectButton");
@@ -123,12 +123,12 @@ public class OverlayUiController : MonoBehaviour
         uiScaleMinusButton.RegisterCallback<ClickEvent>(OnUIScaleAdjust);
         aboutButton = root.Q<Button>("AboutButton");
         aboutButton.RegisterCallback<ClickEvent>(ToggleAboutPanel);
-        
+
         var aboutVersionLabel = aboutPanel.Q<Label>("VersionLabel");
         aboutVersionLabel.text = aboutVersionLabel.text.Replace("%v", VERSION_NUMBER);
         var aboutOsLabel = aboutPanel.Q<Label>("OSLabel");
         aboutOsLabel.text = aboutOsLabel.text.Replace("%os", SystemInfo.operatingSystem);
-        
+
         structureMinusButton = root.Q<Button>("StructureMinus");
         structureMinusButton.RegisterCallback<ClickEvent>(OnPreviousStructureClicked);
         structurePlusButton = root.Q<Button>("StructurePlus");
@@ -138,12 +138,12 @@ public class OverlayUiController : MonoBehaviour
         totalStructuresLabel = root.Q<Label>("TotalStructures");
         copyAppendButton = root.Q<Button>("CopyAppendButton");
         copyAppendButton.RegisterCallback<ClickEvent>(OnCopyAppendClicked);
-        
+
         focusButton = root.Q<Button>("FocusButton");
         focusButton.RegisterCallback<ClickEvent>(OnFocusClicked);
         focusSelectedButton = root.Q<Button>("FocusSelectedButton");
         focusSelectedButton.RegisterCallback<ClickEvent>(OnFocusSelectedClicked);
-        
+
         playButton = root.Q<Button>("PlayButton");
         playButton.RegisterCallback<ClickEvent>(OnPlayClicked);
         pauseButton = root.Q<Button>("PauseButton");
@@ -156,14 +156,14 @@ public class OverlayUiController : MonoBehaviour
         firstButton.RegisterCallback<ClickEvent>(OnFirstStructureClicked);
         lastButton = root.Q<Button>("LastButton");
         lastButton.RegisterCallback<ClickEvent>(OnLastStructureClicked);
-        
+
         statusLabel = root.Q<Button>("StatusLabel");
-        
+
         energyLabel = root.Q<Label>("EnergyLabel");
         atomCountLabel = root.Q<Label>("AtomCountLabel");
         selectionLabel = root.Q<Label>("SelectionLabel");
         additionalInfoLabel = root.Q<Label>("AdditionalInfoLabel");
-        
+
 #if UNITY_WEBGL
         // Scale down the UI a little bit on browser as the default looks too big
         document.panelSettings.scale = 0.96f;
@@ -209,9 +209,9 @@ public class OverlayUiController : MonoBehaviour
         {
             energyLabel.text = $"Energy: {structure.Energy} eV";
         }
-        
+
         string formula = ChemicalFormulaUtils.GetChemicalFormula(structure.Atoms, 50);
-        
+
         atomCountLabel.text = $"Atom Count: {structure.Atoms.Count} ({formula})";
     }
 
@@ -230,7 +230,7 @@ public class OverlayUiController : MonoBehaviour
         {
             leftInfoPanel.style.display = DisplayStyle.None;
         }
-        
+
         if (selection.Count is 0 or > 4)
         {
             additionalInfoLabel.text = "";
@@ -257,23 +257,13 @@ public class OverlayUiController : MonoBehaviour
         }
         else if (selection.Count == 3)
         {
-            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
-            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
-
-            var angle = Vector3.Angle(vec1, vec2);
+            var angle = SpatialUtils.GetBondAngle(sortedSelection[0].Position, sortedSelection[1].Position, sortedSelection[2].Position);
             additionalInfoLabel.text =
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol} angle: {angle:f3} degrees";
         }
         else if (selection.Count == 4)
         {
-            Vector3 vec1 = sortedSelection[0].Position - sortedSelection[1].Position;
-            Vector3 vec2 = sortedSelection[2].Position - sortedSelection[1].Position;
-            Vector3 vec3 = sortedSelection[3].Position - sortedSelection[2].Position;
-
-            Vector3 normal1 = Vector3.Cross(vec1, vec2);
-            Vector3 normal2 = Vector3.Cross(-vec2, vec3);
-
-            var angle = Vector3.Angle(normal1, normal2);
+            var angle = SpatialUtils.GetDihedral(sortedSelection[0].Position, sortedSelection[1].Position, sortedSelection[2].Position, sortedSelection[3].Position);
             additionalInfoLabel.text =
                 $"{sortedSelection[0].Atom.Symbol}-{sortedSelection[1].Atom.Symbol}-{sortedSelection[2].Atom.Symbol}-{sortedSelection[3].Atom.Symbol} dihedral angle: {angle:f3} degrees";
         }
@@ -288,33 +278,33 @@ public class OverlayUiController : MonoBehaviour
             Debug.Log($"Set UI Scale: {newValue}");
             document.panelSettings.scale = newValue;
         }
-        
+
     }
 
     void OnStructureIndexSubmit(ChangeEvent<int> evt)
     {
         StructureSequenceController.Instance.SwitchStructure(evt.newValue - 1);
     }
-    
+
     void OnCopyAppendClicked(ClickEvent evt)
     {
         var newStructure = StructureSequenceController.Instance.CurrentStructure.DeepClone();
         App.Instance.CurrentFile.Structures.Add(newStructure);
         UpdateStructureIndex(null, App.Instance.CurrentFile.StructureCount);
     }
-    
+
     void OnFocusClicked(ClickEvent evt)
     {
         viewport.RefocusCamera();
     }
-    
+
     void OnFocusSelectedClicked(ClickEvent evt)
     {
         if (viewport.selectionManager.IsEmpty)
         {
             return;
         }
-        
+
         // Calculate the average position of select atoms
         Vector3 center = Vector3.zero;
         var selectedAtoms = viewport.selectionManager.SelectedAtoms;
@@ -323,10 +313,10 @@ public class OverlayUiController : MonoBehaviour
             center += item.Position;
         }
         center /= selectedAtoms.Count;
-        
+
         viewport.FocusCameraOnPoint(center);
     }
-    
+
     void OnPlayClicked(ClickEvent evt)
     {
         if (StructureSequenceController.Instance.Play())
@@ -336,7 +326,7 @@ public class OverlayUiController : MonoBehaviour
             nextButton.SetEnabled(false);
             firstButton.SetEnabled(false);
             lastButton.SetEnabled(false);
-            
+
             structureMinusButton.SetEnabled(false);
             structurePlusButton.SetEnabled(false);
         }
@@ -351,17 +341,17 @@ public class OverlayUiController : MonoBehaviour
             nextButton.SetEnabled(true);
             firstButton.SetEnabled(true);
             lastButton.SetEnabled(true);
-            
+
             structureMinusButton.SetEnabled(true);
             structurePlusButton.SetEnabled(true);
         }
     }
-    
+
     void OnNextStructureClicked(ClickEvent evt)
     {
         StructureSequenceController.Instance.Next();
     }
-    
+
     void OnPreviousStructureClicked(ClickEvent evt)
     {
         StructureSequenceController.Instance.Previous();
@@ -371,7 +361,7 @@ public class OverlayUiController : MonoBehaviour
     {
         StructureSequenceController.Instance.SwitchStructure(0);
     }
-    
+
     void OnLastStructureClicked(ClickEvent evt)
     {
         StructureSequenceController.Instance.SwitchStructure(StructureSequenceController.Instance.StructureCount - 1);
@@ -382,22 +372,22 @@ public class OverlayUiController : MonoBehaviour
         filePanel.style.display = DisplayStyle.None;
         projectPanel.style.display = DisplayStyle.None;
         optionsPanel.style.display = DisplayStyle.None;
-        
+
         fileButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         projectButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         optionsButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
     }
-    
+
     void CloseAllRightPanels()
     {
         editPanel.style.display = DisplayStyle.None;
         laspPanel.style.display = DisplayStyle.None;
-        
+
         editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         laspButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
     }
-    
+
     void ToggleFilePanel(ClickEvent _)
     {
         if (filePanel.resolvedStyle.display == DisplayStyle.None)
@@ -442,7 +432,7 @@ public class OverlayUiController : MonoBehaviour
             optionsButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
     }
-    
+
     void ToggleEditPanel(ClickEvent _)
     {
         if (editPanel.resolvedStyle.display == DisplayStyle.None)
@@ -457,7 +447,7 @@ public class OverlayUiController : MonoBehaviour
             editButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
     }
-    
+
     void ToggleLaspPanel(ClickEvent _)
     {
         if (laspPanel.resolvedStyle.display == DisplayStyle.None)
@@ -472,7 +462,7 @@ public class OverlayUiController : MonoBehaviour
             laspButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
     }
-    
+
     void ToggleAboutPanel(ClickEvent _)
     {
         if (aboutPanel.resolvedStyle.display == DisplayStyle.None)
@@ -486,7 +476,7 @@ public class OverlayUiController : MonoBehaviour
             aboutButton.RemoveFromClassList(ACTIVE_BUTTON_CLASS_NAME);
         }
     }
-    
+
     public VisualElement ShowPopupWindow(string title, VisualTreeAsset template)
     {
         var templateContainer = template.Instantiate();
@@ -499,19 +489,19 @@ public class OverlayUiController : MonoBehaviour
         {
             popupWindowTitleLabel.text = title;
         }
-        
+
         popupWindowContainer.Add(templateContainer);
         popupWindowPanel.style.display = DisplayStyle.Flex;
         return templateContainer;
     }
-    
+
     public void ClosePopupWindow(ClickEvent _)
     {
         if (popupWindowContainer.childCount > 1)
         {
             popupWindowContainer.RemoveAt(popupWindowContainer.childCount - 1);
         }
-        
+
         popupWindowPanel.style.display = DisplayStyle.None;
     }
 }
