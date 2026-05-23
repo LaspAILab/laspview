@@ -77,7 +77,7 @@ public class CrystalStructure
         Atoms.Add(atom);
         return atom;
     }
-    
+
     public void AppendAtoms(IEnumerable<Atom> atoms)
     {
         foreach (var atom in atoms)
@@ -170,11 +170,11 @@ public class CrystalStructure
     /// <returns></returns>
     public Vector3 ClipCartesianCoords(Vector3 posCartesian, bool repeat = true)
     {
-        
+
         Vector3 fract = CartesianToFractional(posCartesian);
         return FractionalToCartesian(ClipFractionalCoords(fract, repeat));
     }
-    
+
     public Vector3 ClipFractionalCoords(Vector3 fract, bool repeat = true)
     {
         // Clip atom to lattice (0, 0, 0) to (1, 1, 1)
@@ -233,6 +233,11 @@ public class CrystalStructure
 
         return copy;
     }
+
+    public float GetCellVolume()
+    {
+        return LatticeParams[0] * LatticeParams[1] * LatticeParams[2];
+    }
 }
 
 public class StructureFile
@@ -252,7 +257,7 @@ public class StructureFile
     public int StructureCount => Structures.Count;
 
     public string Filename { get; private set; }
-    
+
     public int LruTimestamp { get; set; }
 
     public StructureFile(string filename = "", int initialTimestamp = -1)
@@ -345,7 +350,7 @@ public class CrystalStructureView
         var latticeCenter = SwapYZ(structure.FractionalToCartesian(new Vector3(0.5f, 0.5f, 0.5f)));
         var maxSide = Mathf.Max(structure.LatticeParams[0], structure.LatticeParams[1], structure.LatticeParams[2]);
         AccelerationOctree = new PointOctree<AtomView>(maxSide, latticeCenter, 10f);
-        
+
         Atoms.Capacity = structure.Atoms.Count;
         foreach (var item in structure.Atoms)
         {
@@ -568,7 +573,7 @@ public class CrystalStructureView
                     foreach (var item in Atoms)
                     {
                         item.SourceAtom.Coordinates = SwapYZ(item.Position);
-                        
+
                         newAtoms.Add(new Atom
                         {
                             Coordinates = SwapYZ(latticeTransform * new Vector4(item.Position.x, item.Position.y, item.Position.z, 1)),
@@ -635,7 +640,7 @@ public class CrystalStructureView
 #endif
         Debug.Log("Disposing arc structure view");
     }
-    
+
     // Convert from right-handed to left-handed coordinate system and backwards
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector3 SwapYZ(Vector3 vec)

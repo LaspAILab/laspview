@@ -10,20 +10,20 @@ public struct SelectionItem : IEquatable<SelectionItem>
 
     // Order of selection
     public int SelectIndex;
-    
-    // An atom may have multiple copies in the viewport, 
+
+    // An atom may have multiple copies in the viewport,
     // so we have to clarify which copy did we select
     public Vector3 LatticeOffset;
 
     public (int, int, int) CellIndex;
-    
+
     public Vector3 Position => Atom.Position + LatticeOffset;
-    
+
     public bool Equals(SelectionItem other)
     {
         return Atom.Equals(other.Atom) && CellIndex == other.CellIndex;
     }
-    
+
     public override bool Equals(object obj)
     {
         return obj is SelectionItem other && Equals(other);
@@ -38,8 +38,8 @@ public struct SelectionItem : IEquatable<SelectionItem>
     {
         return new SelectionItem
         {
-            Atom = colliderScript.Atom, 
-            LatticeOffset = colliderScript.latticeOffset, 
+            Atom = colliderScript.Atom,
+            LatticeOffset = colliderScript.latticeOffset,
             CellIndex = colliderScript.CellIndex
         };
     }
@@ -67,7 +67,7 @@ public class SelectionManager
     private Action<List<SelectionItem>> onSelectionChanged;
 
     private int selectionIndex;
-    
+
     public bool IsEmpty => Selection.Count == 0;
 
     public int Count => Selection.Count;
@@ -85,7 +85,7 @@ public class SelectionManager
     {
         return Selection.Contains(new SelectionItem { Atom = atomView, CellIndex = cellIndex });
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Select(SelectionItem item)
     {
@@ -101,7 +101,7 @@ public class SelectionManager
         {
             Debug.LogWarning("Atom attempting to select is already selected");
         }
-        
+
         return result;
     }
 
@@ -124,7 +124,7 @@ public class SelectionManager
 
         onSelectionChanged?.Invoke(Selection.ToList());
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void ReplaceSelection(IEnumerable<SelectionItem> item)
     {
@@ -148,7 +148,7 @@ public class SelectionManager
         {
             Debug.LogWarning("Atom to be deselected isn't found");
         }
-        
+
         return result;
     }
 
@@ -190,10 +190,10 @@ public class SelectionManager
             item.Atom.SelectedCellIndex = null;
             Selection.Remove(item);
         }
-        
+
         onSelectionChanged?.Invoke(Selection.ToList());
     }
-    
+
     public IEnumerable<SelectionItem> DistinctSelection => Selection.Distinct(new SelectionItemComparator());
 
     public List<AtomView> SelectedAtoms => Selection.Select(x => x.Atom).Distinct().ToList();

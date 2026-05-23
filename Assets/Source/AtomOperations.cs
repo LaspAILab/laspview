@@ -4,67 +4,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-
-public class TranslateAtomsOperation : IOperation
-{
-    private List<AtomView> targetAtoms;
-    private Vector3 translation;
-
-    public TranslateAtomsOperation(List<AtomView> targetAtoms, Vector3 translation)
-    {
-        this.targetAtoms = targetAtoms;
-        this.translation = translation;
-    }
-
-    protected override bool DoImpl(CrystalStructureView structureView)
-    {
-        foreach (var item in targetAtoms)
-        {
-            structureView.SetAtomPosition(item, CrystalStructureView.SwapYZ(item.SourceAtom.Coordinates) + translation, false);
-            ColliderManager.Instance.UpdateColliderForAtom(item);
-            HBondRenderer.Instance.OnAtomUpdate(structureView, item);
-        }
-
-#if !UNITY_WEBGL
-        structureView.BondMutex.WaitOne();
-#endif
-        foreach (var item in targetAtoms)
-        {
-            structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
-        }
-#if !UNITY_WEBGL
-        structureView.BondMutex.ReleaseMutex();
-#endif
-
-        return true;
-    }
-
-    protected override bool UndoImpl(CrystalStructureView structureView)
-    {
-        foreach (var item in targetAtoms)
-        {
-            structureView.SetAtomPosition(item, item.SourceAtom.Coordinates - translation, false);
-            ColliderManager.Instance.UpdateColliderForAtom(item);
-            HBondRenderer.Instance.OnAtomUpdate(structureView, item);
-        }
-
-#if !UNITY_WEBGL
-        structureView.BondMutex.WaitOne();
-#endif
-        foreach (var item in targetAtoms)
-        {
-            structureView.UpdateAtomBondsNoLock(item, App.Instance.BondTolerance, true);
-        }
-#if !UNITY_WEBGL
-        structureView.BondMutex.ReleaseMutex();
-#endif
-
-        return true;
-    }
-
-    public override UpdateFlags Flags => UpdateFlags.UpdateAtom;
-}
-
 public class RepositionAtomsOperation : IOperation
 {
     private List<AtomView> targetAtoms;
@@ -82,7 +21,9 @@ public class RepositionAtomsOperation : IOperation
         oldPositions = new List<Vector3>(targetAtoms.Count);
         for (int i = 0; i < targetAtoms.Count; i++)
         {
-            oldPositions.Add(targetAtoms[i].Position);
+            // The position of the [AtomView] may already be the previewed change,
+            // for the original position we need to use [Coordinates]
+            oldPositions.Add(CrystalStructureView.SwapYZ(targetAtoms[i].SourceAtom.Coordinates));
             structureView.SetAtomPosition(targetAtoms[i], newPositions[i], false);
             ColliderManager.Instance.UpdateColliderForAtom(targetAtoms[i]);
             HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtoms[i]);
@@ -156,7 +97,7 @@ public class SetPositionOperation : IOperation
         ColliderManager.Instance.UpdateColliderForAtom(targetAtom);
         structureView.UpdateAtomBonds(targetAtom, App.Instance.BondTolerance, true);
         HBondRenderer.Instance.OnAtomUpdate(structureView, targetAtom);
-        
+
         return true;
     }
 
