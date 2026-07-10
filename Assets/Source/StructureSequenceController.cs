@@ -47,6 +47,8 @@ public class StructureSequenceController : MonoBehaviour
         CrystalStructureView structureView = new(currentFile.Structures[CurrentStructureIndex]);
         OverlayUiController.Instance.UpdateStructureIndex(0, currentFile.StructureCount);
         App.Instance.operationManager = new(structureView);
+        App.Instance.operationManager.OnOperationPerformed += App.Instance.viewport.OnOperationDone;
+        App.Instance.operationManager.OnOperationPerformed += UtilsPanelController.Instance.OnOperationPerformed;
         viewport.OpenStructureView(structureView);
         viewport.RefocusCamera();
     }
@@ -93,7 +95,9 @@ public class StructureSequenceController : MonoBehaviour
             {
                 OverlayUiController.Instance.UpdateStructureIndex(CurrentStructureIndex, currentFile.StructureCount);
                 App.Instance.operationManager = new(structureView);
-                viewport.OpenStructureView(structureView);
+                App.Instance.operationManager.OnOperationPerformed += App.Instance.viewport.OnOperationDone;
+                App.Instance.operationManager.OnOperationPerformed += UtilsPanelController.Instance.OnOperationPerformed;
+                viewport.OpenStructureView(structureView, false);
             });
         });
 #endif

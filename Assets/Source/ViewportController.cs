@@ -194,7 +194,7 @@ public class ViewportController : MonoBehaviour
         bondRecalculationTask.RequestRecompute();
     }
 
-    public void OpenStructureView(CrystalStructureView structureView)
+    public void OpenStructureView(CrystalStructureView structureView, bool isNewFile = true)
     {
         CurrentStructureView = structureView;
         // Update UI
@@ -202,13 +202,17 @@ public class ViewportController : MonoBehaviour
         EditPanelController.Instance.UpdateLattice(CurrentStructureView.Structure);
         CurrentStructureView.GenerateBonds();
 
-        App.Instance.operationManager.OnOperationPerformed += OnOperationDone;
-        App.Instance.operationManager.OnOperationPerformed += UtilsPanelController.Instance.OnOperationPerformed;
-        selectionManager = new(OverlayUiController.Instance.UpdateSelectionInfo);
-
         latticeTransforms = null;
         colliderManager.SetLatticeTransforms(LatticeTransforms);
         colliderManager.CreateCollidersForStructure(CurrentStructureView);
+
+        SelectionManager oldSelectionManager = selectionManager;
+        selectionManager = new(OverlayUiController.Instance.UpdateSelectionInfo);
+        if (!isNewFile && oldSelectionManager != null)
+        {
+            // Migrate the selection
+            selectionManager.MigrateSelection(structureView, oldSelectionManager);
+        }
 
         structureRenderer.SetStructureView(structureView, LatticeTransforms);
         latticeRenderer.SetLattice(structureView.Structure, repeatA, repeatB, repeatC);
@@ -545,7 +549,7 @@ public class ViewportController : MonoBehaviour
         }
     }
 
-    void OnOperationDone(IOperation op)
+    public void OnOperationDone(IOperation op)
     {
         selectionManager.RemoveInvalid();
 
