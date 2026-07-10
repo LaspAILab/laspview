@@ -45,9 +45,9 @@ struct InstancingData
 }
 
 public class StructureRenderer : MonoBehaviour
-{  
+{
     public static StructureRenderer Instance;
-    
+
     private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
     private static readonly int RimColor = Shader.PropertyToID("_RimColor");
 
@@ -67,13 +67,13 @@ public class StructureRenderer : MonoBehaviour
         get;
         private set;
     } = 0.35f;
-    
+
     public float BallRadiusScale
     {
         get;
         private set;
     } = 1f;
-    
+
     private Matrix4x4[,,] latticeTransforms = null;
 
     private InstancingData atomInstancingData = new InstancingData
@@ -139,7 +139,7 @@ public class StructureRenderer : MonoBehaviour
         }
 
         BallRadiusScale = radiusScale;
-        
+
         // Refresh atom transforms
         foreach (var item in CurrentStructureView.Atoms)
         {
@@ -195,17 +195,17 @@ public class StructureRenderer : MonoBehaviour
         repeatA = latticeTransforms.GetLength(0);
         repeatB = latticeTransforms.GetLength(1);
         repeatC = latticeTransforms.GetLength(2);
-        
+
         // GC.Collect();
         atomInstancingData.Clear();
         atomInstancingData.Capacity = CurrentStructureView.Atoms.Count * repeatA * repeatB * repeatC;
-        
+
         bondInstancingData.Clear();
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.WaitOne();
 #endif
         bondInstancingData.Capacity = CurrentStructureView.Bonds.Count * repeatA * repeatB * repeatC;
-        
+
         for (int i = 0; i < repeatA; i++)
         {
             for (int j = 0; j < repeatB; j++)
@@ -213,26 +213,26 @@ public class StructureRenderer : MonoBehaviour
                 for (int k = 0; k < repeatC; k++)
                 {
                     Matrix4x4 transformMatrix = latticeTransforms[i, j, k];
-                    
+
                     foreach (var item in CurrentStructureView.Atoms)
                     {
                         if (item.IsHidden)
                         {
                             continue;
                         }
-                        
+
                         atomInstancingData.Transforms.Add(transformMatrix * item.Transform);
                         atomInstancingData.Colors.Add(GetAtomColor(item, i,j,k));
                         atomInstancingData.RimColors.Add(GetRimColor(item.SourceAtom.Flags));
                     }
-                    
+
                     foreach (var item in CurrentStructureView.Bonds)
                     {
                         if(item.FromAtom.IsHidden || item.ToAtom.IsHidden)
                         {
                             continue;
                         }
-                        
+
                         bondInstancingData.Transforms.Add(transformMatrix * item.Transform);
                         bondInstancingData.Colors.Add(GetAtomColor(item.FromAtom, i, j, k));
                         // Add blue rim for bonds only if two atoms are both fixed
@@ -242,7 +242,7 @@ public class StructureRenderer : MonoBehaviour
                 }
             }
         }
-        
+
 #if !UNITY_WEBGL
         CurrentStructureView.BondMutex.ReleaseMutex();
 #endif

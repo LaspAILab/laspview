@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -23,7 +22,8 @@ public class PreviewTracker
 {
     private AtomView[] trackedAtoms;
     private IViewportAPI viewport;
-    private bool submitted = false;
+    private CrystalStructureView crystalStructureView;
+    private bool submitted = false, edited = false;
 
     // Whether to update bonds in realtime when transforming atoms
     public bool UpdateBondingRealtime
@@ -49,6 +49,7 @@ public class PreviewTracker
     public PreviewTracker()
     {
         trackedAtoms = Array.Empty<AtomView>();
+        crystalStructureView = App.Instance.viewport.CurrentStructureView;
     }
 
     public PreviewTracker(IViewportAPI activeViewport, IList<AtomView> trackedAtoms)
@@ -56,10 +57,17 @@ public class PreviewTracker
         this.trackedAtoms = trackedAtoms.ToArray();
         PositionBuffer = Enumerable.Repeat(Vector3.zero, trackedAtoms.Count).ToList();
         viewport = activeViewport;
+        crystalStructureView = viewport.GetCrystalStructureView();
     }
 
     public void UpdatePositions(bool usePositionBuffer, IList<Vector3> newPositions = null)
     {
+        if (crystalStructureView != viewport.GetCrystalStructureView())
+        {
+            // Don't reset if structure view has changed
+            return;
+        }
+
         if (submitted)
         {
             Debug.LogWarning("Attempting to update after submission, ignoring. ");
@@ -76,8 +84,6 @@ public class PreviewTracker
         }
 
         Assert.AreEqual(trackedAtoms.Length, newPositions.Count);
-
-        var crystalStructureView = viewport.GetCrystalStructureView();
         for (int i = 0; i < trackedAtoms.Length; i++)
         {
             crystalStructureView.SetAtomPosition(trackedAtoms[i], newPositions[i], true);
@@ -85,17 +91,23 @@ public class PreviewTracker
 
         UpdateBonding();
         viewport.MarkRendererDirty();
+        edited = true;
     }
 
     public void UpdatePositions(Func<AtomView, Vector3> positionGenerator)
     {
+        if (crystalStructureView != viewport.GetCrystalStructureView())
+        {
+            // Don't reset if structure view has changed
+            return;
+        }
+
         if (submitted)
         {
             Debug.LogWarning("Attempting to update after submission, ignoring. ");
             return;
         }
 
-        var crystalStructureView = viewport.GetCrystalStructureView();
         foreach (var item in trackedAtoms)
         {
             crystalStructureView.SetAtomPosition(item, positionGenerator(item), true);
@@ -103,6 +115,7 @@ public class PreviewTracker
 
         UpdateBonding();
         viewport.MarkRendererDirty();
+        edited = true;
     }
 
     public void Submit(List<Vector3> newPositions = null)
@@ -137,13 +150,17 @@ public class PreviewTracker
 
     public void Reset()
     {
+        if (crystalStructureView != viewport.GetCrystalStructureView())
+        {
+            // Don't reset if structure view has changed
+            return;
+        }
+
         if (submitted)
         {
             Debug.LogWarning("Attempting to update but changes are already submitted, ignoring. ");
             return;
         }
-
-        var crystalStructureView = viewport.GetCrystalStructureView();
 
         // Restore atom positions to their original ones
         for (int i = 0; i < trackedAtoms.Length; i++)
@@ -152,11 +169,12 @@ public class PreviewTracker
         }
 
         UpdateBonding();
+        edited = false;
     }
 
     ~PreviewTracker()
     {
-        if (!submitted)
+        if (edited && !submitted)
         {
             // Reset upon dispose
             Reset();

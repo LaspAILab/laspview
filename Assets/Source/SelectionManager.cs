@@ -138,7 +138,7 @@ public class SelectionManager
     public bool Deselect(AtomView atomView, (int, int, int) cellIndex)
     {
         atomView.SelectedCellIndex = null;
-        bool result = Selection.Remove(new SelectionItem { Atom = atomView, CellIndex = cellIndex});
+        bool result = Selection.Remove(new SelectionItem { Atom = atomView, CellIndex = cellIndex });
 
         if (result)
         {
@@ -178,6 +178,26 @@ public class SelectionManager
         }
 
         onSelectionChanged?.Invoke(Selection.ToList());
+    }
+
+    // Migrate the selection from another selection manager to this one
+    public void MigrateSelection(CrystalStructureView currentStructure, SelectionManager other)
+    {
+        foreach (var item in other.Selection)
+        {
+            var match = currentStructure.Atoms.Find(x => x.SourceAtom.Index == item.Atom.SourceAtom.Index);
+            if (match != null)
+            {
+                Select(new SelectionItem
+                {
+                    Atom = match,
+                    LatticeOffset = CrystalStructureView.SwapYZ(
+                        currentStructure.Structure.FractionalToCartesian(new Vector3(item.CellIndex.Item1,
+                            item.CellIndex.Item2, item.CellIndex.Item3))),
+                    CellIndex = item.CellIndex
+                });
+            }
+        }
     }
 
     // Remove inactive atoms from selection
