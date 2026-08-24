@@ -79,7 +79,7 @@ public class FilePanelController : MonoBehaviour
                 else
                 {
                     // Open structure file
-                    App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]), isFirst);
+                    App.Instance.OpenArc(loader.downloadHandler.text.Split('\n'), Path.GetFileName(parts[1]), true, isFirst);
                     isFirst = false;
                 }
             }
@@ -150,7 +150,7 @@ public class FilePanelController : MonoBehaviour
         bool isFirst = true;
         foreach (var path in paths)
         {
-            App.Instance.OpenArc(File.ReadLines(path), Path.GetFileName(path), isFirst);
+            App.Instance.OpenArc(File.ReadLines(path), Path.GetFileName(path), true, isFirst);
             isFirst = false;
         }
     }

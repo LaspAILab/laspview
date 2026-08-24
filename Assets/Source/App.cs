@@ -108,7 +108,7 @@ public class App : MonoBehaviour
         UnityEngine.Analytics.Analytics.initializeOnStartup = false;
         UnityEngine.Analytics.Analytics.limitUserTracking = false;
         UnityEngine.Analytics.PerformanceReporting.enabled = false;
-        
+
         ReadJsonConfig();
         Instance = this;
         viewport = GetComponent<ViewportController>();
@@ -127,7 +127,7 @@ public class App : MonoBehaviour
         SendJSEvent("OnUnityLoad", "");
 #else
         string lines = Resources.Load<TextAsset>("PeriodicTable").text;
-        OpenArc(lines.Split('\n'), "PeriodicTable.arc", true);
+        OpenArc(lines.Split('\n'), "PeriodicTable.arc", false, true);
 #endif
     }
 
@@ -142,7 +142,7 @@ public class App : MonoBehaviour
 #endif
         var rawElements = JsonUtility.FromJson<SerializedElementContainer>(periodicTableJson).Elements;
         Elements = rawElements.ToDictionary(e => e.Symbol, e => new ElementData(e));
-        
+
         var colorConfig = JsonUtility.FromJson<SerializedColorData>(colorConfigJson);
         ColorUtility.TryParseHtmlString(colorConfig.FixedColor, out StructureRenderer.FixedRimColor);
         ColorUtility.TryParseHtmlString(colorConfig.ReactColor, out StructureRenderer.ReactRimColor);
@@ -173,7 +173,7 @@ public class App : MonoBehaviour
 #if DEBUG
         Debug.Log("OpenArcString: " + content);
 #endif
-        OpenArc(content.Split('\n'), $"webin-{++arcStringInputIndex}.arc");
+        OpenArc(content.Split('\n'), $"webin-{++arcStringInputIndex}.arc", false);
     }
 
     public void SaveCurrentStructure()
@@ -205,8 +205,25 @@ public class App : MonoBehaviour
         }
     }
 
+    public void GetCurrentFileName()
+    {
+        try
+        {
+            string str = "";
+            if (CurrentFile.HasPhysicalFile)
+            {
+                str = CurrentFile.Filename;
+            }
+            SendJSEvent("FileNameRecv", str);
+        }
+        catch (Exception e)
+        {
+            SendJSEvent("FileNameFail", e.Message);
+        }
+    }
+
     // Limit the open file count on WebGL
-    private const int MAX_OPEN_FILE_COUNT = 3;
+    private const int MAX_OPEN_FILE_COUNT = 4;
 #endif
 
     void AddFile(StructureFile structureFile)
@@ -226,7 +243,7 @@ public class App : MonoBehaviour
 #endif
     }
 
-    public void OpenArc(IEnumerable<string> content, string filename, bool openAfterLoad = true)
+    public void OpenArc(IEnumerable<string> content, string filename, bool hasPhysicalFile, bool openAfterLoad = true)
     {
         ICrystalFormat formatReader = ICrystalFormat.GetFormatIO(filename);
         if (formatReader == null)
@@ -236,7 +253,7 @@ public class App : MonoBehaviour
         }
 
 #if UNITY_WEBGL
-        CurrentFile = new(filename, fileLruTimestamp++);
+        CurrentFile = new(filename, hasPhysicalFile, fileLruTimestamp++);
         AddFile(CurrentFile);
 
         try
@@ -295,7 +312,7 @@ public class App : MonoBehaviour
                 OverlayUiController.Instance.PrintStatusLog($"Read failed: {e.Message}");
                 Debug.LogError($"Failed to read structure file: {e.Message}\n{e.StackTrace}");
             }
-            
+
             callbackQueue.Enqueue(()=>
             {
                 OverlayUiController.Instance.PrintStatusLog($"Displaying file `{filename}` ({currentFile.StructureCount} items)");
@@ -346,7 +363,7 @@ public class App : MonoBehaviour
 
     public void NewEmpty()
     {
-        CurrentFile = new("Empty", fileLruTimestamp++);
+        CurrentFile = new("Empty", false, fileLruTimestamp++);
         CrystalStructure crystalStructure = new();
         crystalStructure.Energy = 0;
         crystalStructure.SetLattice(new[] { 10f, 10f, 10f, 90f, 90f, 90f });

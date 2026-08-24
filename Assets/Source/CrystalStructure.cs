@@ -258,11 +258,15 @@ public class StructureFile
 
     public string Filename { get; private set; }
 
+    // While this structure is from a physical file or just a string
+    public bool HasPhysicalFile { get; private set; }
+
     public int LruTimestamp { get; set; }
 
-    public StructureFile(string filename = "", int initialTimestamp = -1)
+    public StructureFile(string filename = "", bool hasPhysicalFile = true, int initialTimestamp = -1)
     {
         Filename = filename;
+        HasPhysicalFile = hasPhysicalFile;
         Structures = new();
         LruTimestamp = initialTimestamp;
 #if !UNITY_WEBGL
