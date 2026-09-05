@@ -14,23 +14,40 @@ public class CifFormat : ICrystalFormat
     public void Read(StructureFile file, IEnumerable<string> lines, Action<int> progressCallback = null)
     {
         var linesEnumerator = lines.GetEnumerator();
-        string line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
 
+        // One iteration per data block, a multi-structure CIF consists of several `data_*` blocks
+        string line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
+        while (line != null)
+        {
+            line = ReadDataBlock(file, linesEnumerator, line, progressCallback);
+        }
+    }
+
+    // Reads a single `data_*` block whose header line is `line`, returns the header line of the
+    // next data block, or null at end of file
+    private string ReadDataBlock(StructureFile file, IEnumerator<string> linesEnumerator, string line,
+        Action<int> progressCallback = null)
+    {
         // Skip comments
-        while (line.Trim().StartsWith("#"))
+        while (line != null && line.Trim().StartsWith("#"))
         {
             line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
         }
-        
-        if (line.StartsWith("data_"))
+
+        if (line == null)
         {
-            Debug.LogWarning("Cif file should start with `data_image0`, but it doesn't. ");
+            return null;
+        }
+
+        if (!line.StartsWith("data_"))
+        {
+            Debug.LogWarning("Cif file should start with `data_*`, but it doesn't. ");
         }
 
         // a, b, c, alpha, beta, gamma
         float[] latticeParams = { -1, -1, -1, -1, -1, -1 };
         bool isReadingList = false;
-        
+
         List<string> listDefinition = new();
 
         // Read lattice paramaters
@@ -211,60 +228,65 @@ public class CifFormat : ICrystalFormat
         file.ListMutex.ReleaseMutex();
 #endif
 
-        progressCallback?.Invoke(1);
+        progressCallback?.Invoke(file.StructureCount);
+
+        // Advance to the next data block, skipping unrecognized trailing content of this block
+        while (line != null && !line.StartsWith("data_"))
+        {
+            line = ICrystalFormat.GetNextNonEmptyLine(linesEnumerator);
+        }
+
+        return line;
     }
 
     public string Write(StructureFile file)
     {
-        if (file.StructureCount > 1)
-        {
-            Debug.LogWarning(
-                "Current file contains more than one structure, exporter will only write the first. ");
-        }
-
         if (file.StructureCount == 0)
         {
-            Debug.LogError("Structure is empty, cannot write POSCAR. ");
+            Debug.LogError("Structure is empty, cannot write CIF. ");
             return null;
         }
 
         StringBuilder lines = new StringBuilder();
 
-        lines.Append("data_image0\n");
-
-        var structure = file.Structures.First();
-
-        var latticeParams = structure.LatticeParams;
-        lines.Append($"_cell_length_a     {latticeParams[0]:f5}\n");
-        lines.Append($"_cell_length_b     {latticeParams[1]:f5}\n");
-        lines.Append($"_cell_length_c     {latticeParams[2]:f5}\n");
-        lines.Append($"_cell_angle_alpha  {latticeParams[3]:f5}\n");
-        lines.Append($"_cell_angle_beta   {latticeParams[4]:f5}\n");
-        lines.Append($"_cell_angle_gamma  {latticeParams[5]:f5}\n");
-
-        lines.Append("loop_\n");
-        lines.Append("  _atom_site_label\n");
-        lines.Append("  _atom_site_fract_x\n");
-        lines.Append("  _atom_site_fract_y\n");
-        lines.Append("  _atom_site_fract_z\n");
-        lines.Append("  _atom_site_type_symbol\n");
-
-        Dictionary<string, int> elementCount = new();
-
-        foreach (var atom in structure.Atoms)
+        for (int i = 0; i < file.StructureCount; i++)
         {
-            var indexOfElementType = elementCount.GetValueOrDefault(atom.Symbol, 0);
-            indexOfElementType++;
+            var structure = file.Structures[i];
 
-            elementCount[atom.Symbol] = indexOfElementType;
+            lines.Append($"data_image{i}\n");
 
-            var atomName = $"{atom.Symbol}{indexOfElementType}";
+            var latticeParams = structure.LatticeParams;
+            lines.Append($"_cell_length_a     {latticeParams[0]:f5}\n");
+            lines.Append($"_cell_length_b     {latticeParams[1]:f5}\n");
+            lines.Append($"_cell_length_c     {latticeParams[2]:f5}\n");
+            lines.Append($"_cell_angle_alpha  {latticeParams[3]:f5}\n");
+            lines.Append($"_cell_angle_beta   {latticeParams[4]:f5}\n");
+            lines.Append($"_cell_angle_gamma  {latticeParams[5]:f5}\n");
 
-            var clippedCoordinates = structure.ClipFractionalCoords(structure.CartesianToFractional(atom.Coordinates));
-            lines.Append(string.Format("{0,6}{1,14:f6}{2,14:f6}{3,14:f6}{4,4}\n", atomName, clippedCoordinates.x,
-                clippedCoordinates.y, clippedCoordinates.z, atom.Symbol));
+            lines.Append("loop_\n");
+            lines.Append("  _atom_site_label\n");
+            lines.Append("  _atom_site_fract_x\n");
+            lines.Append("  _atom_site_fract_y\n");
+            lines.Append("  _atom_site_fract_z\n");
+            lines.Append("  _atom_site_type_symbol\n");
+
+            Dictionary<string, int> elementCount = new();
+
+            foreach (var atom in structure.Atoms)
+            {
+                var indexOfElementType = elementCount.GetValueOrDefault(atom.Symbol, 0);
+                indexOfElementType++;
+
+                elementCount[atom.Symbol] = indexOfElementType;
+
+                var atomName = $"{atom.Symbol}{indexOfElementType}";
+
+                var clippedCoordinates = structure.ClipFractionalCoords(structure.CartesianToFractional(atom.Coordinates));
+                lines.Append(string.Format("{0,6}{1,14:f6}{2,14:f6}{3,14:f6}{4,4}\n", atomName, clippedCoordinates.x,
+                    clippedCoordinates.y, clippedCoordinates.z, atom.Symbol));
+            }
         }
-        
+
         return lines.ToString();
     }
 }
