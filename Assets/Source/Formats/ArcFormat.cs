@@ -16,10 +16,18 @@ public class ArcFormat : ICrystalFormat
         new(@"^PBC\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)(?:\s+\(?(\w+)\)?)?\s*$",
             RegexOptions.Compiled);
 
+    // Atom lines are nominally fixed width, but real files deviate in the CORE residue-number column:
+    // the number is written as `****` once it overflows its 5 character field (10000+ atoms), and many
+    // writers drop the space between CORE and that number, gluing the two together (`CORE10000`).
+    // Accept either separator, and accept a residue number made of digits or `*`.
+    // The residue number field is followed by two repeats of the element symbol, then the charge.
+    // The charge is captured on its own (at most 4 decimals) while the trailing `\S*` swallows the
+    // residue number when it is glued to the charge's end (`2****`, `0.000010000`).
+    // Groups: 1 symbol, 2-4 coords, 5 residue number (unused), 6 element, 7 charge, 8 non-numeric charge
     private static readonly Regex ATOM_REGEX =
-        new(@"^(\w+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([A-Z]+)\s+(\w+)\s+(\w+)\s+(\w+)\s+([0-9.-]+)(?:\s+(\w+))?$",
+        new(@"^(\w+)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+)\s*[A-Za-z]+\s*([0-9*]+)\s+([A-Za-z]+)\s+[A-Za-z]+\s+(?:(-?[0-9]+(?:\.[0-9]{1,4})?)\S*|(\S+))",
             RegexOptions.Compiled);
-    
+
     private static readonly Regex ENERGY_REGEX =
         new(@"^(Energy|IS|TS|SSW)\s+([0-9.-]+)\s+([0-9.-]+)\s+([0-9.-]+).*$",
             RegexOptions.Compiled);
@@ -51,13 +59,13 @@ public class ArcFormat : ICrystalFormat
                     prevTrimmedLine = trimmedLine;
                     continue;
                 }
-                
+
                 Debug.LogWarning($"First line should be file header, got `{trimmedLine}`");
             }
-            
-            // We don't have anything to do with DATE, so skip matching. 
+
+            // We don't have anything to do with DATE, so skip matching.
             // match = DATE_REGEX.Match(trimmedLine);
-            
+
             // This branch is most likely, put it in the beginning
             match = ATOM_REGEX.Match(trimmedLine);
             if (match.Success)
@@ -66,14 +74,26 @@ public class ArcFormat : ICrystalFormat
                 {
                     Vector3 coords = new(float.Parse(match.Groups[2].Value), float.Parse(match.Groups[3].Value),
                         float.Parse(match.Groups[4].Value));
-                    string element = match.Groups[8].Value;
-                    
+                    string element = match.Groups[6].Value;
+
                     if (!App.Elements.ContainsKey(element))
                     {
                         Debug.LogError($"Unknown element symbol `{element}`");
                     }
 
-                    float charge = float.Parse(match.Groups[9].Value);
+                    // Group 7 is the charge with any glued residue number already excluded by the regex;
+                    // group 8 is only populated when the charge field holds no recognizable number.
+                    float charge = 0f;
+                    if (match.Groups[7].Success)
+                    {
+                        charge = float.Parse(match.Groups[7].Value);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(
+                            $"Unrecognized charge value `{match.Groups[8].Value}` in atom line, assuming 0. ");
+                    }
+
                     AtomFlags flags = AtomFlags.None;
                     // View charge value 1 as fixed
                     if (Mathf.Approximately(charge, 1))
@@ -97,14 +117,14 @@ public class ArcFormat : ICrystalFormat
 
                 goto end;
             }
-            
+
             match = ENERGY_REGEX.Match(trimmedLine);
             if (match.Success)
             {
                 currentStructure.Conv = float.Parse(match.Groups[2].Value);
                 currentStructure.Energy = float.Parse(match.Groups[4].Value);
             }
-            
+
             match = LATTICE_PARAMS_REGEX.Match(trimmedLine);
             if (match.Success)
             {
@@ -132,7 +152,7 @@ public class ArcFormat : ICrystalFormat
                 {
                     throw new Exception($"Structure doesn't have lattice parameter definition. ");
                 }
-                
+
 #if UNITY_WEBGL
                 file.Structures.Add(currentStructure);
 #else
@@ -182,11 +202,12 @@ public class ArcFormat : ICrystalFormat
                     AtomFlags.React => 0.1f,
                     _ => atom.Charge
                 };
-                
+
                 var clippedCoordinates = crystalStructure.ClipCartesianCoords(atom.Coordinates);
                 lines.Append(string.Format("{0,-5}{1,15:f9}{2,15:f9}{3,15:f9}", atom.Symbol, clippedCoordinates.x,
                     clippedCoordinates.y, clippedCoordinates.z));
-                lines.Append($" CORE{h + 1,5:d} {atom.Symbol,-4}{atom.Symbol,-4}{charge,8:f4}{h + 1,5:d}\n");
+                string index = h + 1 >= 10000 ? "****" : $"{h + 1}";
+                lines.Append($" CORE{index,5} {atom.Symbol,-4}{atom.Symbol,-4}{charge,8:f4}{index,5}\n");
             }
 
             lines.Append("end\nend\n");
