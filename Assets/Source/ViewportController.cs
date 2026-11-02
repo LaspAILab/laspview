@@ -41,6 +41,7 @@ public class ViewportController : MonoBehaviour
 {
     const float BOX_SELECT_THRESHOLD = 0.2f;
     const float PAN_SPEED = 1f;
+    const int MAX_CONNECTED_SPREAD = 300;
 
     [NonSerialized] public StructureRenderer structureRenderer;
     [NonSerialized] public HBondRenderer hBondRenderer;
@@ -133,6 +134,7 @@ public class ViewportController : MonoBehaviour
         }
     }
 
+    [NonSerialized]
     public ViewportAPI Api;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -808,7 +810,24 @@ public class ViewportController : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.Mouse1) && currentTool == ToolType.Select)
         {
-            if (raycastAtom.Count > 0)
+            if (ctrlDown && shiftDown && !altDown && raycastAtom.Count > 0)
+            {
+                // Select all atoms in the connected component of the clicked atom
+                var connected = CurrentStructureView.GetConnectedAtoms(hoveredAtom.Atom, MAX_CONNECTED_SPREAD);
+                var items = new List<SelectionItem>(connected.Count);
+                foreach (var atom in connected)
+                {
+                    items.Add(new SelectionItem
+                    {
+                        Atom = atom,
+                        CellIndex = hoveredAtom.CellIndex,
+                        LatticeOffset = hoveredAtom.LatticeOffset
+                    });
+                }
+                selectionManager.ReplaceSelection(items);
+                shallUpdateRenderer = true;
+            }
+            else if (raycastAtom.Count > 0)
             {
                 if (selectionManager.IsSelected(hoveredAtom.Atom, hoveredAtom.CellIndex))
                 {

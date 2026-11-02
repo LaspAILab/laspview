@@ -15,7 +15,7 @@
         <ui:SliderInt label="Lat range b" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeB" class="display-option-item"/>
         <ui:SliderInt label="Lat range c" value="1" high-value="3" show-input-field="true" low-value="1" name="LatRangeC" class="display-option-item"/>
         <ui:Slider label="Line width" value="0.05" high-value="0.5" show-input-field="true" name="LineWidth" low-value="0.01" class="display-option-item"/>
-        <ui:EnumField label="Line color" type="BackgroundColorType, Assembly-CSharp" name="LineColor" value="White" class="display-option-item">
+        <ui:EnumField label="Line color" type="BackgroundColorType, Assembly-CSharp" name="LineColor" value="Black" class="display-option-item">
             <Bindings>
                 <ui:DataBinding property="value" data-source-path="DisplayStyle" binding-mode="ToSource"/>
             </Bindings>
