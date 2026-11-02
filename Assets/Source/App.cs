@@ -288,7 +288,7 @@ public class App : MonoBehaviour
         OverlayUiController.Instance.PrintStatusLog($"Loading `{filename}` in background");
         Task.Run(() =>
         {
-            StructureFile currentFile = new(filename, fileLruTimestamp++);
+            StructureFile currentFile = new(filename, hasPhysicalFile, fileLruTimestamp++);
             if (openAfterLoad)
             {
                 CurrentFile = currentFile;

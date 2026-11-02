@@ -10,7 +10,7 @@ using Button = UnityEngine.UIElements.Button;
 
 public class OverlayUiController : MonoBehaviour
 {
-    const string VERSION_NUMBER = "2.2.6";
+    const string VERSION_NUMBER = "2.2.7";
 
     public static OverlayUiController Instance;
     private ViewportController viewport;

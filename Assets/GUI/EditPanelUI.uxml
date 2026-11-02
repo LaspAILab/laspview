@@ -41,7 +41,7 @@
         <ui:FloatField label="Display Radius" value="42.2" name="DisplayRadiusInput" class="edit-panel-item" style="justify-content: space-between;"/>
         <ui:TextField label="Display color" placeholder-text="H" name="DisplayColorInput" class="edit-panel-item" style="display: none; justify-content: space-between;"/>
         <ui:VisualElement name="HideRow" class="edit-panel-item" style="flex-grow: 1; flex-direction: row; justify-content: center; display: flex;">
-            <ui:Button text="Hide selected&#10;" name="HideSelectedButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;"/>
+            <ui:Button text="Hide selected" name="HideSelectedButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;"/>
             <ui:Button text="Restore all hidden" name="RestoreAllButton" class="edit-panel-button edit-panel-item" style="margin-left: 0; margin-right: 0; border-top-left-radius: 0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 0; flex-grow: 2;"/>
         </ui:VisualElement>
     </ui:ScrollView>

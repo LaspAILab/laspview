@@ -336,6 +336,9 @@ public class CrystalStructureView
 
     public List<BondView> Bonds = new();
 
+    // Cached adjacency map for connected-component queries; rebuilt lazily after bond changes.
+    private Dictionary<int, List<AtomView>> bondAdjacencyCache;
+
 #if !UNITY_WEBGL
     public Mutex BondMutex;
 #endif
@@ -435,6 +438,7 @@ public class CrystalStructureView
         BondMutex.WaitOne();
 #endif
         Bonds.Clear();
+        bondAdjacencyCache = null;
         for (int i = 0; i < Atoms.Count; i++)
         {
             UpdateAtomBondsNoLock(Atoms[i], BondTolerance, false, true);
@@ -465,6 +469,8 @@ public class CrystalStructureView
         {
             Bonds.RemoveAll(bond => bond.FromAtom == targetAtom || bond.ToAtom == targetAtom);
         }
+
+        bondAdjacencyCache = null;
 
         float maxDistance = tolerance * (targetAtom.Radius + maxAtomRadius);
         List<AtomView> nearbyAtoms = new();
@@ -519,6 +525,61 @@ public class CrystalStructureView
                 }
             }
         }
+    }
+
+    // Flood-fill BFS over the bond graph to find all atoms connected to startAtom.
+    // Adjacency map is cached and rebuilt only when bonds change, so the O(B) build
+    // is amortized. BFS itself is bounded by maxCount.
+    public List<AtomView> GetConnectedAtoms(AtomView startAtom, int maxCount)
+    {
+        var result = new List<AtomView>();
+        if (startAtom == null || !startAtom.InLattice || startAtom.IsHidden)
+            return result;
+
+#if !UNITY_WEBGL
+        BondMutex.WaitOne();
+#endif
+        if (bondAdjacencyCache == null)
+        {
+            bondAdjacencyCache = new Dictionary<int, List<AtomView>>();
+            foreach (var bond in Bonds)
+            {
+                var key = bond.FromAtom.SourceAtom.Index;
+                if (!bondAdjacencyCache.TryGetValue(key, out var neighbors))
+                {
+                    neighbors = new List<AtomView>();
+                    bondAdjacencyCache[key] = neighbors;
+                }
+                neighbors.Add(bond.ToAtom);
+            }
+        }
+        var adjacency = bondAdjacencyCache;
+#if !UNITY_WEBGL
+        BondMutex.ReleaseMutex();
+#endif
+
+        var visited = new HashSet<int> { startAtom.SourceAtom.Index };
+        var queue = new Queue<AtomView>();
+        queue.Enqueue(startAtom);
+
+        while (queue.Count > 0 && result.Count < maxCount)
+        {
+            var current = queue.Dequeue();
+            result.Add(current);
+
+            if (!adjacency.TryGetValue(current.SourceAtom.Index, out var neighbors))
+                continue;
+
+            foreach (var neighbor in neighbors)
+            {
+                if (neighbor.IsHidden)
+                    continue;
+                if (visited.Add(neighbor.SourceAtom.Index))
+                    queue.Enqueue(neighbor);
+            }
+        }
+
+        return result;
     }
 
     // Caution: returns left-handed translation

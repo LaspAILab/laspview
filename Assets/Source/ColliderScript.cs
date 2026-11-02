@@ -1,12 +1,14 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class ColliderScript : MonoBehaviour, IPoolable
 {
+    [NonSerialized]
     public AtomView Atom = null;
 
     public (int, int, int) CellIndex;
-    
+
     public Vector3 latticeOffset;
     public Vector3 ActualPosition => Atom.Position + latticeOffset;
 
